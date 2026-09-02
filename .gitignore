@@ -1,0 +1,10 @@
+node_modules
+dist
+*.tsbuildinfo
+coverage
+.DS_Store
+
+# Docs site (apps/docs) — generated / build output
+apps/docs/build
+apps/docs/.docusaurus
+apps/docs/docs/api

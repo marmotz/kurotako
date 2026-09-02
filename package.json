@@ -1,0 +1,33 @@
+{
+  "name": "@kurotako/root",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "packageManager": "bun@1.4.0",
+  "engines": {
+    "node": ">=24",
+    "bun": ">=1.4.0"
+  },
+  "scripts": {
+    "build": "bun run --filter '*' build",
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "prepare": "lefthook install",
+    "release": "changeset publish"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.11",
+    "@changesets/cli": "3.0.1",
+    "@types/node": "^24",
+    "@vitest/coverage-v8": "4.1.11",
+    "lefthook": "2.1.12",
+    "tsup": "8.5.1",
+    "typescript": "5.9.3",
+    "vitest": "4.1.11"
+  }
+}

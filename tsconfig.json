@@ -1,0 +1,13 @@
+{
+  "// note": "Solution file for `tsc -b`. apps/docs is intentionally NOT referenced here: the Docusaurus site is not a composite project and lives outside `tsc -b`.",
+  "files": [],
+  "references": [
+    { "path": "packages/ir" },
+    { "path": "packages/core" },
+    { "path": "packages/config" },
+    { "path": "packages/cli" },
+    { "path": "packages/parser-prisma" },
+    { "path": "packages/gen-zod" },
+    { "path": "packages/gen-angular" }
+  ]
+}
