@@ -1,0 +1,8 @@
+pre-commit:
+  parallel: true
+  commands:
+    biome:
+      glob: "*.{ts,tsx,js,json,jsonc}"
+      run: bunx biome check --no-errors-on-unmatched --staged {staged_files}
+    typecheck:
+      run: bun run typecheck
