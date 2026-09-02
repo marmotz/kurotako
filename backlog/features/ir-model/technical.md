@@ -359,11 +359,20 @@ export function isCreateOptional(field: Field): boolean
 // members; the caller treats every one as optional (partial)
 export function updateFields(entity: Entity): Field[]
 
-// TS type a non-nullable, non-list value of this field maps to, as a source string
-// ('string' | 'number' | 'bigint' | 'boolean' | 'Date' | 'unknown' | <enum type name>) —
-// the single scalar→TS mapping every generator's typed output must agree on
+// TS type a non-nullable, non-list value of this field maps to, as a source string —
+// the single scalar→TS mapping every generator's typed output must agree on. Returns
+// one of the closed `ScalarTsType` tokens for a scalar, the enum type name for
+// { kind: 'enum' } (never prefixed, ADR-0004), 'unknown' for { kind: 'unknown' }.
+export type ScalarTsType =
+  | 'string' | 'number' | 'bigint' | 'boolean' | 'Date' | 'Uint8Array' | 'JsonValue' | 'unknown'
 export function scalarTsType(type: FieldType): string
 ```
+
+Scalar mapping (decided): `string` / `uuid` / `decimal` → `'string'` (`decimal` kept as a
+string to preserve precision; runtime representation stays each generator's choice),
+`boolean` → `'boolean'`, `int` / `float` → `'number'`, `bigint` → `'bigint'`, `date` /
+`datetime` → `'Date'`, `bytes` → `'Uint8Array'`, `json` → `'JsonValue'` (the recursive type
+re-exported by `@kurotako/ir`).
 
 Pure, deterministic, exhaustively switched over the closed unions. `technical.md` /
 task [#13](../../tasks/13-ir-traversal-helpers.md) pin the exact predicate bodies with a

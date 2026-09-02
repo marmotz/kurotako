@@ -1,6 +1,6 @@
 # CI — Shared tsup build preset
 
-**Status**: to do **Type**: CI **Issue**: [#3](https://github.com/marmotz/kurotako/issues/3)
+**Status**: done **Type**: CI **Issue**: [#3](https://github.com/marmotz/kurotako/issues/3)
 
 Reference: [../features/monorepo-bootstrap/technical.md §Build — tsup](../features/monorepo-bootstrap/technical.md#build--tsup).
 

@@ -1,6 +1,6 @@
 # CI — Root workspace scaffold (Bun)
 
-**Status**: to do **Type**: CI **Issue**: [#1](https://github.com/marmotz/kurotako/issues/1)
+**Status**: done **Type**: CI **Issue**: [#1](https://github.com/marmotz/kurotako/issues/1)
 
 Reference: [../features/monorepo-bootstrap/technical.md §Package manager — Bun workspaces](../features/monorepo-bootstrap/technical.md#package-manager--bun-workspaces).
 

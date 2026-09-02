@@ -1,6 +1,6 @@
 # CI — changesets (independent versioning)
 
-**Status**: to do **Type**: CI **Issue**: [#8](https://github.com/marmotz/kurotako/issues/8)
+**Status**: done **Type**: CI **Issue**: [#8](https://github.com/marmotz/kurotako/issues/8)
 
 Reference: [../features/monorepo-bootstrap/technical.md §Versioning / publishing — changesets](../features/monorepo-bootstrap/technical.md#versioning--publishing--changesets).
 

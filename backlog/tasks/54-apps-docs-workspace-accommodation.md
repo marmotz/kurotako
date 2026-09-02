@@ -1,6 +1,6 @@
 # CI — apps/docs workspace accommodation
 
-**Status**: to do **Type**: CI **Issue**: [#54](https://github.com/marmotz/kurotako/issues/54)
+**Status**: done **Type**: CI **Issue**: [#54](https://github.com/marmotz/kurotako/issues/54)
 
 Reference: [../features/docs-site/technical.md §Amendments to monorepo-bootstrap](../features/docs-site/technical.md#amendments-to-monorepo-bootstrap)
 and [../features/monorepo-bootstrap/technical.md §Consequences](../features/monorepo-bootstrap/technical.md#consequences-verified-against-the-current-repo).

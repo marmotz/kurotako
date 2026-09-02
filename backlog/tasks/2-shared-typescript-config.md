@@ -1,6 +1,6 @@
 # CI — Shared TypeScript config + project references
 
-**Status**: to do **Type**: CI **Issue**: [#2](https://github.com/marmotz/kurotako/issues/2)
+**Status**: done **Type**: CI **Issue**: [#2](https://github.com/marmotz/kurotako/issues/2)
 
 Reference: [../features/monorepo-bootstrap/technical.md §TypeScript](../features/monorepo-bootstrap/technical.md#typescript).
 

@@ -13,17 +13,17 @@ design: [technical.md](features/monorepo-bootstrap/technical.md)
 
 | Done | Issue                                                | Task                                                              | Description                                                                         |
 |------|------------------------------------------------------|-------------------------------------------------------------------|-------------------------------------------------------------------------------------|
-|      | [#1](https://github.com/marmotz/kurotako/issues/1)   | [1-root-workspace-scaffold](tasks/1-root-workspace-scaffold.md)   | Root `package.json`, Bun workspaces, `.gitignore`, `.node-version`, `.editorconfig` |
-|      | [#2](https://github.com/marmotz/kurotako/issues/2)   | [2-shared-typescript-config](tasks/2-shared-typescript-config.md) | `tsconfig.base.json` + solution tsconfig, `typecheck` script                        |
-|      | [#3](https://github.com/marmotz/kurotako/issues/3)   | [3-tsup-build-preset](tasks/3-tsup-build-preset.md)               | `tsup.config.base.ts`, `build` script                                               |
-|      | [#4](https://github.com/marmotz/kurotako/issues/4)   | [4-vitest-workspace](tasks/4-vitest-workspace.md)                 | `vitest.workspace.ts`, coverage, `test` script                                      |
-|      | [#5](https://github.com/marmotz/kurotako/issues/5)   | [5-biome-lint-format](tasks/5-biome-lint-format.md)               | `biome.json`, `lint`/`format` scripts                                               |
-|      | [#6](https://github.com/marmotz/kurotako/issues/6)   | [6-package-skeletons](tasks/6-package-skeletons.md)               | 7 `packages/*` skeletons (ir, core, config, cli, parser-prisma, gen-zod, gen-angular) |
-|      | [#7](https://github.com/marmotz/kurotako/issues/7)   | [7-lefthook-git-hooks](tasks/7-lefthook-git-hooks.md)             | `lefthook.yml`, `prepare` script                                                    |
-|      | [#8](https://github.com/marmotz/kurotako/issues/8)   | [8-changesets-release](tasks/8-changesets-release.md)             | `.changeset/config.json`, independent versioning                                    |
-|      | [#9](https://github.com/marmotz/kurotako/issues/9)   | [9-ci-workflow](tasks/9-ci-workflow.md)                           | `.github/workflows/ci.yml`                                                          |
-|      | [#10](https://github.com/marmotz/kurotako/issues/10) | [10-repo-meta-files](tasks/10-repo-meta-files.md)                 | `LICENSE`, `README`, `CONTRIBUTING`, `CODE_OF_CONDUCT`                              |
-|      | [#54](https://github.com/marmotz/kurotako/issues/54) | [54-apps-docs-workspace-accommodation](tasks/54-apps-docs-workspace-accommodation.md) | `apps/*` workspace for the docs site: `workspaces`, `.gitignore`, Biome, changesets, `CONTRIBUTING` (for docs-site) |
+| [x]  | [#1](https://github.com/marmotz/kurotako/issues/1)   | [1-root-workspace-scaffold](tasks/1-root-workspace-scaffold.md)   | Root `package.json`, Bun workspaces, `.gitignore`, `.node-version`, `.editorconfig` |
+| [x]  | [#2](https://github.com/marmotz/kurotako/issues/2)   | [2-shared-typescript-config](tasks/2-shared-typescript-config.md) | `tsconfig.base.json` + solution tsconfig, `typecheck` script                        |
+| [x]  | [#3](https://github.com/marmotz/kurotako/issues/3)   | [3-tsup-build-preset](tasks/3-tsup-build-preset.md)               | `tsup.config.base.ts`, `build` script                                               |
+| [x]  | [#4](https://github.com/marmotz/kurotako/issues/4)   | [4-vitest-workspace](tasks/4-vitest-workspace.md)                 | `vitest.workspace.ts`, coverage, `test` script                                      |
+| [x]  | [#5](https://github.com/marmotz/kurotako/issues/5)   | [5-biome-lint-format](tasks/5-biome-lint-format.md)               | `biome.json`, `lint`/`format` scripts                                               |
+| [x]  | [#6](https://github.com/marmotz/kurotako/issues/6)   | [6-package-skeletons](tasks/6-package-skeletons.md)               | 7 `packages/*` skeletons (ir, core, config, cli, parser-prisma, gen-zod, gen-angular) |
+| [x]  | [#7](https://github.com/marmotz/kurotako/issues/7)   | [7-lefthook-git-hooks](tasks/7-lefthook-git-hooks.md)             | `lefthook.yml`, `prepare` script                                                    |
+| [x]  | [#8](https://github.com/marmotz/kurotako/issues/8)   | [8-changesets-release](tasks/8-changesets-release.md)             | `.changeset/config.json`, independent versioning                                    |
+| [x]  | [#9](https://github.com/marmotz/kurotako/issues/9)   | [9-ci-workflow](tasks/9-ci-workflow.md)                           | `.github/workflows/ci.yml`                                                          |
+| [x]  | [#10](https://github.com/marmotz/kurotako/issues/10) | [10-repo-meta-files](tasks/10-repo-meta-files.md)                 | `LICENSE`, `README`, `CONTRIBUTING`, `CODE_OF_CONDUCT`                              |
+| [x]  | [#54](https://github.com/marmotz/kurotako/issues/54) | [54-apps-docs-workspace-accommodation](tasks/54-apps-docs-workspace-accommodation.md) | `apps/*` workspace for the docs site: `workspaces`, `.gitignore`, Biome, changesets, `CONTRIBUTING` (for docs-site) |
 
 ## IR model (`@kurotako/ir`)
 
@@ -32,10 +32,10 @@ design: [technical.md](features/monorepo-bootstrap/technical.md)
 
 | Done | Issue                                                | Task                                                        | Description                                                          |
 |------|------------------------------------------------------|------------------------------------------------------------|--------------------------------------------------------------------|
-|      | [#11](https://github.com/marmotz/kurotako/issues/11) | [11-ir-types-and-version](tasks/11-ir-types-and-version.md)  | `src/schemas.ts` Valibot schemas + `src/types.ts` inferred + `src/version.ts` |
-|      | [#12](https://github.com/marmotz/kurotako/issues/12) | [12-ir-runtime-validation](tasks/12-ir-runtime-validation.md) | `validateIR`/`assertIR`/`parseIR` = Valibot parse + cross-ref pass   |
-|      | [#13](https://github.com/marmotz/kurotako/issues/13) | [13-ir-traversal-helpers](tasks/13-ir-traversal-helpers.md)  | `src/helpers.ts` resolution / iteration helpers                      |
-|      | [#14](https://github.com/marmotz/kurotako/issues/14) | [14-ir-source-builder](tasks/14-ir-source-builder.md)        | `src/builder.ts` fluent `createSourceIR()` + incremental validation  |
+| [x]  | [#11](https://github.com/marmotz/kurotako/issues/11) | [11-ir-types-and-version](tasks/11-ir-types-and-version.md)  | `src/schemas.ts` Valibot schemas + `src/types.ts` inferred + `src/version.ts` |
+| [x]  | [#12](https://github.com/marmotz/kurotako/issues/12) | [12-ir-runtime-validation](tasks/12-ir-runtime-validation.md) | `validateIR`/`assertIR`/`parseIR` = Valibot parse + cross-ref pass   |
+| [x]  | [#13](https://github.com/marmotz/kurotako/issues/13) | [13-ir-traversal-helpers](tasks/13-ir-traversal-helpers.md)  | `src/helpers.ts` resolution / iteration helpers                      |
+| [x]  | [#14](https://github.com/marmotz/kurotako/issues/14) | [14-ir-source-builder](tasks/14-ir-source-builder.md)        | `src/builder.ts` fluent `createSourceIR()` + incremental validation  |
 
 ## Orchestration (`@kurotako/core`)
 
@@ -149,7 +149,7 @@ design: [technical.md](features/generator-angular/technical.md)
 
 | Done | Issue                                                | Task                                                                          | Description                                                                     |
 |------|------------------------------------------------------|------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
-|      | [#54](https://github.com/marmotz/kurotako/issues/54) | [54-apps-docs-workspace-accommodation](tasks/54-apps-docs-workspace-accommodation.md) | `apps/*` workspace root-file edits (also listed under Monorepo bootstrap)       |
+| [x]  | [#54](https://github.com/marmotz/kurotako/issues/54) | [54-apps-docs-workspace-accommodation](tasks/54-apps-docs-workspace-accommodation.md) | `apps/*` workspace root-file edits (also listed under Monorepo bootstrap)       |
 |      | [#55](https://github.com/marmotz/kurotako/issues/55) | [55-docs-site-scaffold](tasks/55-docs-site-scaffold.md)                       | `apps/docs` Docusaurus package: config, sidebar, tsconfig, placeholder page     |
 |      | [#56](https://github.com/marmotz/kurotako/issues/56) | [56-docs-site-typedoc-api](tasks/56-docs-site-typedoc-api.md)                 | `docusaurus-plugin-typedoc` over ir/core/config/cli, generated `docs/api/`      |
 |      | [#57](https://github.com/marmotz/kurotako/issues/57) | [57-docs-site-deploy-workflow](tasks/57-docs-site-deploy-workflow.md)         | `.github/workflows/docs.yml` + GitHub Pages deploy, `CNAME` / `baseUrl`         |

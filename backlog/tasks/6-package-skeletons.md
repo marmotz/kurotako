@@ -1,6 +1,6 @@
 # CI — Package skeletons (7 packages)
 
-**Status**: to do **Type**: CI **Issue**: [#6](https://github.com/marmotz/kurotako/issues/6)
+**Status**: done **Type**: CI **Issue**: [#6](https://github.com/marmotz/kurotako/issues/6)
 
 Reference: [../features/monorepo-bootstrap/technical.md §Target layout](../features/monorepo-bootstrap/technical.md#target-layout)
 and [§Package
