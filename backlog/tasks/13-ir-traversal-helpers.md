@@ -1,6 +1,6 @@
 # backend — IR traversal / resolution helpers
 
-**Status**: to do **Type**: backend **Issue**: [#13](https://github.com/marmotz/kurotako/issues/13)
+**Status**: done **Type**: backend **Issue**: [#13](https://github.com/marmotz/kurotako/issues/13)
 
 Reference: [../features/ir-model/technical.md §Helpers (`helpers.ts`)](../features/ir-model/technical.md#helpers-helpersts).
 

@@ -1,6 +1,6 @@
 # CI — Repo meta files
 
-**Status**: to do **Type**: CI **Issue**: [#10](https://github.com/marmotz/kurotako/issues/10)
+**Status**: done **Type**: CI **Issue**: [#10](https://github.com/marmotz/kurotako/issues/10)
 
 Reference: [../features/monorepo-bootstrap/technical.md §Meta files](../features/monorepo-bootstrap/technical.md#meta-files).
 

@@ -1,6 +1,6 @@
 # CI — lefthook git hooks
 
-**Status**: to do **Type**: CI **Issue**: [#7](https://github.com/marmotz/kurotako/issues/7)
+**Status**: done **Type**: CI **Issue**: [#7](https://github.com/marmotz/kurotako/issues/7)
 
 Reference: [../features/monorepo-bootstrap/technical.md §Git hooks — lefthook](../features/monorepo-bootstrap/technical.md#git-hooks--lefthook).
 

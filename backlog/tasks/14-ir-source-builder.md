@@ -1,6 +1,6 @@
 # backend — SourceIR fluent builder
 
-**Status**: to do **Type**: backend **Issue**: [#14](https://github.com/marmotz/kurotako/issues/14)
+**Status**: done **Type**: backend **Issue**: [#14](https://github.com/marmotz/kurotako/issues/14)
 
 Reference: [../features/ir-model/technical.md §Builder (`builder.ts`)](../features/ir-model/technical.md#builder-builderts).
 

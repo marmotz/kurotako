@@ -1,6 +1,6 @@
 # backend — IR runtime validation (Valibot + cross-reference pass)
 
-**Status**: to do **Type**: backend **Issue**: [#12](https://github.com/marmotz/kurotako/issues/12)
+**Status**: done **Type**: backend **Issue**: [#12](https://github.com/marmotz/kurotako/issues/12)
 
 Reference: [../features/ir-model/technical.md §Runtime validation (`validate.ts`)](../features/ir-model/technical.md#runtime-validation-validatets).
 

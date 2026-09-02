@@ -1,6 +1,6 @@
 # CI — Biome lint + format
 
-**Status**: to do **Type**: CI **Issue**: [#5](https://github.com/marmotz/kurotako/issues/5)
+**Status**: done **Type**: CI **Issue**: [#5](https://github.com/marmotz/kurotako/issues/5)
 
 Reference: [../features/monorepo-bootstrap/technical.md §Lint + format — Biome](../features/monorepo-bootstrap/technical.md#lint--format--biome).
 

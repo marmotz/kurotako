@@ -1,6 +1,6 @@
 # backend — IR Valibot schemas, inferred types and version module
 
-**Status**: to do **Type**: backend **Issue**: [#11](https://github.com/marmotz/kurotako/issues/11)
+**Status**: done **Type**: backend **Issue**: [#11](https://github.com/marmotz/kurotako/issues/11)
 
 Reference: [../features/ir-model/technical.md §Schemas and type surface (`schemas.ts` + `types.ts`)](../features/ir-model/technical.md#schemas-and-type-surface-schemasts--typests)
 and [§Versioning (`version.ts`)](../features/ir-model/technical.md#versioning-versionts).

@@ -1,6 +1,6 @@
 # CI — GitHub Actions workflow
 
-**Status**: to do **Type**: CI **Issue**: [#9](https://github.com/marmotz/kurotako/issues/9)
+**Status**: done **Type**: CI **Issue**: [#9](https://github.com/marmotz/kurotako/issues/9)
 
 Reference: [../features/monorepo-bootstrap/technical.md §CI — GitHub Actions](../features/monorepo-bootstrap/technical.md#ci--github-actions).
 
