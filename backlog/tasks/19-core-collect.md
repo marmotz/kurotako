@@ -1,6 +1,6 @@
 # backend — virtual tree aggregation and collision detection
 
-**Status**: to do **Type**: backend **Issue**: [#19](https://github.com/marmotz/kurotako/issues/19)
+**Status**: done **Type**: backend **Issue**: [#19](https://github.com/marmotz/kurotako/issues/19)
 
 Reference: [../features/core-pipeline/technical.md §Orchestration algorithm (`run.ts`)](../features/core-pipeline/technical.md#orchestration-algorithm-runts)
 step 5, and [§Determinism](../features/core-pipeline/technical.md#determinism).

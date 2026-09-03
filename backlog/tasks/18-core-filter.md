@@ -1,6 +1,6 @@
 # backend — namespace-filtered IR view
 
-**Status**: to do **Type**: backend **Issue**: [#18](https://github.com/marmotz/kurotako/issues/18)
+**Status**: done **Type**: backend **Issue**: [#18](https://github.com/marmotz/kurotako/issues/18)
 Reference: [../features/core-pipeline/technical.md §Orchestration algorithm (`run.ts`)](../features/core-pipeline/technical.md#orchestration-algorithm-runts)
 step 4.
 

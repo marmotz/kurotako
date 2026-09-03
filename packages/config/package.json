@@ -2,6 +2,7 @@
   "name": "@kurotako/config",
   "version": "0.0.0",
   "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -27,7 +28,14 @@
     "access": "public"
   },
   "dependencies": {
-    "@kurotako/core": "workspace:*",
-    "@kurotako/ir": "workspace:*"
+    "@kurotako/ir": "workspace:*",
+    "jiti": "2.7.0",
+    "valibot": "1.4.2"
+  },
+  "peerDependencies": {
+    "@kurotako/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@kurotako/core": "workspace:*"
   }
 }

@@ -1,6 +1,6 @@
 # backend — core types, driver contracts and error model
 
-**Status**: to do **Type**: backend **Issue**: [#15](https://github.com/marmotz/kurotako/issues/15)
+**Status**: done **Type**: backend **Issue**: [#15](https://github.com/marmotz/kurotako/issues/15)
 
 Reference: [../features/core-pipeline/technical.md §Public API (`run.ts` + `types.ts`)](../features/core-pipeline/technical.md#public-api-runts--typests)
 and [§Error model (`errors.ts`)](../features/core-pipeline/technical.md#error-model-errorsts).

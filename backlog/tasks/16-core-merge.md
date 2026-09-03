@@ -1,6 +1,6 @@
 # backend — SourceIR merge into the global IR
 
-**Status**: to do **Type**: backend **Issue**: [#16](https://github.com/marmotz/kurotako/issues/16)
+**Status**: done **Type**: backend **Issue**: [#16](https://github.com/marmotz/kurotako/issues/16)
 Reference: [../features/core-pipeline/technical.md §Orchestration algorithm (`run.ts`)](../features/core-pipeline/technical.md#orchestration-algorithm-runts)
 steps 1-2, and [§What stays out of this feature](../features/core-pipeline/technical.md#what-stays-out-of-this-feature).
 

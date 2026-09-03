@@ -1,6 +1,6 @@
 # backend — Writer seam and mode A directory writer
 
-**Status**: to do **Type**: backend **Issue**: [#20](https://github.com/marmotz/kurotako/issues/20)
+**Status**: done **Type**: backend **Issue**: [#20](https://github.com/marmotz/kurotako/issues/20)
 
 Reference: [../features/core-pipeline/technical.md §Writer seam](../features/core-pipeline/technical.md#writer-seam)
 and [§Accepted risks](../features/core-pipeline/technical.md#accepted-risks).

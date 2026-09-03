@@ -4,6 +4,9 @@ dist
 coverage
 .DS_Store
 
+# Transient test fixtures (@kurotako/config load.test.ts / template.test.ts)
+packages/config/tmp-*
+
 # Docs site (apps/docs) — generated / build output
 apps/docs/build
 apps/docs/.docusaurus
