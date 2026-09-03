@@ -1,6 +1,6 @@
 # backend — @kurotako/config file resolution (resolveConfigFile)
 
-**Status**: to do
+**Status**: done
 **Type**: backend
 **Issue**: [#24](https://github.com/marmotz/kurotako/issues/24)
 

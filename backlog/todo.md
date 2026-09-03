@@ -59,10 +59,10 @@ design: [technical.md](features/monorepo-bootstrap/technical.md)
 
 | Done | Issue                                                | Task                                                          | Description                                                                     |
 |------|------------------------------------------------------|--------------------------------------------------------------|-------------------------------------------------------------------------------|
-|      | [#22](https://github.com/marmotz/kurotako/issues/22) | [22-config-types-and-errors](tasks/22-config-types-and-errors.md) | `types.ts` + `defineConfig` + `errors.ts` + `CONFIG_TEMPLATE`, package skeleton |
-|      | [#23](https://github.com/marmotz/kurotako/issues/23) | [23-config-schema](tasks/23-config-schema.md)                 | `schema.ts` — `NAMESPACE_RE`, structural `TakoConfigSchema`, `normalizeIssues` |
-|      | [#24](https://github.com/marmotz/kurotako/issues/24) | [24-config-resolve](tasks/24-config-resolve.md)               | `resolve.ts` — `resolveConfigFile()` walk-up + `--config` override             |
-|      | [#25](https://github.com/marmotz/kurotako/issues/25) | [25-config-load](tasks/25-config-load.md)                     | `load.ts` — `loadConfig()`: jiti import, validate, curry options, build `ResolvedConfig` |
+| [x]  | [#22](https://github.com/marmotz/kurotako/issues/22) | [22-config-types-and-errors](tasks/22-config-types-and-errors.md) | `types.ts` + `defineConfig` + `errors.ts` + `CONFIG_TEMPLATE`, package skeleton |
+| [x]  | [#23](https://github.com/marmotz/kurotako/issues/23) | [23-config-schema](tasks/23-config-schema.md)                 | `schema.ts` — `NAMESPACE_RE`, structural `TakoConfigSchema`, `normalizeIssues` |
+| [x]  | [#24](https://github.com/marmotz/kurotako/issues/24) | [24-config-resolve](tasks/24-config-resolve.md)               | `resolve.ts` — `resolveConfigFile()` walk-up + `--config` override             |
+| [x]  | [#25](https://github.com/marmotz/kurotako/issues/25) | [25-config-load](tasks/25-config-load.md)                     | `load.ts` — `loadConfig()`: jiti import, validate, curry options, build `ResolvedConfig` |
 
 ## Prisma parser (`@kurotako/parser-prisma`)
 

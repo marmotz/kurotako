@@ -1,6 +1,6 @@
 # backend — @kurotako/config type surface, defineConfig, errors, template
 
-**Status**: to do
+**Status**: done
 **Type**: backend
 **Issue**: [#22](https://github.com/marmotz/kurotako/issues/22)
 

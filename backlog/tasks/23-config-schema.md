@@ -1,6 +1,6 @@
 # backend — @kurotako/config structural Valibot schema
 
-**Status**: to do
+**Status**: done
 **Type**: backend
 **Issue**: [#23](https://github.com/marmotz/kurotako/issues/23)
 

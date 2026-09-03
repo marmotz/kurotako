@@ -1,6 +1,6 @@
 # backend — @kurotako/config loadConfig (jiti import + validate + build ResolvedConfig)
 
-**Status**: to do
+**Status**: done
 **Type**: backend
 **Issue**: [#25](https://github.com/marmotz/kurotako/issues/25)
 
