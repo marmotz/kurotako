@@ -202,7 +202,12 @@ function parseDriverOptions(
   namespace?: string,
 ): unknown {
   if (schema) {
-    const result = v.safeParse(schema, options);
+    // Every `optionsSchema` is an object schema (`v.object` / `v.strictObject`).
+    // A driver whose every option has a default or is optional must still load
+    // when the entry omits `options` entirely, so normalise `undefined` to `{}`
+    // before validation; defaults are then applied by the schema.
+    const input = options === undefined ? {} : options;
+    const result = v.safeParse(schema, input);
     if (!result.success) {
       throw new DriverOptionsError(
         role,

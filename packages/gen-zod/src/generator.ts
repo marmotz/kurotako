@@ -6,7 +6,7 @@
  * `generate` is synchronous and pure: same IR + options -> deep-equal `GenOutput`
  * (drift-guard requirement).
  */
-import type { TakoGenerator } from '@kurotako/config';
+import { defineGenerator } from '@kurotako/config';
 import type { GenerateContext, GenOutput, VirtualFile } from '@kurotako/core';
 import { buildArtifact } from './artifact.js';
 import { dialectFor } from './dialect.js';
@@ -16,11 +16,11 @@ import { emitEnums } from './emit/enums.js';
 import { emitFilters } from './emit/filters.js';
 import { ZodGeneratorOptions } from './options.js';
 
-export const zodGenerator: TakoGenerator<ZodGeneratorOptions> = {
+export const zodGenerator = defineGenerator({
   name: 'zod',
   optionsSchema: ZodGeneratorOptions,
 
-  generate(ctx: GenerateContext, options: ZodGeneratorOptions): GenOutput {
+  generate(ctx: GenerateContext, options): GenOutput {
     const dialect = dialectFor(options.zodVersion);
     const files: VirtualFile[] = [];
 
@@ -52,4 +52,4 @@ export const zodGenerator: TakoGenerator<ZodGeneratorOptions> = {
 
     return { files, artifact: buildArtifact(ctx.ir, options) };
   },
-};
+});

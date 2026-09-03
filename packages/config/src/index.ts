@@ -6,6 +6,7 @@
  * See `backlog/features/config-system/technical.md`.
  */
 export { defineConfig } from './define.js';
+export { defineGenerator, defineParser } from './define-driver.js';
 export {
   type ConfigIssue,
   ConfigLoadError,

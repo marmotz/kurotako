@@ -47,32 +47,56 @@ export interface TakoGenerator<O = void> {
 }
 
 /**
- * The `options` type an entry carries: whatever the driver's `optionsSchema`
- * infers, else `undefined` (a passed `options` is then a type error).
+ * Any Valibot object schema, carrying both its Input and Output shapes. Used as
+ * the probe bound for the helper-inferred `optionsSchema` type parameter.
  */
-export type OptionsOf<D> = D extends {
-  optionsSchema: v.GenericSchema<unknown, infer O>;
-}
-  ? O
-  : undefined;
+type AnyOptionsSchema = v.GenericSchema<unknown, unknown>;
+
+/** Options the driver body receives: schema Output, or `void` when schemaless. */
+export type DriverOptions<S> = S extends AnyOptionsSchema
+  ? v.InferOutput<S>
+  : // biome-ignore lint/suspicious/noConfusingVoidType: a schemaless driver body takes no options
+    void;
+
+/** Options the config entry accepts: schema Input, or `never` when schemaless. */
+export type EntryOptions<S> = S extends AnyOptionsSchema
+  ? v.InferInput<S>
+  : never;
+
+/** The schema type carried by a helper-declared driver, or `never`. */
+export type SchemaOf<D> = D extends { optionsSchema?: infer S }
+  ? S extends AnyOptionsSchema
+    ? S
+    : never
+  : never;
 
 /**
- * Source entry: `options` shape is driven by `D`'s `optionsSchema` (absent =>
- * `options?: undefined`, so passing one is a type error). Always optional — a
- * missing required `options` surfaces at load time as a `DriverOptionsError`.
+ * The `options` member of a config entry, per decisions c/d/e of
+ * `driver-options-ergonomics/technical.md`:
+ * - no `optionsSchema` => `{ options?: never }` (passing one is a type error);
+ * - schema Input accepts `undefined` or is all-optional => `{ options?: … }`;
+ * - schema Input has a required field => `{ options: … }`.
  */
-export type SourceEntry<D = TakoParser<any>> = {
-  use: D;
-  options?: OptionsOf<D>;
-};
+export type OptionsMember<D> = [SchemaOf<D>] extends [never]
+  ? { options?: never }
+  : [undefined] extends [EntryOptions<SchemaOf<D>>]
+    ? { options?: EntryOptions<SchemaOf<D>> }
+    : Record<string, never> extends EntryOptions<SchemaOf<D>>
+      ? { options?: EntryOptions<SchemaOf<D>> }
+      : { options: EntryOptions<SchemaOf<D>> };
+
+/**
+ * Source entry: `options` shape and optionality are driven by `D`'s
+ * `optionsSchema` (see `OptionsMember`).
+ */
+export type SourceEntry<D = TakoParser<any>> = { use: D } & OptionsMember<D>;
 
 /** Generator entry: like `SourceEntry`, plus an optional namespace allowlist. */
 export type GeneratorEntry<D = TakoGenerator<any>> = {
   use: D;
-  options?: OptionsOf<D>;
   /** Restrict this generator's IR view; default = all namespaces. */
   namespaces?: string[];
-};
+} & OptionsMember<D>;
 
 /** Loose entry the base `TakoConfig` uses so `defineConfig`'s generic binds. */
 export interface AnySourceEntry {

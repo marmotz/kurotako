@@ -35,5 +35,9 @@
     "@kurotako/core": "workspace:*",
     "chokidar": "^4",
     "citty": "0.1.6"
+  },
+  "devDependencies": {
+    "@kurotako/gen-zod": "workspace:*",
+    "@kurotako/parser-prisma": "workspace:*"
   }
 }

@@ -10,7 +10,7 @@
  * implemented in v1.
  */
 import { resolve } from 'node:path';
-import type { TakoParser } from '@kurotako/config';
+import { defineParser } from '@kurotako/config';
 import type { ParseContext } from '@kurotako/core';
 import type { SourceIR } from '@kurotako/ir';
 import { resolveInput } from './detect.js';
@@ -19,14 +19,11 @@ import { PrismaInputError } from './errors.js';
 import { buildSourceIR } from './map/build.js';
 import { PrismaParserOptions } from './options.js';
 
-export const prismaParser: TakoParser<PrismaParserOptions> = {
+export const prismaParser = defineParser({
   name: 'prisma',
   optionsSchema: PrismaParserOptions,
 
-  async parse(
-    ctx: ParseContext,
-    options: PrismaParserOptions,
-  ): Promise<SourceIR> {
+  async parse(ctx: ParseContext, options): Promise<SourceIR> {
     const input = await resolveInput(ctx.cwd, options, ctx.namespace);
 
     if (input.mode === 8) {
@@ -46,12 +43,9 @@ export const prismaParser: TakoParser<PrismaParserOptions> = {
     );
   },
 
-  async watchPaths(
-    ctx: ParseContext,
-    options: PrismaParserOptions,
-  ): Promise<string[]> {
+  async watchPaths(ctx: ParseContext, options): Promise<string[]> {
     // The resolved schema path — a `.prisma` file, a schema folder, or the
     // deferred contract.json. A folder watch covers every `*.prisma` inside it.
     return [resolve(ctx.cwd, options.schema)];
   },
-};
+});

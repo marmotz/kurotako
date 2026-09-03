@@ -79,6 +79,23 @@ describe('loadConfig', () => {
     });
   });
 
+  it('normalises a missing options key to {} so an all-default optionsSchema resolves to its defaults', async () => {
+    writeConfig(`
+      import * as v from 'valibot'
+      const gen = {
+        name: 'zod',
+        optionsSchema: v.object({ zodVersion: v.optional(v.picklist([3, 4]), 4) }),
+        generate: () => ({ files: [], artifact: { entities: {} } }),
+      }
+      export default {
+        sources: { pg: { use: { name: 'p', parse: () => ({ namespace: 'pg', parser: 'p', entities: {}, enums: {} }) } } },
+        generators: [{ use: gen }],
+      }
+    `);
+    const { config } = await loadConfig({ cwd: root });
+    expect(config.generators.zod?.options).toEqual({ zodVersion: 4 });
+  });
+
   it('rejects bad options with a DriverOptionsError naming the driver + namespace', async () => {
     writeConfig(`
       import * as v from 'valibot'
