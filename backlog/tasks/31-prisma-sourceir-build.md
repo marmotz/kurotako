@@ -1,6 +1,6 @@
 # backend — @kurotako/parser-prisma SourceIR assembly and end-to-end parse
 
-**Status**: to do **Type**: backend **Issue**: [#31](https://github.com/marmotz/kurotako/issues/31)
+**Status**: done **Type**: backend **Issue**: [#31](https://github.com/marmotz/kurotako/issues/31)
 
 Reference: [../features/parser-prisma/technical.md §DMMF → `SourceIR` mapping (`map/`)](../features/parser-prisma/technical.md#dmmf--sourceir-mapping-map),
 [§Cardinality, `optional`, `nullable`](../features/parser-prisma/technical.md#cardinality-optional-nullable),

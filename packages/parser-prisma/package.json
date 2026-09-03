@@ -12,6 +12,7 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "sideEffects": false,
   "files": [
     "dist"
   ],
@@ -27,8 +28,23 @@
     "access": "public"
   },
   "dependencies": {
+    "@kurotako/ir": "workspace:*",
+    "valibot": "1.4.2"
+  },
+  "peerDependencies": {
     "@kurotako/config": "workspace:*",
     "@kurotako/core": "workspace:*",
-    "@kurotako/ir": "workspace:*"
+    "@prisma/internals": ">=5 <8"
+  },
+  "peerDependenciesMeta": {
+    "@prisma/internals": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@kurotako/config": "workspace:*",
+    "@kurotako/core": "workspace:*",
+    "@prisma/dmmf": "6.19.3",
+    "@prisma/internals": "6.19.3"
   }
 }

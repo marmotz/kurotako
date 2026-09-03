@@ -1,6 +1,6 @@
 # backend — @kurotako/parser-prisma scaffold: options, driver object, errors
 
-**Status**: to do **Type**: backend **Issue**: [#26](https://github.com/marmotz/kurotako/issues/26)
+**Status**: done **Type**: backend **Issue**: [#26](https://github.com/marmotz/kurotako/issues/26)
 
 Reference: [../features/parser-prisma/technical.md §Package shape](../features/parser-prisma/technical.md#package-shape),
 [§Dependencies](../features/parser-prisma/technical.md#dependencies) and
