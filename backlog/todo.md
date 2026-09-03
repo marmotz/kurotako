@@ -164,3 +164,27 @@ Done once the MVP contracts stop moving; not on the critical path.
 | Done | Issue                                                | Task                                                                | Description                                                              |
 |------|------------------------------------------------------|--------------------------------------------------------------------|------------------------------------------------------------------------|
 |      | [#60](https://github.com/marmotz/kurotako/issues/60) | [60-docs-reconciliation-post-mvp](tasks/60-docs-reconciliation-post-mvp.md) | Reconcile `architecture.md` (contracts, hard `zod` dep, output tree, `.ts` config, CLI set), `vision.md` (close the settled open questions), `ir.md` (close the 3 open points) |
+
+## Driver options ergonomics
+
+[features/driver-options-ergonomics/overview.md](features/driver-options-ergonomics/overview.md)
+— technical design: [technical.md](features/driver-options-ergonomics/technical.md). Bug:
+the config `tako init` writes neither typechecks (`options` typed `undefined` on
+schema-bearing drivers) nor runs (`{ use: zodGenerator }` with no `options` →
+`driver_options_invalid`).
+
+| Done | Issue                                                | Task                                                                              | Description                                                                                          |
+|------|------------------------------------------------------|----------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
+| [x]  | [#69](https://github.com/marmotz/kurotako/issues/69) | [69-config-driver-options-helpers](tasks/69-config-driver-options-helpers.md)     | `@kurotako/config`: `defineParser`/`defineGenerator`, entry option types (Input), `load.ts` `undefined`→`{}` |
+| [x]  | [#70](https://github.com/marmotz/kurotako/issues/70) | [70-migrate-drivers-to-define-helpers](tasks/70-migrate-drivers-to-define-helpers.md) | Migrate `prismaParser` / `zodGenerator` to the helpers + uncommented-`CONFIG_TEMPLATE` compile fixture in cli |
+
+## Running `tako` in a consumer monorepo
+
+[features/monorepo-projects/overview.md](features/monorepo-projects/overview.md)
+— in discussion. `@prisma/internals` is resolved from the `tako.config.ts` directory, not
+from the schema file's directory, so it must be hoisted to the monorepo root. Plus the
+open design question of sources / outputs spread across sub-projects. No tasks yet.
+
+| Done | Issue | Task | Description |
+|------|-------|------|-------------|
+| _no tasks yet — needs `backlog-technical`_ | | | |

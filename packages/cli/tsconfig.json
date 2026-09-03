@@ -11,6 +11,12 @@
     },
     {
       "path": "../core"
+    },
+    {
+      "path": "../gen-zod"
+    },
+    {
+      "path": "../parser-prisma"
     }
   ]
 }

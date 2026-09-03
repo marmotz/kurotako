@@ -27,14 +27,24 @@ describe('CONFIG_TEMPLATE', () => {
       const filled = CONFIG_TEMPLATE.replace(
         '  sources: {\n',
         "  sources: {\n    pg: { use: { name: 'p', parse: () => ({ namespace: 'pg', parser: 'p', entities: {}, enums: {} }) } },\n",
-      ).replace("import { defineConfig } from '@kurotako/config'", '');
+      )
+        .replace(
+          '  generators: [\n',
+          "  generators: [\n    { use: { name: 'g', optionsSchema: v.object({ zodVersion: v.optional(v.picklist([3, 4]), 4) }), generate: () => ({ files: [], artifact: { entities: {} } }) } },\n",
+        )
+        .replace(
+          "import { defineConfig } from '@kurotako/config'",
+          "import * as v from 'valibot'",
+        );
       writeFileSync(
         join(root, 'tako.config.ts'),
         filled.replace('export default defineConfig(', 'export default ('),
       );
       const { config } = await loadConfig({ cwd: root });
       expect(Object.keys(config.sources)).toEqual(['pg']);
-      expect(config.generators).toEqual({});
+      // The generator entry omits `options`; the all-default optionsSchema
+      // still resolves to its defaults.
+      expect(config.generators.g?.options).toEqual({ zodVersion: 4 });
       expect(config.output.dir).toBe(join(root, 'generated', 'kurotako'));
     } finally {
       rmSync(root, { recursive: true, force: true });
