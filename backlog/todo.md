@@ -71,7 +71,7 @@ design: [technical.md](features/monorepo-bootstrap/technical.md)
 
 | Done | Issue                                                | Task                                                          | Description                                                                     |
 |------|------------------------------------------------------|--------------------------------------------------------------|-------------------------------------------------------------------------------|
-|      | [#59](https://github.com/marmotz/kurotako/issues/59) | [59-prisma-getdmmf-spike](tasks/59-prisma-getdmmf-spike.md)  | **Spike, blocks #26**: verify `getDMMF` availability / call shape / Prisma version range in `@prisma/internals` |
+| [x]  | [#59](https://github.com/marmotz/kurotako/issues/59) | [59-prisma-getdmmf-spike](tasks/59-prisma-getdmmf-spike.md)  | **Spike, blocks #26**: verify `getDMMF` availability / call shape / Prisma version range in `@prisma/internals` |
 |      | [#26](https://github.com/marmotz/kurotako/issues/26) | [26-prisma-parser-scaffold](tasks/26-prisma-parser-scaffold.md) | Package scaffold: `options.ts` (`PrismaParserOptions`), `errors.ts`, `parser.ts` skeleton, deps (`@prisma/internals` peer) |
 |      | [#27](https://github.com/marmotz/kurotako/issues/27) | [27-prisma-input-detection](tasks/27-prisma-input-detection.md) | `detect.ts` — `resolveInput()`: file / folder / `contract.json`, version-mode inference |
 |      | [#28](https://github.com/marmotz/kurotako/issues/28) | [28-prisma-dmmf-reader](tasks/28-prisma-dmmf-reader.md)       | `dmmf/` — neutral `PrismaModel`, `getDMMF` wrapper, `DMMF.Document → PrismaModel` |

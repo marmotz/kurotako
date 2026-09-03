@@ -53,13 +53,18 @@ modes behind one package.
   (e.g. `@db.Uuid` → `format: uuid`). `///` doc comments are carried verbatim into
   `IR.doc` with no interpretation. A richer directive syntax inside doc comments
   (`min` / `max` / custom `regex`) is deferred past v1.
-- **Metadata populated from v1**: `///` doc comments, `@map` / `@@map`, `@@index`,
-  `@@unique` — feeding the fields already present in the IR.
+- **Metadata populated from v1**: `///` doc comments, `@@map`, `@@unique` — feeding the
+  fields already present in the IR. (Spike [#59](../../tasks/59-prisma-getdmmf-spike.md):
+  DMMF exposes no non-unique `@@index` and no field-level `@map` — both dropped in v1, see
+  `technical.md` Accepted limitations.)
 
 ## Settled in `technical.md`
 
-- `@prisma/internals` is a **peer dependency** (`getDMMF`, WASM-based, no engine binary);
-  the parse follows the user's own Prisma version.
+- `@prisma/internals` is an **optional peer dependency** (`>=5 <8`; `getDMMF`, WASM-based,
+  no engine binary at parse time); the parse follows the user's own Prisma version. Spike
+  [#59](../../tasks/59-prisma-getdmmf-spike.md): on Prisma 7 the `prisma` CLI no longer
+  bundles `@prisma/internals`, so the user adds it explicitly — otherwise a clear
+  `PrismaPeerMissingError` with an install hint.
 - Native `@db.*` types map to a scalar refinement + `constraints` (`string` +
   `format` for semantic types; `uuid` scalar only for `@db.Uuid` / `@db.ObjectId`).
 - `Field.optional` = `hasDefaultValue || isUpdatedAt`; `nullable` follows `?` separately.

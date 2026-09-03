@@ -27,10 +27,12 @@ Reference: [../features/parser-prisma/technical.md §Package shape](../features/
 1. `packages/parser-prisma/package.json`:
    - `dependencies`: `@kurotako/ir` (`workspace:*`), `valibot`.
    - `peerDependencies`: `@kurotako/core` (`workspace:*`), `@kurotako/config`
-     (`workspace:*`), `@prisma/internals` (range pinned by the spike
-     [#59](59-prisma-getdmmf-spike.md) — expected `>=5 <8`, Prisma 8 being the deferred
-     `contract.json` mode).
-   - `devDependencies`: `@kurotako/core`, `@kurotako/config`, `@prisma/internals` (pinned,
+     (`workspace:*`), `@prisma/internals` `>=5 <8` (pinned by the spike
+     [#59](59-prisma-getdmmf-spike.md); Prisma 8 = the deferred `contract.json` mode).
+     Mark it `peerDependenciesMeta.optional` — on Prisma 7 the user's `prisma` CLI no
+     longer provides it transitively and the parser must fail with a clear
+     `PrismaPeerMissingError` at parse time, not at install.
+   - `devDependencies`: `@kurotako/core`, `@kurotako/config`, `@prisma/internals@7` (pinned,
      for the test suite).
    - keep `"sideEffects": false`.
 2. `packages/parser-prisma/tsconfig.json` — `references`:
