@@ -1,6 +1,6 @@
 # backend — @kurotako/parser-prisma relation pairing and implicit-m2m materialisation
 
-**Status**: to do **Type**: backend **Issue**: [#30](https://github.com/marmotz/kurotako/issues/30)
+**Status**: done **Type**: backend **Issue**: [#30](https://github.com/marmotz/kurotako/issues/30)
 
 Reference: [../features/parser-prisma/technical.md §Relations (`map/relations.ts`)](../features/parser-prisma/technical.md#relations-maprelationsts) and
 [§Implicit many-to-many — materialised (`map/relations.ts`)](../features/parser-prisma/technical.md#implicit-many-to-many--materialised-maprelationsts).

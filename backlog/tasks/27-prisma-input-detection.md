@@ -1,6 +1,6 @@
 # backend — @kurotako/parser-prisma input resolution and version-mode detection
 
-**Status**: to do **Type**: backend **Issue**: [#27](https://github.com/marmotz/kurotako/issues/27)
+**Status**: done **Type**: backend **Issue**: [#27](https://github.com/marmotz/kurotako/issues/27)
 
 Reference: [../features/parser-prisma/technical.md §Version-mode detection (`detect.ts`)](../features/parser-prisma/technical.md#version-mode-detection-detectts).
 

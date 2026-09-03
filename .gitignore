@@ -7,6 +7,9 @@ coverage
 # Transient test fixtures (@kurotako/config load.test.ts / template.test.ts)
 packages/config/tmp-*
 
+# Transient test fixtures (@kurotako/parser-prisma detect.test.ts / parser.test.ts)
+packages/parser-prisma/tmp-*
+
 # Docs site (apps/docs) — generated / build output
 apps/docs/build
 apps/docs/.docusaurus

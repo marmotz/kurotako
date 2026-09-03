@@ -1,6 +1,6 @@
 # backend — @kurotako/parser-prisma scalar, native-type, format and default mapping
 
-**Status**: to do **Type**: backend **Issue**: [#29](https://github.com/marmotz/kurotako/issues/29)
+**Status**: done **Type**: backend **Issue**: [#29](https://github.com/marmotz/kurotako/issues/29)
 
 Reference: [../features/parser-prisma/technical.md §Scalars (`map/scalars.ts`)](../features/parser-prisma/technical.md#scalars-mapscalarsts),
 [§Native `@db.*` types → scalar refinement + constraints](../features/parser-prisma/technical.md#native-db-types--scalar-refinement--constraints),

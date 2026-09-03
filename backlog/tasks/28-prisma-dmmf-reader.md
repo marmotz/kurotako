@@ -1,6 +1,6 @@
 # backend — @kurotako/parser-prisma getDMMF wrapper and neutral PrismaModel shape
 
-**Status**: to do **Type**: backend **Issue**: [#28](https://github.com/marmotz/kurotako/issues/28)
+**Status**: done **Type**: backend **Issue**: [#28](https://github.com/marmotz/kurotako/issues/28)
 
 Reference: [../features/parser-prisma/technical.md §Prisma ≤ 7 mode — DMMF acquisition (`dmmf/load.ts`)](../features/parser-prisma/technical.md#prisma--7-mode--dmmf-acquisition-dmmfloadts).
 
