@@ -68,7 +68,7 @@ packages/parser-prisma/src/
 | `@kurotako/core` | `peerDependencies` + `devDependencies` (`workspace:*`) | `ParseContext` **type** only (always present via the CLI) |
 | `@kurotako/config` | `peerDependencies` + `devDependencies` (`workspace:*`) | `TakoParser` **type** only |
 | `valibot` | `dependencies` | `optionsSchema` |
-| `@prisma/internals` | **`peerDependencies`** (`>=5 <9`, range confirmed at implementation) | `getDMMF` in the Prisma ≤ 7 mode. **Decided**: the consuming project already depends on Prisma; reading the DMMF with *that* version keeps the parse aligned with the user's schema semantics. A clear error is thrown when it cannot be resolved. |
+| `@prisma/internals` | **`peerDependencies`** (`>=5 <8`, pinned by [spike #59](../../tasks/59-prisma-getdmmf-spike.md)) | `getDMMF` in the Prisma ≤ 7 mode. **Decided**: reading the DMMF with the project's own Prisma keeps the parse aligned with the user's schema semantics. A clear `PrismaPeerMissingError` with an install hint is thrown when it cannot be resolved. See [Spike #59 findings](#spike-59-findings-getdmmf) — on Prisma 7 the peer no longer resolves transitively and the hint (`add @prisma/internals@7 as a devDependency`) is the nominal path. |
 
 - `tsconfig.json` `references`: `[{ "path": "../ir" }, { "path": "../core" }, { "path": "../config" }]`
   — [monorepo-bootstrap #6](../../tasks/6-package-skeletons.md) step 2 already mandates a
@@ -146,25 +146,63 @@ export async function resolveInput(cwd: string, o: PrismaParserOptions): Promise
 ## Prisma ≤ 7 mode — DMMF acquisition (`dmmf/load.ts`)
 
 ```ts
-import { getDMMF } from '@prisma/internals'   // peer
-
+// CJS-only package — named ESM import does NOT work under Node ESM (see spike #59).
+// Resolve dynamically from the consumer's cwd instead:
+//   const { getDMMF } = await import(require.resolve('@prisma/internals', { paths: [ctx.cwd] }))
 export async function readDmmf(input: Extract<ResolvedInput, { mode: 7 }>, logger: Logger): Promise<PrismaModel>
 ```
 
 - **`getDMMF`** is the documented programmatic entry
-  (`@prisma/internals`, `GetDMMFOptions → Promise<DMMF.Document>`). It parses the schema via
-  the bundled `prisma-schema-wasm` module — **no query-engine binary, no post-install
-  download, no network at parse time**. (Confirmed against the current `@prisma/internals`;
-  the exact multi-file call shape — `datamodel: Array<[string,string]>` vs `datamodelPath`
-  — and the supported version range are pinned in the implementation task.)
-- Single-file: `getDMMF({ datamodel: content })`. Folder: pass the tuple array.
-- `datasourceOverrides` / `previewFeatures` are **not** set — kurotako only needs the
-  datamodel, never a live datasource. A `getDMMF` throw (schema syntax error, unknown
-  attribute) is caught and rewrapped as `PrismaSchemaError` with the Prisma message and the
+  (`@prisma/internals`, `getDMMF(options): Promise<DMMF.Document>`). It parses the schema via
+  the bundled `prisma-schema-wasm` module — **no query-engine binary and no network at parse
+  time** (the WASM call itself). Confirmed by [spike #59](../../tasks/59-prisma-getdmmf-spike.md)
+  against `@prisma/internals` 5.22 / 6.19 / 7.10 (and `8.1.0-dev`).
+- **Call shape** (`GetDMMFOptions`, stable across v5–v7): `{ datamodel: SchemaFileInput }`
+  where `SchemaFileInput = string | Array<[filename, content]>`. Single-file:
+  `getDMMF({ datamodel: content })`. Folder: `getDMMF({ datamodel: [[relPath, content], …] })`
+  — the tuple array, file order irrelevant. `datamodelPath` was removed after v5;
+  `previewFeatures` after v6; **`datasourceOverrides` is not accepted at all in v7** — pass
+  neither, kurotako only needs the datamodel.
+- **Error shape**: a schema error throws a `GetDmmfError extends Error` (v7) /
+  `GetDmmfError` (v5–v6). `err.name === 'GetDmmfError'`, no structured fields — the P1012
+  text (`Error code`, `error:` line, source excerpt, `[Context: getDmmf]`) is in
+  `err.message`. Wrap as `PrismaSchemaError` keeping `err.message` and `cause`, plus the
   namespace; core then surfaces it as a `DriverError`
   ([core-pipeline/technical.md §Error model](../core-pipeline/technical.md#error-model-errorts)).
 - If `@prisma/internals` cannot be resolved (peer not installed) → a `PrismaPeerMissingError`
-  with an install hint, before any parsing.
+  with the install hint `add @prisma/internals@<major> as a devDependency` (major matched to
+  the resolved `@prisma/client`), before any parsing.
+- **Caveat**: installing `@prisma/internals` pulls `@prisma/engines`, whose `postinstall`
+  downloads a ~24 MB `schema-engine` binary. `getDMMF` does not use it, but the install-time
+  cost is real. Not kurotako's to fix — noted so the peer-missing hint can mention it.
+
+### Spike #59 findings (`getDMMF`)
+
+- **`getDMMF` is alive and WASM-based** in `@prisma/internals` 5 → 7, and still exported in
+  `8.1.0-dev` (Prisma 8 had not, at spike time, dropped the DSL/DMMF path — but 8 is
+  unreleased, hence the conservative `<8` upper bound; the contract mode stays the plan for
+  8, [see below](#prisma-8-mode--deferred-past-kurotako-v1)).
+- **Prisma 7 restructured the CLI.** `prisma` + `@prisma/client` v7 no longer pull
+  `@prisma/internals` (the CLI is built on `@prisma/orm-framework` / `@prisma/orm-toolchain`
+  with a contract + PSL-parser model, and `@prisma/prisma-schema-wasm` is not in the tree).
+  On a v7 project the peer resolves **only if the user adds `@prisma/internals` explicitly**.
+  Decision (confirmed with the maintainer): keep the peer, make `PrismaPeerMissingError` +
+  install hint the nominal v7 path. Prisma 5–6 are unaffected (their `prisma` CLI still
+  provides `@prisma/internals` transitively).
+- **`@prisma/client`-only projects** (no `prisma` devDep) never resolve `@prisma/internals`
+  on any major → same `PrismaPeerMissingError` path.
+- **DMMF shape verified** (drives [#28](../../tasks/28-prisma-dmmf-reader.md)): `DMMF.Model`
+  exposes `name`, `dbName`, `primaryKey {name, fields}`, `uniqueIndexes [{name, fields}]`,
+  `uniqueFields`, `documentation` — **no `indexes` key at all** (non-unique `@@index` is not
+  in the DMMF; the [Accepted limitation](#accepted-limitations-v1-dmmf-mode) is now
+  confirmed, not conditional). `DMMF.Field`: `kind`, `isList`, `isRequired`, `isUnique`,
+  `isId`, `isUpdatedAt`, `hasDefaultValue`, `type`, `nativeType: [name, string[]] | null`
+  (e.g. `["VarChar", ["120"]]`, `["Uuid", []]`), `default` (literal, or `{ name, args }`
+  e.g. `{ name: 'uuid', args: [4] }`, `{ name: 'now', args: [] }`), relation fields.
+- **`Unsupported("…")` fields**: in the v7 spike an optional `Unsupported(...)` field was
+  **absent** from `doc.datamodel` entirely (no `kind: 'unsupported'` entry). [#29](../../tasks/29-prisma-scalar-mapping.md)
+  must not assume the field is present; re-verify the exact condition there.
+- Scratch script lives outside the repo (spike only); nothing committed to any package.
 
 `dmmf/read.ts` flattens `DMMF.Document.datamodel` (`models`, `enums`, `types`) into a small
 **mode-neutral `PrismaModel`** shape (plain records: entities, fields, enums, raw relation
@@ -321,9 +359,12 @@ a bespoke m2m shape. Prisma 8's stance on implicit m2m is an open question for t
 
 ## Prisma 8 mode — deferred past kurotako v1
 
-Prisma 8 replaces the DSL/DMMF model with a deterministic emitted **contract**
+Prisma moves from the DSL/DMMF model to a deterministic emitted **contract**
 (`contract.json` — canonical JSON of models, storage and capabilities — plus
-`contract.d.ts`). Plan, not built in v1:
+`contract.d.ts`). [Spike #59](#spike-59-findings-getdmmf) found this transition already
+underway in the **Prisma 7** CLI (`@prisma/orm-framework` `./contract` + `./psl-parser`),
+while `getDMMF` via a standalone `@prisma/internals` still works for 5–7. v1 targets the
+DMMF path for `<8`; the contract reader is the plan for 8. Plan, not built in v1:
 
 - `contract/read.ts` reads an already-emitted `contract.json` (the user runs
   `prisma contract emit` in their build) and produces the same mode-neutral `PrismaModel`
@@ -368,9 +409,10 @@ front-end swap.
 - **Field-level `@map` is lost.** DMMF exposes model/enum `dbName` but not `Field.dbName`.
   `Field.dbName` stays undefined in v1. Revisit with a light PSL scan if a generator needs
   it.
-- **Non-unique `@@index` may be lost.** Depending on the pinned `@prisma/internals`, DMMF
-  may only surface unique indexes. `Entity.indexes` is populated when available; otherwise
-  empty. No v1 generator consumes indexes, so this is latent.
+- **Non-unique `@@index` is lost.** Confirmed by [spike #59](#spike-59-findings-getdmmf):
+  `DMMF.Model` has no `indexes` key in `@prisma/internals` 5–7, only `uniqueIndexes` /
+  `uniqueFields`. `Entity.indexes` stays `[]` in DMMF mode. No v1 generator consumes
+  indexes, so this is latent. Revisit with a light PSL scan if needed.
 - **`nanoid()` / exotic string generators** produce a `default` expr but no `format`.
 - **Composite-type fields** (`type` blocks, MongoDB) map to `FieldType { kind: 'unknown' }`
   in v1 — full composite-type support is out of scope.

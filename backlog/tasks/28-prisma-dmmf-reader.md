@@ -4,16 +4,31 @@
 
 Reference: [../features/parser-prisma/technical.md §Prisma ≤ 7 mode — DMMF acquisition (`dmmf/load.ts`)](../features/parser-prisma/technical.md#prisma--7-mode--dmmf-acquisition-dmmfloadts).
 
-## Verified
+## Verified (spike [#59](59-prisma-getdmmf-spike.md))
 
-- `getDMMF` from `@prisma/internals` (`GetDMMFOptions → Promise<DMMF.Document>`) parses via
-  the bundled `prisma-schema-wasm` — no query-engine binary, no post-install download, no
-  network. `DMMF.Field` carries `kind`, `isRequired`, `isList`, `isUnique`, `isId`,
-  `isUpdatedAt`, `hasDefaultValue`, `type`, `nativeType`, `documentation`, `default`,
-  `relationName`, `relationFromFields`, `relationToFields`, `relationOnDelete`,
-  `relationOnUpdate`. `DMMF.Model` carries `name`, `dbName`, `primaryKey`, `uniqueIndexes`
-  / `uniqueFields`, `documentation`. Field-level `@map` is **not** exposed.
-- `@prisma/internals` is a peer dep; it may be absent → `PrismaPeerMissingError`.
+- `getDMMF` from `@prisma/internals` (`getDMMF(options): Promise<DMMF.Document>`) parses via
+  the bundled `prisma-schema-wasm` — **no query-engine binary and no network at the call**.
+  Confirmed against `@prisma/internals` 5.22 / 6.19 / 7.10.
+- **Call shape** (`GetDMMFOptions`, stable v5–v7): `{ datamodel: SchemaFileInput }`,
+  `SchemaFileInput = string | Array<[filename, content]>`. Single file → the string;
+  folder → the tuple array (order irrelevant). Do **not** pass `datamodelPath` (gone after
+  v5), `previewFeatures` (gone after v6), or `datasourceOverrides` (rejected in v7).
+- **CJS-only package**: `import { getDMMF } from '@prisma/internals'` does not work under
+  Node ESM. Resolve dynamically: `require.resolve('@prisma/internals', { paths: [ctx.cwd] })`
+  then `await import(...)` / `createRequire`.
+- **Error**: a schema error throws `GetDmmfError extends Error`, `err.name === 'GetDmmfError'`,
+  the P1012 text in `err.message`, no structured fields → wrap into `PrismaSchemaError`
+  (`message` + `cause` + namespace).
+- `DMMF.Field` carries `kind`, `isRequired`, `isList`, `isUnique`, `isId`, `isUpdatedAt`,
+  `hasDefaultValue`, `type`, `nativeType: [name, string[]] | null`, `documentation`,
+  `default` (literal or `{ name, args }`), `relationName`, `relationFromFields`,
+  `relationToFields`, `relationOnDelete`, `relationOnUpdate`. `DMMF.Model` carries `name`,
+  `dbName`, `primaryKey {name, fields}`, `uniqueIndexes [{name, fields}]`, `uniqueFields`,
+  `documentation`. **No `indexes` key** — non-unique `@@index` is not in the DMMF.
+  Field-level `@map` is **not** exposed.
+- `@prisma/internals` is a peer dep (`>=5 <8`); it may be absent → `PrismaPeerMissingError`
+  with hint `add @prisma/internals@<major> as a devDependency`. On Prisma 7 this is the
+  nominal path (the v7 `prisma` CLI no longer pulls `@prisma/internals`).
 - Decided: `map/build.ts` consumes only a mode-neutral `PrismaModel`, so the deferred v8
   reader can produce the same shape.
 
@@ -27,20 +42,22 @@ Reference: [../features/parser-prisma/technical.md §Prisma ≤ 7 mode — DMMF 
    `PrismaEnum { name; dbName?; doc?; values: { name; dbName?; doc? }[] }`.
 2. `packages/parser-prisma/src/dmmf/load.ts`:
    - `export async function readDmmf(input: Extract<ResolvedInput, { mode: 7 }>, logger: Logger): Promise<{ model: PrismaModel; prismaVersion: string }>`.
-   - Dynamically resolve `@prisma/internals`; failure → `PrismaPeerMissingError`. Read its
-     `package.json` `version` for `prismaVersion`.
-   - `kind 'file'` → `getDMMF({ datamodel: content })`. `kind 'folder'` → pass the tuple
-     array in the multi-file shape the resolved `@prisma/internals` accepts (verify:
-     `datamodel: Array<[string, string]>`). Do **not** set `datasourceOverrides` /
-     `previewFeatures`.
-   - a `getDMMF` throw → `PrismaSchemaError` (wrap `cause`, keep the Prisma message).
+   - Dynamically resolve `@prisma/internals` from `ctx.cwd`
+     (`require.resolve('@prisma/internals', { paths: [ctx.cwd] })`, then `await import`);
+     failure → `PrismaPeerMissingError` with the install hint. Read its `package.json`
+     `version` for `prismaVersion`.
+   - `kind 'file'` → `getDMMF({ datamodel: content })`. `kind 'folder'` →
+     `getDMMF({ datamodel: [[relPath, content], …] })` (tuple array, confirmed by #59). Do
+     **not** set `datamodelPath` / `datasourceOverrides` / `previewFeatures`.
+   - a `getDMMF` throw (`GetDmmfError`, message-only) → `PrismaSchemaError` (wrap `cause`,
+     keep `err.message`).
 3. `packages/parser-prisma/src/dmmf/read.ts`:
    - `export function toPrismaModel(doc: DMMF.Document): PrismaModel`.
    - Walk `doc.datamodel.models` / `.enums`. Split object fields into `relationEdges`,
      scalar/enum fields into `fields`. `primaryKey` from `model.primaryKey?.fields` or the
      single `isId` field. `uniques` from `model.uniqueIndexes` (fallback `uniqueFields`).
-     `indexes` from model indexes **iff** exposed by the pinned version, else `[]` (log at
-     `debug`). Carry `documentation` verbatim into `doc`.
+     `indexes` is always `[]` in DMMF mode (#59: `DMMF.Model` exposes no `indexes` key).
+     Carry `documentation` verbatim into `doc`.
 4. Wire `parser.ts`: mode 7 → `readDmmf` then `toPrismaModel`; set the builder
    `parserVersion` to `` `prisma@${prismaVersion}` ``.
 5. `packages/parser-prisma/src/dmmf/*.test.ts` — fixture `schema.prisma` strings through
