@@ -1,5 +1,11 @@
 /**
- * Package version. Kept in sync with package.json by the release process
- * (changesets); a plain constant keeps `src` self-contained under `rootDir`.
+ * `@kurotako/core` — the orchestrator. `run()` wires parsers and generators
+ * through the dependency DAG: parse -> merge -> order -> generate -> collect ->
+ * write. Single entry point; see `backlog/features/core-pipeline/technical.md`.
  */
-export const version = '0.0.0';
+export * from './errors.js';
+export { childLogger, noopLogger } from './logger.js';
+export { run } from './run.js';
+export type * from './types.js';
+export type { Writer } from './writer/index.js';
+export { directoryWriter, selectWriter } from './writer/index.js';
