@@ -1,6 +1,6 @@
 # backend — @kurotako/cli `tako init` command
 
-**Status**: to do
+**Status**: done
 **Type**: backend
 **Issue**: [#45](https://github.com/marmotz/kurotako/issues/45)
 

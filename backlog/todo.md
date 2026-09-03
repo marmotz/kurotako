@@ -115,10 +115,10 @@ design: [technical.md](features/generator-angular/technical.md)
 
 | Done | Issue                                                | Task                                                                        | Description                                                              |
 |------|------------------------------------------------------|----------------------------------------------------------------------------|------------------------------------------------------------------------|
-|      | [#44](https://github.com/marmotz/kurotako/issues/44) | [44-cli-scaffold-reporter-errors](tasks/44-cli-scaffold-reporter-errors.md) | citty command tree, `ConsoleReporter`, `renderError`, `bin/tako.ts`, barrel |
-|      | [#45](https://github.com/marmotz/kurotako/issues/45) | [45-cli-init-command](tasks/45-cli-init-command.md)                         | `tako init` — write `CONFIG_TEMPLATE`, `--force`, refuse-if-exists       |
-|      | [#46](https://github.com/marmotz/kurotako/issues/46) | [46-cli-generate-validate-commands](tasks/46-cli-generate-validate-commands.md) | `tako generate` (`--dry-run`) + `tako validate` via `loadAndRun`        |
-|      | [#47](https://github.com/marmotz/kurotako/issues/47) | [47-cli-watch-mode](tasks/47-cli-watch-mode.md)                             | `tako generate --watch` — chokidar loop, debounce, `watchPaths` union   |
+| [x]  | [#44](https://github.com/marmotz/kurotako/issues/44) | [44-cli-scaffold-reporter-errors](tasks/44-cli-scaffold-reporter-errors.md) | citty command tree, `ConsoleReporter`, `renderError`, `bin/tako.ts`, barrel |
+| [x]  | [#45](https://github.com/marmotz/kurotako/issues/45) | [45-cli-init-command](tasks/45-cli-init-command.md)                         | `tako init` — write `CONFIG_TEMPLATE`, `--force`, refuse-if-exists       |
+| [x]  | [#46](https://github.com/marmotz/kurotako/issues/46) | [46-cli-generate-validate-commands](tasks/46-cli-generate-validate-commands.md) | `tako generate` (`--dry-run`) + `tako validate` via `loadAndRun`        |
+| [x]  | [#47](https://github.com/marmotz/kurotako/issues/47) | [47-cli-watch-mode](tasks/47-cli-watch-mode.md)                             | `tako generate --watch` — chokidar loop, debounce, `watchPaths` union   |
 
 ## Output modes (directory / npm package)
 

@@ -1,6 +1,6 @@
 # backend — @kurotako/cli `tako generate --watch` (chokidar loop)
 
-**Status**: to do
+**Status**: done
 **Type**: backend
 **Issue**: [#47](https://github.com/marmotz/kurotako/issues/47)
 

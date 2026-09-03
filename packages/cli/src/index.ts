@@ -1,5 +1,7 @@
 /**
- * Package version. Kept in sync with package.json by the release process
- * (changesets); a plain constant keeps `src` self-contained under `rootDir`.
+ * `@kurotako/cli` — the `tako` binary. This barrel is the programmatic surface:
+ * `runCli()` plus the reporter / error helpers, for embedders and tests.
  */
-export const version = '0.0.0';
+export { runCli } from './cli.js';
+export { ConfigExistsError, renderError } from './errors.js';
+export { ConsoleReporter, type ConsoleReporterOptions } from './reporter.js';

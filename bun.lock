@@ -24,6 +24,8 @@
       "dependencies": {
         "@kurotako/config": "workspace:*",
         "@kurotako/core": "workspace:*",
+        "chokidar": "^4",
+        "citty": "0.1.6",
       },
     },
     "packages/config": {

@@ -1,0 +1,67 @@
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { CONFIG_TEMPLATE } from '@kurotako/config';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { runCli } from '../cli.js';
+
+const PKG_DIR = join(import.meta.dirname, '..', '..');
+
+let root: string;
+let cwd: string;
+let stderr: string;
+let stderrSpy: ReturnType<typeof vi.spyOn>;
+
+beforeEach(() => {
+  root = mkdtempSync(join(PKG_DIR, 'tmp-init-'));
+  cwd = process.cwd();
+  process.chdir(root);
+  process.exitCode = undefined;
+  stderr = '';
+  stderrSpy = vi
+    .spyOn(process.stderr, 'write')
+    .mockImplementation((c: string | Uint8Array) => {
+      stderr += c.toString();
+      return true;
+    });
+});
+
+afterEach(() => {
+  process.chdir(cwd);
+  rmSync(root, { recursive: true, force: true });
+  stderrSpy.mockRestore();
+  process.exitCode = undefined;
+});
+
+describe('tako init', () => {
+  it('writes tako.config.ts into cwd with the template content', async () => {
+    await runCli(['init']);
+    expect(process.exitCode ?? 0).toBe(0);
+    expect(readFileSync(join(root, 'tako.config.ts'), 'utf8')).toBe(
+      CONFIG_TEMPLATE,
+    );
+  });
+
+  it('refuses to overwrite an existing config (exit 1, config_exists)', async () => {
+    writeFileSync(join(root, 'tako.config.ts'), 'old');
+    await runCli(['init']);
+    expect(process.exitCode).toBe(1);
+    expect(stderr).toContain('config_exists');
+    expect(readFileSync(join(root, 'tako.config.ts'), 'utf8')).toBe('old');
+  });
+
+  it('--force overwrites', async () => {
+    writeFileSync(join(root, 'tako.config.ts'), 'old');
+    await runCli(['init', '--force']);
+    expect(process.exitCode ?? 0).toBe(0);
+    expect(readFileSync(join(root, 'tako.config.ts'), 'utf8')).toBe(
+      CONFIG_TEMPLATE,
+    );
+  });
+
+  it('--config retargets the write', async () => {
+    await runCli(['init', '--config', 'nested/custom.config.ts']);
+    expect(readFileSync(join(root, 'nested', 'custom.config.ts'), 'utf8')).toBe(
+      CONFIG_TEMPLATE,
+    );
+  });
+});

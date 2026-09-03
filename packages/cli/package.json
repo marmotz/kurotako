@@ -12,6 +12,7 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "sideEffects": false,
   "files": [
     "dist"
   ],
@@ -31,6 +32,8 @@
   },
   "dependencies": {
     "@kurotako/config": "workspace:*",
-    "@kurotako/core": "workspace:*"
+    "@kurotako/core": "workspace:*",
+    "chokidar": "^4",
+    "citty": "0.1.6"
   }
 }
