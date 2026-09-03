@@ -1,6 +1,6 @@
 # backend — @kurotako/cli `tako generate` and `tako validate` commands
 
-**Status**: to do
+**Status**: done
 **Type**: backend
 **Issue**: [#46](https://github.com/marmotz/kurotako/issues/46)
 

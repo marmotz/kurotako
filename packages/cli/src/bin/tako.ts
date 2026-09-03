@@ -1,11 +1,8 @@
 #!/usr/bin/env node
-import { version } from '../index.js';
+/**
+ * Executable entry. Thin: parse `process.argv` and delegate to `runCli()`,
+ * which sets `process.exitCode`.
+ */
+import { runCli } from '../cli.js';
 
-const arg = process.argv[2];
-
-if (arg === '--version' || arg === '-v') {
-  process.stdout.write(`${version}\n`);
-  process.exit(0);
-}
-
-process.stdout.write('tako: no command yet. Try --version.\n');
+await runCli(process.argv.slice(2));

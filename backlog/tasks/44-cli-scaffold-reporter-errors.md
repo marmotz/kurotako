@@ -1,6 +1,6 @@
 # backend — @kurotako/cli scaffold: citty tree, reporter, error rendering
 
-**Status**: to do
+**Status**: done
 **Type**: backend
 **Issue**: [#44](https://github.com/marmotz/kurotako/issues/44)
 
