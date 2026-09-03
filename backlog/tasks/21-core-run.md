@@ -1,6 +1,6 @@
 # backend — run() orchestrator and afterEmit hook
 
-**Status**: to do **Type**: backend **Issue**: [#21](https://github.com/marmotz/kurotako/issues/21)
+**Status**: done **Type**: backend **Issue**: [#21](https://github.com/marmotz/kurotako/issues/21)
 
 Reference: [../features/core-pipeline/technical.md §Public API (`run.ts` + `types.ts`)](../features/core-pipeline/technical.md#public-api-runts--typests),
 [§Orchestration algorithm (`run.ts`)](../features/core-pipeline/technical.md#orchestration-algorithm-runts),

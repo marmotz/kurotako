@@ -1,5 +1,23 @@
 /**
- * Package version. Kept in sync with package.json by the release process
- * (changesets); a plain constant keeps `src` self-contained under `rootDir`.
+ * `@kurotako/config` — resolve, load and validate `tako.config.ts`, and the
+ * `defineConfig` helper user config files import. Builds the `@kurotako/core`
+ * `ResolvedConfig` the CLI hands to `run()`.
+ *
+ * See `backlog/features/config-system/technical.md`.
  */
-export const version = '0.0.0';
+export { defineConfig } from './define.js';
+export {
+  type ConfigIssue,
+  ConfigLoadError,
+  ConfigNotFoundError,
+  ConfigShapeError,
+  DriverOptionsError,
+  DuplicateGeneratorError,
+  NoDefaultExportError,
+  UnknownNamespaceError,
+} from './errors.js';
+export { type LoadResult, loadConfig } from './load.js';
+export { resolveConfigFile } from './resolve.js';
+export { NAMESPACE_RE, normalizeIssues, TakoConfigSchema } from './schema.js';
+export { CONFIG_TEMPLATE } from './template.js';
+export type * from './types.js';

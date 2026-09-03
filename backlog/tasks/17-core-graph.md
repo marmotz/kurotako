@@ -1,6 +1,6 @@
 # backend — generator dependency graph and topological order
 
-**Status**: to do **Type**: backend **Issue**: [#17](https://github.com/marmotz/kurotako/issues/17)
+**Status**: done **Type**: backend **Issue**: [#17](https://github.com/marmotz/kurotako/issues/17)
 Reference: [../features/core-pipeline/technical.md §Orchestration algorithm (`run.ts`)](../features/core-pipeline/technical.md#orchestration-algorithm-runts)
 step 3, and [ADR-0002](https://github.com/marmotz/kurotako/blob/main/docs/adr/0002-no-middle-generators-dag.md).
 

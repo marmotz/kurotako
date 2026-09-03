@@ -44,13 +44,13 @@ design: [technical.md](features/monorepo-bootstrap/technical.md)
 
 | Done | Issue                                                | Task                                                            | Description                                                                    |
 |------|------------------------------------------------------|----------------------------------------------------------------|-------------------------------------------------------------------------------|
-|      | [#15](https://github.com/marmotz/kurotako/issues/15) | [15-core-types-and-contracts](tasks/15-core-types-and-contracts.md) | `types.ts` (config, driver contracts, artifacts, hooks), `errors.ts`, `logger.ts` |
-|      | [#16](https://github.com/marmotz/kurotako/issues/16) | [16-core-merge](tasks/16-core-merge.md)                         | `merge.ts` — `mergeSources()`, namespace-mismatch / duplicate rejection, `assertIR` |
-|      | [#17](https://github.com/marmotz/kurotako/issues/17) | [17-core-graph](tasks/17-core-graph.md)                         | `graph.ts` — `generatorOrder()`, Kahn, missing hard dep, cycle detection       |
-|      | [#18](https://github.com/marmotz/kurotako/issues/18) | [18-core-filter](tasks/18-core-filter.md)                       | `filter.ts` — `filterIR()` namespace-filtered deep clone                       |
-|      | [#19](https://github.com/marmotz/kurotako/issues/19) | [19-core-collect](tasks/19-core-collect.md)                     | `collect.ts` — `mergeTrees()`, path normalization, cross-generator collision   |
-|      | [#20](https://github.com/marmotz/kurotako/issues/20) | [20-core-writer](tasks/20-core-writer.md)                       | `writer.ts` — `Writer` seam + mode A `directoryWriter` (unconditional wipe)     |
-|      | [#21](https://github.com/marmotz/kurotako/issues/21) | [21-core-run](tasks/21-core-run.md)                             | `run.ts` — orchestrator wiring every step + `afterEmit` hook + e2e tests       |
+| [x]  | [#15](https://github.com/marmotz/kurotako/issues/15) | [15-core-types-and-contracts](tasks/15-core-types-and-contracts.md) | `types.ts` (config, driver contracts, artifacts, hooks), `errors.ts`, `logger.ts` |
+| [x]  | [#16](https://github.com/marmotz/kurotako/issues/16) | [16-core-merge](tasks/16-core-merge.md)                         | `merge.ts` — `mergeSources()`, namespace-mismatch / duplicate rejection, `assertIR` |
+| [x]  | [#17](https://github.com/marmotz/kurotako/issues/17) | [17-core-graph](tasks/17-core-graph.md)                         | `graph.ts` — `generatorOrder()`, Kahn, missing hard dep, cycle detection       |
+| [x]  | [#18](https://github.com/marmotz/kurotako/issues/18) | [18-core-filter](tasks/18-core-filter.md)                       | `filter.ts` — `filterIR()` namespace-filtered deep clone                       |
+| [x]  | [#19](https://github.com/marmotz/kurotako/issues/19) | [19-core-collect](tasks/19-core-collect.md)                     | `collect.ts` — `mergeTrees()`, path normalization, cross-generator collision   |
+| [x]  | [#20](https://github.com/marmotz/kurotako/issues/20) | [20-core-writer](tasks/20-core-writer.md)                       | `writer.ts` — `Writer` seam + mode A `directoryWriter` (unconditional wipe)     |
+| [x]  | [#21](https://github.com/marmotz/kurotako/issues/21) | [21-core-run](tasks/21-core-run.md)                             | `run.ts` — orchestrator wiring every step + `afterEmit` hook + e2e tests       |
 
 ## Configuration system
 
