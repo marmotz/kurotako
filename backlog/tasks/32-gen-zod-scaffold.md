@@ -1,6 +1,6 @@
 # backend — @kurotako/gen-zod scaffold, options, names and v3/v4 dialect
 
-**Status**: to do **Type**: backend **Issue**: [#32](https://github.com/marmotz/kurotako/issues/32)
+**Status**: done **Type**: backend **Issue**: [#32](https://github.com/marmotz/kurotako/issues/32)
 
 Reference: [../features/generator-zod/technical.md §Package shape](../features/generator-zod/technical.md#package-shape),
 [§Public contract (`generator.ts` + `options.ts`)](../features/generator-zod/technical.md#public-contract-generatorts--optionsts),

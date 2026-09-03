@@ -1,6 +1,6 @@
 # backend — @kurotako/gen-zod enums.ts and filters.ts emission
 
-**Status**: to do **Type**: backend **Issue**: [#35](https://github.com/marmotz/kurotako/issues/35)
+**Status**: done **Type**: backend **Issue**: [#35](https://github.com/marmotz/kurotako/issues/35)
 
 Reference: [../features/generator-zod/technical.md §File layout (decided: one file per entity + shared enums file)](../features/generator-zod/technical.md#file-layout-decided-one-file-per-entity--shared-enums-file),
 [§Where operator schemas (decided: Prisma-style, `emit/filters.ts`)](../features/generator-zod/technical.md#where-operator-schemas-decided-prisma-style-emitfiltersts),

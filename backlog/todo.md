@@ -86,12 +86,12 @@ design: [technical.md](features/generator-zod/technical.md)
 
 | Done | Issue                                                | Task                                                                  | Description                                                                 |
 |------|------------------------------------------------------|----------------------------------------------------------------------|---------------------------------------------------------------------------|
-|      | [#32](https://github.com/marmotz/kurotako/issues/32) | [32-gen-zod-scaffold](tasks/32-gen-zod-scaffold.md)                   | Package deps, `options.ts`, `errors.ts`, `names.ts`, `dialect.ts` (v3/v4), skeleton |
-|      | [#33](https://github.com/marmotz/kurotako/issues/33) | [33-gen-zod-scalars-constraints](tasks/33-gen-zod-scalars-constraints.md) | `render/scalars.ts` + `constraints.ts` + `field.ts` — dialect-aware expression rendering |
-|      | [#34](https://github.com/marmotz/kurotako/issues/34) | [34-gen-zod-variants-relations](tasks/34-gen-zod-variants-relations.md) | `render/variants.ts` (full/create/update/where/select) + `relations.ts` (flat/deep) |
-|      | [#35](https://github.com/marmotz/kurotako/issues/35) | [35-gen-zod-emit-enums-filters](tasks/35-gen-zod-emit-enums-filters.md) | `emit/enums.ts` (const + `z.enum` + type) + `filters.ts` (Prisma-style Where operators) |
-|      | [#36](https://github.com/marmotz/kurotako/issues/36) | [36-gen-zod-emit-entity-barrel](tasks/36-gen-zod-emit-entity-barrel.md) | `emit/entity.ts` (per-entity file, all variants × families) + `barrel.ts` |
-|      | [#37](https://github.com/marmotz/kurotako/issues/37) | [37-gen-zod-artifact-and-run](tasks/37-gen-zod-artifact-and-run.md)    | `artifact.ts` (`GeneratorArtifact` + `ZodArtifactExtra`) + `generate()` wiring + e2e tests |
+| [x]  | [#32](https://github.com/marmotz/kurotako/issues/32) | [32-gen-zod-scaffold](tasks/32-gen-zod-scaffold.md)                   | Package deps, `options.ts`, `errors.ts`, `names.ts`, `dialect.ts` (v3/v4), skeleton |
+| [x]  | [#33](https://github.com/marmotz/kurotako/issues/33) | [33-gen-zod-scalars-constraints](tasks/33-gen-zod-scalars-constraints.md) | `render/scalars.ts` + `constraints.ts` + `field.ts` — dialect-aware expression rendering |
+| [x]  | [#34](https://github.com/marmotz/kurotako/issues/34) | [34-gen-zod-variants-relations](tasks/34-gen-zod-variants-relations.md) | `render/variants.ts` (full/create/update/where/select) + `relations.ts` (flat/deep) |
+| [x]  | [#35](https://github.com/marmotz/kurotako/issues/35) | [35-gen-zod-emit-enums-filters](tasks/35-gen-zod-emit-enums-filters.md) | `emit/enums.ts` (const + `z.enum` + type) + `filters.ts` (Prisma-style Where operators) |
+| [x]  | [#36](https://github.com/marmotz/kurotako/issues/36) | [36-gen-zod-emit-entity-barrel](tasks/36-gen-zod-emit-entity-barrel.md) | `emit/entity.ts` (per-entity file, all variants × families) + `barrel.ts` |
+| [x]  | [#37](https://github.com/marmotz/kurotako/issues/37) | [37-gen-zod-artifact-and-run](tasks/37-gen-zod-artifact-and-run.md)    | `artifact.ts` (`GeneratorArtifact` + `ZodArtifactExtra`) + `generate()` wiring + e2e tests |
 
 ## Angular generator (`@kurotako/gen-angular`)
 

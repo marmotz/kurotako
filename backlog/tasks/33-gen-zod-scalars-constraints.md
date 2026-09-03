@@ -1,6 +1,6 @@
 # backend — @kurotako/gen-zod scalar, constraint and field expression rendering
 
-**Status**: to do **Type**: backend **Issue**: [#33](https://github.com/marmotz/kurotako/issues/33)
+**Status**: done **Type**: backend **Issue**: [#33](https://github.com/marmotz/kurotako/issues/33)
 
 Reference: [../features/generator-zod/technical.md §Base scalar expression (`render/scalars.ts`, dialect-aware)](../features/generator-zod/technical.md#base-scalar-expression-renderscalarsts-dialect-aware),
 [§Constraints (`render/constraints.ts`, dialect-aware)](../features/generator-zod/technical.md#constraints-renderconstraintsts-dialect-aware),

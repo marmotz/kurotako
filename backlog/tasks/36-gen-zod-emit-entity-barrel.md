@@ -1,6 +1,6 @@
 # backend — @kurotako/gen-zod per-entity schema file and namespace barrel
 
-**Status**: to do **Type**: backend **Issue**: [#36](https://github.com/marmotz/kurotako/issues/36)
+**Status**: done **Type**: backend **Issue**: [#36](https://github.com/marmotz/kurotako/issues/36)
 
 Reference: [../features/generator-zod/technical.md §File layout (decided: one file per entity + shared enums file)](../features/generator-zod/technical.md#file-layout-decided-one-file-per-entity--shared-enums-file),
 [§Naming (`names.ts`)](../features/generator-zod/technical.md#naming-namests--deterministic-never-namespace-prefixed),
