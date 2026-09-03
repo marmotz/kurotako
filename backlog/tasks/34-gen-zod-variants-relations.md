@@ -1,6 +1,6 @@
 # backend — @kurotako/gen-zod variant derivation and relation families
 
-**Status**: to do **Type**: backend **Issue**: [#34](https://github.com/marmotz/kurotako/issues/34)
+**Status**: done **Type**: backend **Issue**: [#34](https://github.com/marmotz/kurotako/issues/34)
 
 Reference: [../features/generator-zod/technical.md §Variant field sets (`render/variants.ts`)](../features/generator-zod/technical.md#variant-field-sets-rendervariantsts),
 [§Relations (`render/relations.ts`) — two families (decided)](../features/generator-zod/technical.md#relations-renderrelationsts--two-families-decided).

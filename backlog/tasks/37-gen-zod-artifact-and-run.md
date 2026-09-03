@@ -1,6 +1,6 @@
 # backend — @kurotako/gen-zod artifact assembly and generate() wiring
 
-**Status**: to do **Type**: backend **Issue**: [#37](https://github.com/marmotz/kurotako/issues/37)
+**Status**: done **Type**: backend **Issue**: [#37](https://github.com/marmotz/kurotako/issues/37)
 
 Reference: [../features/generator-zod/technical.md §Artifact (`artifact.ts`) — the shape the overview deferred here](../features/generator-zod/technical.md#artifact-artifactts--the-shape-the-overview-deferred-here),
 [§Public contract (`generator.ts` + `options.ts`)](../features/generator-zod/technical.md#public-contract-generatorts--optionsts),

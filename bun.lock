@@ -63,9 +63,16 @@
       "name": "@kurotako/gen-zod",
       "version": "0.0.0",
       "dependencies": {
+        "@kurotako/ir": "workspace:*",
+        "valibot": "1.4.2",
+      },
+      "devDependencies": {
         "@kurotako/config": "workspace:*",
         "@kurotako/core": "workspace:*",
-        "@kurotako/ir": "workspace:*",
+      },
+      "peerDependencies": {
+        "@kurotako/config": "workspace:*",
+        "@kurotako/core": "workspace:*",
       },
     },
     "packages/ir": {
