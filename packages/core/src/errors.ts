@@ -177,6 +177,60 @@ export class PackageBuildError extends TakoError {
   }
 }
 
+const MISSING_PACKAGE_WORKSPACE_FILE_GUIDANCE: Record<string, string> = {
+  'tsconfig.base.json': `Create '<workspaceRoot>/tsconfig.base.json':
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true
+  }
+}
+
+Use these values as-is, no adjustment needed: in particular, keep
+"moduleResolution": "bundler" — 'node16'/'nodenext' would fail to compile
+the extensionless \`export * from './zod';\` that tako's generated root
+barrel always emits.`,
+  'tsup.config.base.{ts,js,mjs,cjs}': `Create '<workspaceRoot>/tsup.config.base.ts':
+import type { Options } from 'tsup';
+
+export const basePreset: Options = {
+  entry: ['src/index.ts'],
+  format: ['esm', 'cjs'],
+  dts: { compilerOptions: { composite: false, incremental: false } },
+  sourcemap: true,
+  clean: true,
+  target: 'node22',
+  outDir: 'dist',
+};`,
+  "'typescript' (devDependency, needed for the .d.ts build)": `Run, from '<workspaceRoot>':
+  <your package manager> add -D typescript`,
+};
+
+export class MissingPackageWorkspaceFilesError extends TakoError {
+  readonly workspaceRoot: string;
+  readonly missing: string[];
+
+  constructor(workspaceRoot: string, missing: string[]) {
+    const guidance = missing
+      .map((item) => {
+        const template = MISSING_PACKAGE_WORKSPACE_FILE_GUIDANCE[item];
+        return template
+          ? template.replaceAll('<workspaceRoot>', workspaceRoot)
+          : item;
+      })
+      .join('\n\n');
+    super(
+      'missing_package_workspace_files',
+      `mode 'package' requires 'tsconfig.base.json' and 'tsup.config.base.{ts,js,mjs,cjs}' in '${workspaceRoot}' (one directory above 'packagesDir'); missing: ${missing.join(', ')}\n\n${guidance}`,
+    );
+    this.workspaceRoot = workspaceRoot;
+    this.missing = missing;
+  }
+}
+
 export class OutputNotGeneratedError extends TakoError {
   readonly path: string;
 

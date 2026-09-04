@@ -11,8 +11,10 @@
  */
 import { existsSync, readFileSync } from 'node:fs';
 import fs from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import {
+  MissingPackageWorkspaceFilesError,
   OutputNotGeneratedError,
   PackageBuildError,
   TakoError,
@@ -44,6 +46,7 @@ export const packageWriter: Writer = {
     const packagesDir = path.resolve(output.packagesDir);
     const scope = output.scope;
     const scopeSlug = scope.replace(/^@/, '');
+    assertWorkspaceBaseFiles(packagesDir);
     const peersByNamespace = collectPeerDependencies(artifacts ?? {}, files);
 
     const byNamespace = new Map<string, VirtualFile[]>();
@@ -62,6 +65,7 @@ export const packageWriter: Writer = {
     const namespaces = [...byNamespace.keys()].sort();
     await fs.mkdir(packagesDir, { recursive: true });
     const written: string[] = [];
+    const entriesByNamespace = new Map<string, string[]>();
 
     for (const namespace of namespaces) {
       const sources = [...(byNamespace.get(namespace) ?? [])].sort((a, b) =>
@@ -91,8 +95,10 @@ export const packageWriter: Writer = {
       await fs.writeFile(tsconfigPath, buildTsconfig(), 'utf8');
       written.push(tsconfigPath);
 
+      const sortedEntries = entries.sort();
+      entriesByNamespace.set(namespace, sortedEntries);
       const tsupPath = path.join(pkgDir, 'tsup.config.ts');
-      await fs.writeFile(tsupPath, buildTsupConfig(entries.sort()), 'utf8');
+      await fs.writeFile(tsupPath, buildTsupConfig(sortedEntries), 'utf8');
       written.push(tsupPath);
 
       const gitattributesPath = path.join(pkgDir, '.gitattributes');
@@ -108,7 +114,7 @@ export const packageWriter: Writer = {
     );
     written.push(rootGitattributes);
 
-    await buildPackages(packagesDir, scopeSlug, namespaces);
+    await buildPackages(packagesDir, scopeSlug, namespaces, entriesByNamespace);
 
     const pm = resolvePackageManager({
       configured: output.packageManager,
@@ -126,6 +132,45 @@ export const packageWriter: Writer = {
     return written.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
   },
 };
+
+const TSUP_CONFIG_BASE_EXTENSIONS = ['.ts', '.js', '.mjs', '.cjs'];
+
+/**
+ * The generated `tsconfig.json` / `tsup.config.ts` reference `../../tsconfig.base.json`
+ * / `../../tsup.config.base` (two levels up from `<pkgDir>`, i.e. one level up from
+ * `packagesDir`). Failing fast here turns an opaque esbuild "Could not resolve" into
+ * an actionable error naming exactly what's missing and where.
+ */
+function assertWorkspaceBaseFiles(packagesDir: string): void {
+  const workspaceRoot = path.dirname(packagesDir);
+  const missing: string[] = [];
+
+  if (!existsSync(path.join(workspaceRoot, 'tsconfig.base.json'))) {
+    missing.push('tsconfig.base.json');
+  }
+  const hasTsupBase = TSUP_CONFIG_BASE_EXTENSIONS.some((ext) =>
+    existsSync(path.join(workspaceRoot, `tsup.config.base${ext}`)),
+  );
+  if (!hasTsupBase) {
+    missing.push('tsup.config.base.{ts,js,mjs,cjs}');
+  }
+  if (!isResolvableFrom('typescript', workspaceRoot)) {
+    missing.push("'typescript' (devDependency, needed for the .d.ts build)");
+  }
+
+  if (missing.length > 0) {
+    throw new MissingPackageWorkspaceFilesError(workspaceRoot, missing);
+  }
+}
+
+function isResolvableFrom(specifier: string, from: string): boolean {
+  try {
+    createRequire(path.join(from, 'noop.js')).resolve(specifier);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 async function guardAndReset(pkgDir: string): Promise<void> {
   let entries: string[];
@@ -160,18 +205,42 @@ async function buildPackages(
   packagesDir: string,
   scopeSlug: string,
   namespaces: string[],
+  entriesByNamespace: Map<string, string[]>,
 ): Promise<void> {
   const { build } = await import('tsup');
   const originalCwd = process.cwd();
   try {
     for (const namespace of namespaces) {
-      process.chdir(path.join(packagesDir, `${scopeSlug}-${namespace}`));
+      const pkgDir = path.join(packagesDir, `${scopeSlug}-${namespace}`);
+      // Still needed: tsup/esbuild auto-detects `peerDependencies` (e.g. `zod`)
+      // as external by reading the nearest `package.json`, which it locates
+      // from `process.cwd()`.
+      process.chdir(pkgDir);
       try {
         await build({
-          entry: ['src/**/*.ts'],
+          // Config auto-discovery (cosmiconfig) is disabled: the pkgDir's own
+          // tsup.config.ts exists for humans building the package standalone
+          // later, but resolving it here — a TS file re-exporting
+          // `../../tsup.config.base` — through tsup's config loader instead of
+          // this programmatic call caused spurious "Could not resolve" entry
+          // errors.
+          config: false,
+          // A relative `entry` array goes through tinyglobby, whose matches
+          // esbuild then resolves against the cwd esbuild's service captured
+          // at first use — *not* the cwd at this call, so it silently breaks
+          // after the first `process.chdir()` in this loop. An absolute-path
+          // entry *map* skips glob resolution entirely (tsup only runs
+          // `fs.existsSync` on it) and keeps `dist/` mirroring `src/`.
+          entry: Object.fromEntries(
+            (entriesByNamespace.get(namespace) ?? []).map((entry) => [
+              entry.replace(/^src\//, '').replace(/\.ts$/, ''),
+              path.join(pkgDir, entry),
+            ]),
+          ),
+          tsconfig: path.join(pkgDir, 'tsconfig.json'),
           format: ['esm', 'cjs'],
           dts: { compilerOptions: { composite: false, incremental: false } },
-          outDir: 'dist',
+          outDir: path.join(pkgDir, 'dist'),
           silent: true,
         });
       } catch (cause) {

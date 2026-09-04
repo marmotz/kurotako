@@ -2,7 +2,11 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { OutputNotGeneratedError, PackageBuildError } from '../errors.js';
+import {
+  MissingPackageWorkspaceFilesError,
+  OutputNotGeneratedError,
+  PackageBuildError,
+} from '../errors.js';
 import type { GeneratorArtifact, Logger, VirtualFile } from '../types.js';
 import { packageWriter } from './package.js';
 import { runInstall } from './pm.js';
@@ -33,11 +37,25 @@ const artifacts: Record<string, GeneratorArtifact> = {
   zod: { entities: {}, peerDependencies: { zod: '^4' } },
 };
 
+async function stubResolvableTypescript(workspaceRoot: string): Promise<void> {
+  const tsDir = path.join(workspaceRoot, 'node_modules', 'typescript');
+  await fs.mkdir(tsDir, { recursive: true });
+  await fs.writeFile(
+    path.join(tsDir, 'package.json'),
+    '{"name":"typescript","main":"index.js"}',
+    'utf8',
+  );
+  await fs.writeFile(path.join(tsDir, 'index.js'), '', 'utf8');
+}
+
 let dir: string;
 
 beforeEach(async () => {
   dir = await fs.mkdtemp(path.join(os.tmpdir(), 'kurotako-pkg-'));
   await fs.writeFile(path.join(dir, '.git'), '', 'utf8');
+  await fs.writeFile(path.join(dir, 'tsconfig.base.json'), '{}', 'utf8');
+  await fs.writeFile(path.join(dir, 'tsup.config.base.ts'), '', 'utf8');
+  await stubResolvableTypescript(dir);
   build.mockReset();
   build.mockResolvedValue(undefined);
   vi.mocked(runInstall).mockClear();
@@ -144,6 +162,33 @@ describe('packageWriter', () => {
     await expect(write({ packageManager: 'bun' })).rejects.toBeInstanceOf(
       OutputNotGeneratedError,
     );
+  });
+
+  it('throws MissingPackageWorkspaceFilesError instead of a raw build failure when the workspace base files are absent', async () => {
+    await fs.rm(path.join(dir, 'tsconfig.base.json'));
+    await fs.rm(path.join(dir, 'tsup.config.base.ts'));
+    const error = await write({ packageManager: 'bun' }).catch((e) => e);
+    expect(error).toBeInstanceOf(MissingPackageWorkspaceFilesError);
+    expect((error as MissingPackageWorkspaceFilesError).missing).toEqual([
+      'tsconfig.base.json',
+      'tsup.config.base.{ts,js,mjs,cjs}',
+    ]);
+    expect(build).not.toHaveBeenCalled();
+  });
+
+  it('throws MissingPackageWorkspaceFilesError when typescript is not resolvable from the workspace root', async () => {
+    await fs.rm(path.join(dir, 'node_modules'), { recursive: true });
+    const error = await write({ packageManager: 'bun' }).catch((e) => e);
+    expect(error).toBeInstanceOf(MissingPackageWorkspaceFilesError);
+    expect((error as MissingPackageWorkspaceFilesError).missing).toEqual([
+      "'typescript' (devDependency, needed for the .d.ts build)",
+    ]);
+  });
+
+  it('accepts a tsup.config.base with a .js extension', async () => {
+    await fs.rm(path.join(dir, 'tsup.config.base.ts'));
+    await fs.writeFile(path.join(dir, 'tsup.config.base.js'), '', 'utf8');
+    await expect(write({ packageManager: 'bun' })).resolves.toBeDefined();
   });
 
   it('overwrites a previously generated package and is byte-deterministic', async () => {

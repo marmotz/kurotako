@@ -210,6 +210,25 @@ describe('loadConfig', () => {
     }
   });
 
+  it("rejects output.mode 'package' with a scope containing a '/' (would nest the generated package dir)", async () => {
+    writeConfig(`
+      export default {
+        sources: { pg: { use: ${parserSrc} } },
+        generators: [],
+        output: { mode: 'package', packagesDir: './pkgs', scope: '@acme/dto' },
+      }
+    `);
+    try {
+      await loadConfig({ cwd: root });
+      expect.unreachable();
+    } catch (err) {
+      expect(err).toBeInstanceOf(ConfigShapeError);
+      const issues = (err as ConfigShapeError).issues;
+      expect(issues.map((i) => i.path)).toEqual(['output.scope']);
+      expect(issues[0]?.message).toContain('not a valid npm scope');
+    }
+  });
+
   it('rejects a no-optionsSchema driver whose options is an exotic object (Date)', async () => {
     writeConfig(`
       const gen = { name: 'zod', generate: () => ({ files: [], artifact: { entities: {} } }) }

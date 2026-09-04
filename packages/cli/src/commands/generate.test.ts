@@ -1,7 +1,39 @@
 import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import type { ResolvedConfig } from '@kurotako/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { runCli } from '../cli.js';
+import { outputSummaryDir } from './generate.js';
+
+function resolvedConfig(output: ResolvedConfig['output']): ResolvedConfig {
+  return { rootDir: '/root', sources: {}, generators: {}, output };
+}
+
+describe('outputSummaryDir', () => {
+  it("mode 'dir' (default) -> output.dir, falling back to rootDir", () => {
+    expect(outputSummaryDir(resolvedConfig({ dir: '/root/out' }))).toBe(
+      '/root/out',
+    );
+    expect(outputSummaryDir(resolvedConfig({}))).toBe('/root');
+  });
+
+  it("mode 'package' -> output.packagesDir, not the unrelated dir default", () => {
+    expect(
+      outputSummaryDir(
+        resolvedConfig({
+          mode: 'package',
+          dir: '/root/generated/kurotako',
+          packagesDir: '/root/packages',
+          scope: '@acme',
+        }),
+      ),
+    ).toBe('/root/packages');
+  });
+
+  it("mode 'package' with no packagesDir -> falls back to rootDir", () => {
+    expect(outputSummaryDir(resolvedConfig({ mode: 'package' }))).toBe('/root');
+  });
+});
 
 const PKG_DIR = join(import.meta.dirname, '..', '..');
 

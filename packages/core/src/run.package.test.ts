@@ -36,6 +36,16 @@ let dir: string;
 
 beforeEach(async () => {
   dir = await fs.mkdtemp(path.join(os.tmpdir(), 'kurotako-runb-'));
+  await fs.writeFile(path.join(dir, 'tsconfig.base.json'), '{}', 'utf8');
+  await fs.writeFile(path.join(dir, 'tsup.config.base.ts'), '', 'utf8');
+  const tsDir = path.join(dir, 'node_modules', 'typescript');
+  await fs.mkdir(tsDir, { recursive: true });
+  await fs.writeFile(
+    path.join(tsDir, 'package.json'),
+    '{"name":"typescript","main":"index.js"}',
+    'utf8',
+  );
+  await fs.writeFile(path.join(tsDir, 'index.js'), '', 'utf8');
   build.mockClear();
   vi.mocked(runInstall).mockClear();
 });
