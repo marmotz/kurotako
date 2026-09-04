@@ -22,6 +22,8 @@ import type {
   RunOptions,
   RunResult,
 } from './types.js';
+import { applyBanner } from './writer/banner.js';
+import { synthesizeRootBarrels } from './writer/barrel.js';
 import { selectWriter } from './writer/index.js';
 
 export async function run(
@@ -108,21 +110,48 @@ export async function run(
 
   // 5. Collect.
   checkSignal();
-  const files = mergeTrees(perGenerator);
+  const collected = mergeTrees(perGenerator);
+
+  // 5b. Synthesize the per-namespace root barrels and fold them into the tree.
+  // A generator that emitted `<ns>/index.ts` itself now collides with the
+  // synthesized file → OutputCollisionError pointing at the prefix rule.
+  checkSignal();
+  const barrels = synthesizeRootBarrels(collected, artifacts, logger);
+  const merged = mergeTrees(
+    [
+      ...perGenerator,
+      { generator: '<synthesized root barrel>', files: barrels },
+    ],
+    {
+      collisionHint:
+        "each generator must emit under its own '<namespace>/<generatorName>/' sub-tree; '<namespace>/index.ts' is synthesized by tako",
+    },
+  );
+
+  // 5c. Prepend the generated-file banner once, covering generator output and
+  // synthesized barrels alike.
+  const files = applyBanner(merged);
 
   // 6. Write (unless disabled).
   let writtenPaths: string[] | undefined;
   if (opts?.write !== false) {
     checkSignal();
     const writer = selectWriter(config.output);
-    writtenPaths = await writer.write({ files, output: config.output });
+    writtenPaths = await writer.write({
+      files,
+      output: config.output,
+      artifacts,
+      logger,
+    });
   }
 
   // 7. afterEmit — only after a real write.
   if (writtenPaths) {
     checkSignal();
     const outputDir =
-      config.output.dir ?? config.output.packagesDir ?? config.rootDir;
+      (config.output.mode === 'package'
+        ? config.output.packagesDir
+        : config.output.dir) ?? config.rootDir;
     try {
       await config.hooks?.afterEmit?.({
         outputDir,

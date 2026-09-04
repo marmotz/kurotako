@@ -57,7 +57,7 @@ describe('tako generate', () => {
     await runCli(['generate']);
     expect(process.exitCode ?? 0).toBe(0);
     expect(existsSync(join(root, 'out', 'pg', 'zod', 'user.ts'))).toBe(true);
-    expect(stderr).toContain('wrote 1 files -> out');
+    expect(stderr).toContain('wrote 2 files -> out');
   });
 
   it('--dry-run writes nothing and says so, exit 0', async () => {
@@ -65,7 +65,7 @@ describe('tako generate', () => {
     await runCli(['generate', '--dry-run']);
     expect(process.exitCode ?? 0).toBe(0);
     expect(existsSync(join(root, 'out'))).toBe(false);
-    expect(stderr).toContain('1 files would be written');
+    expect(stderr).toContain('2 files would be written');
   });
 
   it('a throwing driver exits 1 and renderError names the driver', async () => {

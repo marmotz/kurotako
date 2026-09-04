@@ -1,6 +1,6 @@
 # backend — output root-barrel synthesis and generated-file banner
 
-**Status**: to do **Type**: backend **Issue**: [#48](https://github.com/marmotz/kurotako/issues/48)
+**Status**: done **Type**: backend **Issue**: [#48](https://github.com/marmotz/kurotako/issues/48)
 
 Reference: [../features/output-modes/technical.md §The collision this feature must resolve](../features/output-modes/technical.md#the-collision-this-feature-must-resolve),
 [§New orchestration step (between collect `#5` and write `#6`)](../features/output-modes/technical.md#new-orchestration-step-between-collect-5-and-write-6),

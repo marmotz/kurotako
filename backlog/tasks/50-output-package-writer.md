@@ -1,6 +1,6 @@
 # backend — output mode B: packageWriter (package.json, tsup build, install)
 
-**Status**: to do **Type**: backend **Issue**: [#50](https://github.com/marmotz/kurotako/issues/50)
+**Status**: done **Type**: backend **Issue**: [#50](https://github.com/marmotz/kurotako/issues/50)
 
 Reference: [../features/output-modes/technical.md §`packageWriter` (mode B)](../features/output-modes/technical.md#packagewriter-mode-b),
 [§Versioning (mode B)](../features/output-modes/technical.md#versioning-mode-b),

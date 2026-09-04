@@ -34,7 +34,10 @@ function normalizePath(rawPath: string, generator: string): string {
   return normalized;
 }
 
-export function mergeTrees(perGenerator: GeneratorTree[]): VirtualFile[] {
+export function mergeTrees(
+  perGenerator: GeneratorTree[],
+  opts?: { collisionHint?: string },
+): VirtualFile[] {
   const byPath = new Map<string, { generator: string; file: VirtualFile }>();
 
   for (const { generator, files } of perGenerator) {
@@ -42,10 +45,11 @@ export function mergeTrees(perGenerator: GeneratorTree[]): VirtualFile[] {
       const normalized = normalizePath(file.path, generator);
       const existing = byPath.get(normalized);
       if (existing) {
-        throw new OutputCollisionError(normalized, [
-          existing.generator,
-          generator,
-        ]);
+        throw new OutputCollisionError(
+          normalized,
+          [existing.generator, generator],
+          opts?.collisionHint,
+        );
       }
       byPath.set(normalized, {
         generator,

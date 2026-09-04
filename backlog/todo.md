@@ -127,9 +127,9 @@ design: [technical.md](features/generator-angular/technical.md)
 
 | Done | Issue                                                | Task                                                                | Description                                                              |
 |------|------------------------------------------------------|--------------------------------------------------------------------|------------------------------------------------------------------------|
-|      | [#48](https://github.com/marmotz/kurotako/issues/48) | [48-output-root-barrel-and-banner](tasks/48-output-root-barrel-and-banner.md) | `writer/barrel.ts` + `writer/banner.ts`, `run.ts` steps 5b/5c, collision guard (dep of #43) |
-|      | [#49](https://github.com/marmotz/kurotako/issues/49) | [49-output-peers-and-pm](tasks/49-output-peers-and-pm.md)          | `writer/peers.ts` (peerDeps aggregation) + `writer/pm.ts` (package-manager resolution)  |
-|      | [#50](https://github.com/marmotz/kurotako/issues/50) | [50-output-package-writer](tasks/50-output-package-writer.md)      | `packageWriter` — `package.json`, tsup build, install; `selectWriter` mode-B branch     |
+| [x]  | [#48](https://github.com/marmotz/kurotako/issues/48) | [48-output-root-barrel-and-banner](tasks/48-output-root-barrel-and-banner.md) | `writer/barrel.ts` + `writer/banner.ts`, `run.ts` steps 5b/5c, collision guard (dep of #43) |
+| [x]  | [#49](https://github.com/marmotz/kurotako/issues/49) | [49-output-peers-and-pm](tasks/49-output-peers-and-pm.md)          | `writer/peers.ts` (peerDeps aggregation) + `writer/pm.ts` (package-manager resolution)  |
+| [x]  | [#50](https://github.com/marmotz/kurotako/issues/50) | [50-output-package-writer](tasks/50-output-package-writer.md)      | `packageWriter` — `package.json`, tsup build, install; `selectWriter` mode-B branch     |
 
 ## Drift Guard (`tako check`)
 
