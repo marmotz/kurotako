@@ -1,6 +1,6 @@
 # backend — @kurotako/gen-angular reactive factory service and Zod ValidatorFn runtime
 
-**Status**: to do **Type**: backend **Issue**: [#40](https://github.com/marmotz/kurotako/issues/40)
+**Status**: done **Type**: backend **Issue**: [#40](https://github.com/marmotz/kurotako/issues/40)
 
 Reference: [../features/generator-angular/technical.md §Reactive factory service](../features/generator-angular/technical.md#reactive-factory-service-renderreactivets),
 [§`zodValidator` — reactive, path-distributed errors](../features/generator-angular/technical.md#zodvalidator--reactive-path-distributed-errors-emitruntimets).

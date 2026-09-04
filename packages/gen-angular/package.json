@@ -12,6 +12,7 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "sideEffects": false,
   "files": [
     "dist"
   ],
@@ -27,9 +28,18 @@
     "access": "public"
   },
   "dependencies": {
+    "@kurotako/ir": "workspace:*",
+    "valibot": "1.4.2"
+  },
+  "peerDependencies": {
+    "@kurotako/config": "workspace:*",
+    "@kurotako/core": "workspace:*",
+    "@kurotako/gen-zod": "workspace:*"
+  },
+  "devDependencies": {
     "@kurotako/config": "workspace:*",
     "@kurotako/core": "workspace:*",
     "@kurotako/gen-zod": "workspace:*",
-    "@kurotako/ir": "workspace:*"
+    "typescript": "5.9.3"
   }
 }

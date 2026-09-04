@@ -1,6 +1,6 @@
 # backend — @kurotako/gen-angular control-tree types and Create/Update variant field sets
 
-**Status**: to do **Type**: backend **Issue**: [#39](https://github.com/marmotz/kurotako/issues/39)
+**Status**: done **Type**: backend **Issue**: [#39](https://github.com/marmotz/kurotako/issues/39)
 
 Reference: [../features/generator-angular/technical.md §Control type per scalar](../features/generator-angular/technical.md#control-type-per-scalar-rendercontrolsts),
 [§Variant field sets](../features/generator-angular/technical.md#variant-field-sets),

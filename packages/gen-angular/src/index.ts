@@ -1,5 +1,16 @@
 /**
- * Package version. Kept in sync with package.json by the release process
- * (changesets); a plain constant keeps `src` self-contained under `rootDir`.
+ * `@kurotako/gen-angular` — the Angular forms generator driver.
+ *
+ * Maps the IR + the `gen-zod` artifact to typed reactive `FormGroup`s and
+ * Signal Forms `schema` + model factories, per namespace. Single entry point:
+ * the driver object, its options schema/type, the artifact-extra type and the
+ * error classes.
  */
-export const version = '0.0.0';
+export type { AngularArtifactExtra } from './artifact.js';
+export {
+  AngularGenError,
+  MissingZodNamespaceError,
+  MissingZodSymbolError,
+} from './errors.js';
+export { angularGenerator } from './generator.js';
+export { AngularGeneratorOptions } from './options.js';

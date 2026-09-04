@@ -1,6 +1,6 @@
 # backend — @kurotako/gen-angular scaffold, options, names and Zod-artifact reader
 
-**Status**: to do **Type**: backend **Issue**: [#38](https://github.com/marmotz/kurotako/issues/38)
+**Status**: done **Type**: backend **Issue**: [#38](https://github.com/marmotz/kurotako/issues/38)
 
 Reference: [../features/generator-angular/technical.md §Package shape](../features/generator-angular/technical.md#package-shape),
 [§Public contract (`generator.ts` + `options.ts`)](../features/generator-angular/technical.md#public-contract-generatorts--optionsts),

@@ -1,6 +1,6 @@
 # backend — @kurotako/gen-angular per-entity file, runtime file, barrel, artifact and generate() wiring
 
-**Status**: to do **Type**: backend **Issue**: [#43](https://github.com/marmotz/kurotako/issues/43)
+**Status**: done **Type**: backend **Issue**: [#43](https://github.com/marmotz/kurotako/issues/43)
 
 Reference: [../features/generator-angular/technical.md §File layout](../features/generator-angular/technical.md#file-layout-per-namespace-ns),
 [§Artifact (`artifact.ts`)](../features/generator-angular/technical.md#artifact-artifactts),
