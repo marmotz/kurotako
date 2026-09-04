@@ -25,8 +25,9 @@ and the output modes ([output-modes/technical.md](../features/output-modes/techn
    user-facing prose; **do not** transclude
    [docs/architecture.md](https://github.com/marmotz/kurotako/blob/main/docs/architecture.md)
    or [docs/glossary.md](https://github.com/marmotz/kurotako/blob/main/docs/glossary.md).
-   Link to the ADRs on GitHub for rationale. Use `parser` / `generator` vocabulary only
-   ([ADR-0006](https://github.com/marmotz/kurotako/blob/main/docs/adr/0006-parser-generator-vocabulary.md));
+   Link to [docs/architecture.md](https://github.com/marmotz/kurotako/blob/main/docs/architecture.md)
+   on GitHub for rationale. Use `parser` / `generator` vocabulary only (see
+   [docs/glossary.md](https://github.com/marmotz/kurotako/blob/main/docs/glossary.md));
    no "driver".
 4. `apps/docs/docs/reference/tako-config.md` — full `tako.config.ts` reference:
    `defineConfig`, `parsers` map (config key = namespace), `generators` array,
@@ -40,7 +41,7 @@ and the output modes ([output-modes/technical.md](../features/output-modes/techn
 7. `apps/docs/docs/reference/output-modes.md` — mode A (directory, default) vs mode B
    (npm package per source), from
    [output-modes/technical.md](https://github.com/marmotz/kurotako/blob/main/backlog/features/output-modes/technical.md)
-   and [ADR-0005](https://github.com/marmotz/kurotako/blob/main/docs/adr/0005-output-modes.md).
+   and [docs/architecture.md](https://github.com/marmotz/kurotako/blob/main/docs/architecture.md).
 8. Replace the scaffold placeholder landing page with a real intro; finalise
    `sidebars.ts` ordering (getting-started -> concepts -> reference -> API).
 9. The "writing a parser / generator" guides are **out of scope** (fast-follow with the

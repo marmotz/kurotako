@@ -18,7 +18,7 @@ Reference: [../features/config-system/technical.md §Structural validation (`sch
 ## To do
 
 1. `packages/config/src/schema.ts`:
-   - `export const NAMESPACE_RE = /^[a-z][a-zA-Z0-9]*$/` ([ADR-0005](https://github.com/marmotz/kurotako/blob/main/docs/adr/0005-output-modes.md)).
+   - `export const NAMESPACE_RE = /^[a-z][a-zA-Z0-9]*$/` ([docs/architecture.md](https://github.com/marmotz/kurotako/blob/main/docs/architecture.md)).
    - `DriverObject` — `v.object({ name: v.pipe(v.string(), v.minLength(1)) })` plus a
      `v.check` that `parse` or `generate` is a function.
    - `export const TakoConfigSchema` — exactly the shape in technical.md §schema.ts:

@@ -34,7 +34,7 @@ useful runtime error messages. A `tako init` command drops a commented skeleton.
 ### Sections
 
 - `sources` — keyed object; **each key is a namespace**
-  ([ADR-0003](../../../docs/adr/0003-multiple-parsers-namespaces.md)). Value carries the
+  ([docs/architecture.md](../../../docs/architecture.md)). Value carries the
   parser instance and its options.
 - `generators` — an **array of entries**; each entry carries the generator instance
   (`use`), its `options?`, and an optional `namespaces?` allowlist restricting the IR
@@ -44,7 +44,7 @@ useful runtime error messages. A `tako init` command drops a commented skeleton.
   `ResolvedConfig.generators` shape core-pipeline `#15` declares (keyed by the
   generator short name; one entry per generator in v1).
 - `output` — mode A `{ dir }` (default) vs mode B
-  `{ mode: 'package', packagesDir, scope }` ([ADR-0005](../../../docs/adr/0005-output-modes.md)).
+  `{ mode: 'package', packagesDir, scope }` ([docs/architecture.md](../../../docs/architecture.md)).
 - Optional top-level extension callbacks (`afterEmit`, ...) — exact set owned by
   [core-pipeline](../core-pipeline/overview.md) `technical.md`.
 

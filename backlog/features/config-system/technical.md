@@ -22,10 +22,10 @@ overview into a concrete package, type surface and load algorithm.
     ([core-pipeline/technical.md §Config consumed / §Driver contracts / §Error model](../core-pipeline/technical.md)).
   - [`@kurotako/ir`](../ir-model/technical.md) is **schema-first on Valibot** and exposes
     `SourceIR` / `IR` types and the Valibot schemas.
-- Relevant ADRs: [ADR-0001](../../../docs/adr/0001-name-kurotako.md) (`tako` binary,
-  `@kurotako/*` scope), [ADR-0003](../../../docs/adr/0003-multiple-parsers-namespaces.md)
-  (namespace = config key, a parser package instantiated several times),
-  [ADR-0005](../../../docs/adr/0005-output-modes.md) (output modes A / B).
+- Relevant design decisions (see [docs/vision.md](../../../docs/vision.md) and
+  [docs/architecture.md](../../../docs/architecture.md)): `tako` binary, `@kurotako/*`
+  scope; namespace = config key, a parser package instantiated several times; output
+  modes A / B.
 
 ## Package
 
@@ -123,7 +123,7 @@ export interface TakoHooks {
 }
 
 export interface TakoConfig {
-  sources: Record<string, SourceEntry>       // key === namespace (ADR-0003)
+  sources: Record<string, SourceEntry>       // key === namespace
   generators: GeneratorEntry[]               // array; order irrelevant (core resolves the DAG)
   output?: OutputOption                      // default { dir: './generated/kurotako' }
   hooks?: TakoHooks
@@ -194,7 +194,7 @@ export const TakoConfigSchema = v.object({
 ```
 
 - `NAMESPACE_RE` — `^[a-z][a-zA-Z0-9]*$` (a namespace becomes a directory / submodule
-  name and an import-path segment, [ADR-0005](../../../docs/adr/0005-output-modes.md));
+  name and an import-path segment, [docs/architecture.md](../../../docs/architecture.md));
   pin it here, referenced by [output-modes](../output-modes/overview.md).
 - Cross-field checks done **after** `v.parse` (not expressible structurally), in `load.ts`:
   - duplicate `generators[].use.name` -> `DuplicateGeneratorError`;

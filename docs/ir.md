@@ -11,8 +11,7 @@ choice shared with `@kurotako/core` and the config system.
 
 ## Principles
 
-- **Namespace-first** ([ADR-0004](adr/0004-ir-namespace-first.md)): entity key
-  `(namespace, name)`. No merging of homonyms.
+- **Namespace-first**: entity key `(namespace, name)`. No merging of homonyms.
 - **Agnostic** of the source and the target. A parser fills the IR; a generator reads it. Nothing specific to Prisma,
   Zod or Angular in the format.
 - **Rich enough** to carry types, cardinalities, constraints and relations, without trying to cover from v1 everything

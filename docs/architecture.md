@@ -18,7 +18,7 @@ generators, feeds each its input, collects the artifacts.
 
 ## Parsers
 
-- Several parsers active simultaneously ([ADR-0003](adr/0003-multiple-parsers-namespaces.md)).
+- Several parsers active simultaneously.
 - A source's **config key** is its **namespace** (`pg`, `mongo`, `crm`...).
 - The source's `parser` field designates the package (`prisma`, `mongoose`). The same package can be instantiated
   several times under different namespaces (two
@@ -36,8 +36,7 @@ generators, feeds each its input, collects the artifacts.
 
 See [ir.md](ir.md). Structural points:
 
-- Keyed `(namespace, entity)`. `pg.User` and `mongo.User` are two distinct entities, never merged
-  ([ADR-0004](adr/0004-ir-namespace-first.md)).
+- Keyed `(namespace, entity)`. `pg.User` and `mongo.User` are two distinct entities, never merged.
 - The core rejects two sources declaring the same namespace; there is no entity collision since the namespace isolates
   them.
 - Source / target agnostic: it must carry types, constraints (required/optional, length, regex, min/max, enum),
@@ -45,8 +44,7 @@ See [ir.md](ir.md). Structural points:
 
 ## Generators and DAG
 
-- Each generator declares its dependencies; the core computes a topological order
-  ([ADR-0002](adr/0002-no-middle-generators-dag.md)).
+- Each generator declares its dependencies; the core computes a topological order.
 - A generator receives the IR plus, for each dependency, a handle to its artifacts (handle shape: open question,
   see [vision.md](vision.md#open-questions) §3).
 - Contract (draft):
@@ -67,7 +65,7 @@ See [ir.md](ir.md). Structural points:
 ## Namespaces and output
 
 - The namespace **never changes the generated identifiers**: the entity `User` always produces `UserDto`, `UserSchema`,
-  `UserForm`, whether the config has 1 or 10 sources ([ADR-0004](adr/0004-ir-namespace-first.md)).
+  `UserForm`, whether the config has 1 or 10 sources.
 - The namespace drives the **location**: one directory / submodule per source, named after the config key.
 - Disambiguation through the import path:
 

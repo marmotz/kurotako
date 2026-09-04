@@ -3,8 +3,7 @@
 Design for `@kurotako/core`. Product decisions come from [overview.md](overview.md); the
 pipeline model and the driver-role vocabulary live in
 [docs/architecture.md](../../../docs/architecture.md) and
-[ADR-0002](../../../docs/adr/0002-no-middle-generators-dag.md) /
-[ADR-0006](../../../docs/adr/0006-parser-generator-vocabulary.md). This document turns the
+[docs/glossary.md](../../../docs/glossary.md). This document turns the
 overview decisions into a concrete API surface and orchestration algorithm.
 
 ## Starting point
@@ -26,11 +25,9 @@ overview decisions into a concrete API surface and orchestration algorithm.
   [generator-angular](../generator-angular/overview.md) implement `Generator`;
   [cli](../cli/overview.md) calls `run()`; [output-modes](../output-modes/overview.md)
   adds the mode B writer; [cli](../cli/overview.md) `--watch` wraps `run()`.
-- Relevant ADRs: [ADR-0002](../../../docs/adr/0002-no-middle-generators-dag.md) (DAG, hard
-  vs optional deps), [ADR-0003](../../../docs/adr/0003-multiple-parsers-namespaces.md)
-  (namespace = config key, one package instantiated several times),
-  [ADR-0004](../../../docs/adr/0004-ir-namespace-first.md) (key `(namespace, entity)`),
-  [ADR-0005](../../../docs/adr/0005-output-modes.md) (output modes A / B).
+- Relevant design decisions (see [docs/architecture.md](../../../docs/architecture.md)):
+  DAG, hard vs optional deps; namespace = config key, one package instantiated several
+  times; key `(namespace, entity)`; output modes A / B.
 
 ## Package shape
 
@@ -97,7 +94,7 @@ declares the shape it needs.
 export interface ResolvedConfig {
   rootDir: string                             // absolute; dir of the config file. Anchor for
                                               // relative output paths and for ParseContext.cwd
-  sources: Record<string, SourceConfig>       // key === namespace (ADR-0003)
+  sources: Record<string, SourceConfig>       // key === namespace
   generators: Record<string, GeneratorConfig> // key === Generator.name (short name)
   output: OutputConfig
   hooks?: Hooks

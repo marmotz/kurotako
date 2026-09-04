@@ -15,15 +15,13 @@ turns them into a concrete type surface and package API.
 - Consumers, none implemented yet: `@kurotako/core` (merge + validate), every `parser-*`
   (builder), every `gen-*` (types + helpers). Contracts drafted in
   [docs/architecture.md](../../../docs/architecture.md).
-- Relevant ADRs: [ADR-0003](../../../docs/adr/0003-multiple-parsers-namespaces.md)
-  (namespaces, cross-source qualified targets),
-  [ADR-0004](../../../docs/adr/0004-ir-namespace-first.md) (key `(namespace, entity)`, no
-  homonym merge).
+- Relevant design decisions (see [docs/architecture.md](../../../docs/architecture.md)):
+  namespaces, cross-source qualified targets; key `(namespace, entity)`, no homonym merge.
 
 ## Package shape
 
 Single entry point (keeps the `exports` map identical to the bootstrap skeleton and to
-what mode B emits — [ADR-0005](../../../docs/adr/0005-output-modes.md)). No subpath
+what mode B emits — [docs/architecture.md](../../../docs/architecture.md)). No subpath
 exports in v1.
 
 ```
@@ -128,7 +126,7 @@ export type DefaultValue =
 
 export interface Relation {
   name: string
-  target: RelationTarget                   // qualified; cross-source allowed at format level (ADR-0003)
+  target: RelationTarget                   // qualified; cross-source allowed at format level
   cardinality: 'one' | 'many'
   optional: boolean                        // nullable to-one / possibly-empty association
   owning: boolean                          // this side carries the foreign key
@@ -178,7 +176,7 @@ export type JsonValue =
 - **`optional` vs `nullable`** kept distinct (decided): lets `gen-zod` emit `.optional()`
   vs `.nullable()` and disambiguates create/update variants. Prisma `?` maps to
   `nullable: true`.
-- **Relations separate from `fields[]`** (matches the sketch and ADR-0003: relations are
+- **Relations separate from `fields[]`** (matches the sketch: relations are
   reasoned per namespace and can be cross-source). The backing scalar column stays a
   normal `Field` (e.g. `authorId`), referenced by `relation.fkFields`.
 - **`primaryKey` at entity level**, not a `Field.id` flag — a boolean can't express
@@ -362,7 +360,7 @@ export function updateFields(entity: Entity): Field[]
 // TS type a non-nullable, non-list value of this field maps to, as a source string —
 // the single scalar→TS mapping every generator's typed output must agree on. Returns
 // one of the closed `ScalarTsType` tokens for a scalar, the enum type name for
-// { kind: 'enum' } (never prefixed, ADR-0004), 'unknown' for { kind: 'unknown' }.
+// { kind: 'enum' } (never prefixed), 'unknown' for { kind: 'unknown' }.
 export type ScalarTsType =
   | 'string' | 'number' | 'bigint' | 'boolean' | 'Date' | 'Uint8Array' | 'JsonValue' | 'unknown'
 export function scalarTsType(type: FieldType): string
@@ -403,7 +401,7 @@ rather than re-encode them.
 - **`FieldType` as a flat `scalar: ScalarType | { enumRef: string }`** rather than a
   tagged union. Rejected: the tagged `kind` gives generators an exhaustive `switch`.
 - **Relations embedded in `fields[]`** (Prisma's own shape). Rejected: relations are
-  qualified and possibly cross-source (ADR-0003); a separate `relations[]` keeps the
+  qualified and possibly cross-source; a separate `relations[]` keeps the
   scalar field list clean and the cross-source target explicit.
 - **`format` as a free `string`**. Rejected: a closed union lets generators switch
   exhaustively and turns an unknown value from a newer parser into a visible version

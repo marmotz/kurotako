@@ -31,9 +31,9 @@ overview into a concrete command surface, a watch loop, and a reporter.
   - [`@kurotako/core`](../core-pipeline/technical.md) — `run(config, { logger?, signal?,
     write? }): Promise<RunResult>` where `RunResult = { ir; order; files: VirtualFile[];
     artifacts }`; `Logger` interface; `TakoError { code }` base.
-- Relevant ADRs: [ADR-0001](../../../docs/adr/0001-name-kurotako.md) (`tako` binary,
-  `@kurotako/*` scope), [ADR-0005](../../../docs/adr/0005-output-modes.md) (mode B is
-  rejected by `run()` in v1 — the CLI surfaces that error, nothing more).
+- Relevant design decisions (see [docs/vision.md](../../../docs/vision.md) and
+  [docs/architecture.md](../../../docs/architecture.md)): `tako` binary, `@kurotako/*`
+  scope; mode B is rejected by `run()` in v1 — the CLI surfaces that error, nothing more.
 
 ## Package
 

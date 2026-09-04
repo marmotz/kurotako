@@ -6,15 +6,14 @@ Design for the initial repository skeleton. No code exists yet: every path below
 
 ## Starting point
 
-- Repo tree today: `docs/` (vision, architecture, IR, ADRs), `backlog/`, `.serena/`.
+- Repo tree today: `docs/` (vision, architecture, IR), `backlog/`, `.serena/`.
   No `package.json`, no `src`, no tooling.
 - Git: branch `develop`, no commits pushed yet. The GitHub repo `marmotz/kurotako` exists
   ([backlog/AGENTS.md](../../AGENTS.md)); CI runs once the first commit lands on the
   default branch.
-- Relevant ADRs: [ADR-0001](../../../docs/adr/0001-name-kurotako.md) (scope `@kurotako/*`,
-  binary `tako`), [ADR-0005](../../../docs/adr/0005-output-modes.md) (mode B emits real
-  packages — the bootstrap package skeleton must be a valid template for what `gen-*`
-  later emits).
+- Relevant design decisions (see [docs/vision.md](../../../docs/vision.md#decisions-already-made)):
+  scope `@kurotako/*`, binary `tako`; mode B emits real packages — the bootstrap package
+  skeleton must be a valid template for what `gen-*` later emits.
 
 ## Target layout
 
@@ -304,7 +303,7 @@ pre-commit:
 
 Rationale:
 - The architecture is explicitly "one central body, semi-autonomous arms"
-  ([ADR-0001](../../../docs/adr/0001-name-kurotako.md)). A parser and a generator evolve on
+  ([docs/vision.md](../../../docs/vision.md)). A parser and a generator evolve on
   unrelated schedules; a `parser-prisma` patch has no reason to bump `gen-angular`.
 - Independent is the changesets default and the low-friction path: you only write a
   changeset for what you touched, only those packages are released.
@@ -397,7 +396,7 @@ fan-out).
   first push should establish `main` (or the config is flipped to `develop` — a one-line
   change to make when the repo is created and the default branch is chosen).
 - The per-package `package.json` skeleton here is deliberately shaped like what mode B
-  (`gen-*` emitting real packages, [ADR-0005](../../../docs/adr/0005-output-modes.md)) will
+  (`gen-*` emitting real packages, [docs/architecture.md](../../../docs/architecture.md)) will
   need to produce, so `output-modes` can reuse it as the template.
 - **[output-modes/technical.md](../output-modes/technical.md)** decided the mode-B
   plumbing lives in `@kurotako/core`, so `packages/core/package.json` promotes `tsup` from

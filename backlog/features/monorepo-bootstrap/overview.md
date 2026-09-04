@@ -16,7 +16,7 @@ CI ready to activate as soon as the GitHub repo is created.
 
 ## Decisions made
 
-- npm scope `@kurotako/*`, `tako` binary ([ADR-0001](../../../docs/adr/0001-name-kurotako.md)).
+- npm scope `@kurotako/*`, `tako` binary ([docs/vision.md](../../../docs/vision.md)).
 - Initial packages: `core`, `ir`, `config`, `cli`, `parser-prisma`, `gen-zod`,
   `gen-angular` ([docs/architecture.md](../../../docs/architecture.md);
   `config` added by [config-system](../config-system/technical.md)).

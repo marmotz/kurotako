@@ -4,10 +4,10 @@
 
 ## Context
 
-Each source produces its own submodule ([ADR-0004](../../../docs/adr/0004-ir-namespace-first.md)).
+Each source produces its own submodule ([docs/architecture.md](../../../docs/architecture.md)).
 There are two ways to deliver it to the consumer: a directory inside the project (mode A)
 or a real npm package per source (mode B). Both are retained
-([ADR-0005](../../../docs/adr/0005-output-modes.md)); we need to specify their plumbing
+([docs/architecture.md](../../../docs/architecture.md)); we need to specify their plumbing
 and where it lives (in the core, in a dedicated module, in the CLI).
 
 ## Goal

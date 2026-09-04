@@ -4,7 +4,7 @@ Design for how `tako` writes the generated tree to disk. Product decisions come 
 [overview.md](overview.md); the writer seam, the virtual-file model and the artifact
 contract live in
 [core-pipeline/technical.md](../core-pipeline/technical.md#writer-seam) and the mode
-selection in [ADR-0005](../../../docs/adr/0005-output-modes.md). This document turns the
+selection in [docs/architecture.md](../../../docs/architecture.md). This document turns the
 overview into a concrete set of core modules, a barrel-synthesis step, a mode-B package
 writer, and the list of amendments the decision "plumbing lives in `@kurotako/core`"
 forces on already-written designs.
@@ -38,10 +38,10 @@ forces on already-written designs.
     `index.ts` barrel**, today all directly under `<ns>/`. Each returns a
     `GeneratorArtifact` whose `EntitySymbols.module` and `extra.perNamespace[ns].*Module`
     are the specifiers a sibling generator / the consumer imports from.
-- Relevant ADRs: [ADR-0004](../../../docs/adr/0004-ir-namespace-first.md) (deterministic
-  identifiers, never namespace-prefixed; namespace drives output **location** only),
-  [ADR-0005](../../../docs/adr/0005-output-modes.md) (modes A / B, identical module name),
-  [ADR-0006](../../../docs/adr/0006-parser-generator-vocabulary.md).
+- Relevant design decisions (see [docs/architecture.md](../../../docs/architecture.md)
+  and [docs/glossary.md](../../../docs/glossary.md)): deterministic identifiers, never
+  namespace-prefixed; namespace drives output **location** only; modes A / B, identical
+  module name.
 
 ## The collision this feature must resolve
 
@@ -335,7 +335,7 @@ Re-running `tako generate` never bumps it. No `output.version` field, no content
 Consequence: a generated package cannot be `npm publish`ed as-is to a public registry
 without the consumer setting a version first — acceptable, mode B targets monorepos /
 private registries with their own release tooling
-([ADR-0005](../../../docs/adr/0005-output-modes.md) "independent versioning" is the
+([docs/architecture.md](../../../docs/architecture.md) "independent versioning" is the
 consumer's, not `tako`'s).
 
 ## Package manager (mode B)
