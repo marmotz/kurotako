@@ -22,6 +22,7 @@ import {
   DriverOptionsError,
   DuplicateGeneratorError,
   NoDefaultExportError,
+  UnknownGeneratorError,
   UnknownNamespaceError,
 } from './errors.js';
 import { resolveConfigFile } from './resolve.js';
@@ -105,25 +106,35 @@ export async function loadConfig(opts?: {
     }
   }
 
-  const output = config.output ?? {};
-  const mode = output.mode ?? 'dir';
-  if (mode === 'package') {
+  for (const [index, entry] of config.outputs.entries()) {
+    for (const name of entry.generators ?? []) {
+      if (!seenGenerators.has(name)) {
+        throw new UnknownGeneratorError(index, name);
+      }
+    }
+  }
+
+  for (const [index, entry] of config.outputs.entries()) {
+    const mode = entry.mode ?? 'dir';
+    if (mode !== 'package') {
+      continue;
+    }
     const missing: ConfigIssue[] = [];
-    if (output.packagesDir === undefined) {
+    if (entry.packagesDir === undefined) {
       missing.push({
-        path: 'output.packagesDir',
-        message: "required when output.mode is 'package'",
+        path: `outputs.${index}.packagesDir`,
+        message: "required when outputs[].mode is 'package'",
       });
     }
-    if (output.scope === undefined) {
+    if (entry.scope === undefined) {
       missing.push({
-        path: 'output.scope',
-        message: "required when output.mode is 'package'",
+        path: `outputs.${index}.scope`,
+        message: "required when outputs[].mode is 'package'",
       });
-    } else if (!NPM_SCOPE_RE.test(output.scope)) {
+    } else if (!NPM_SCOPE_RE.test(entry.scope)) {
       missing.push({
-        path: 'output.scope',
-        message: `'${output.scope}' is not a valid npm scope: it must look like '@name' (letters, digits, '-', '.', '_' only — no '/'). Generated package names are '\${scope}/\${namespace}', so an extra '/' here would nest the generated package under a subdirectory instead of naming it.`,
+        path: `outputs.${index}.scope`,
+        message: `'${entry.scope}' is not a valid npm scope: it must look like '@name' (letters, digits, '-', '.', '_' only — no '/'). Generated package names are '\${scope}/\${namespace}', so an extra '/' here would nest the generated package under a subdirectory instead of naming it.`,
       });
     }
     if (missing.length > 0) {
@@ -174,24 +185,30 @@ export async function loadConfig(opts?: {
     };
   }
 
-  // --- output --------------------------------------------------------------
-  const resolvedOutput: OutputConfig = { mode };
-  resolvedOutput.dir = absolutize(output.dir ?? DEFAULT_OUTPUT_DIR, rootDir);
-  if (output.packagesDir !== undefined) {
-    resolvedOutput.packagesDir = absolutize(output.packagesDir, rootDir);
-  }
-  if (output.scope !== undefined) {
-    resolvedOutput.scope = output.scope;
-  }
-  if (output.packageManager !== undefined) {
-    resolvedOutput.packageManager = output.packageManager;
-  }
+  // --- outputs ---------------------------------------------------------------
+  const resolvedOutputs: OutputConfig[] = config.outputs.map((entry) => {
+    const resolvedOutput: OutputConfig = { mode: entry.mode ?? 'dir' };
+    resolvedOutput.dir = absolutize(entry.dir ?? DEFAULT_OUTPUT_DIR, rootDir);
+    if (entry.packagesDir !== undefined) {
+      resolvedOutput.packagesDir = absolutize(entry.packagesDir, rootDir);
+    }
+    if (entry.scope !== undefined) {
+      resolvedOutput.scope = entry.scope;
+    }
+    if (entry.packageManager !== undefined) {
+      resolvedOutput.packageManager = entry.packageManager;
+    }
+    if (entry.generators !== undefined) {
+      resolvedOutput.generators = entry.generators;
+    }
+    return resolvedOutput;
+  });
 
   const resolved: ResolvedConfig = {
     rootDir,
     sources,
     generators,
-    output: resolvedOutput,
+    outputs: resolvedOutputs,
     hooks: (mod as { hooks?: TakoHooks }).hooks,
   };
 

@@ -18,6 +18,7 @@ import type { MergeEntry } from './merge.js';
 import { mergeSources } from './merge.js';
 import type {
   GeneratorArtifact,
+  OutputConfig,
   ResolvedConfig,
   RunOptions,
   RunResult,
@@ -132,36 +133,52 @@ export async function run(
   // synthesized barrels alike.
   const files = applyBanner(merged);
 
-  // 6. Write (unless disabled).
-  let writtenPaths: string[] | undefined;
+  // 6. Write (unless disabled) — one writer call per `config.outputs` entry.
+  const written: { output: OutputConfig; files: string[] }[] = [];
   if (opts?.write !== false) {
-    checkSignal();
-    const writer = selectWriter(config.output);
-    writtenPaths = await writer.write({
-      files,
-      output: config.output,
-      artifacts,
-      logger,
-    });
-  }
+    for (const output of config.outputs) {
+      checkSignal();
+      const names = new Set(output.generators ?? order);
+      const filteredFiles = collected.filter((file) =>
+        names.has(file.path.split('/')[1] ?? ''),
+      );
+      const outputBarrels = synthesizeRootBarrels(
+        filteredFiles,
+        artifacts,
+        logger,
+      );
+      const outputTree = applyBanner(
+        mergeTrees([
+          { generator: '<filtered>', files: filteredFiles },
+          { generator: '<synthesized root barrel>', files: outputBarrels },
+        ]),
+      );
 
-  // 7. afterEmit — only after a real write.
-  if (writtenPaths) {
-    checkSignal();
-    const outputDir =
-      (config.output.mode === 'package'
-        ? config.output.packagesDir
-        : config.output.dir) ?? config.rootDir;
-    try {
-      await config.hooks?.afterEmit?.({
-        outputDir,
-        files: writtenPaths,
+      const writer = selectWriter(output);
+      const writtenPaths = await writer.write({
+        files: outputTree,
+        output,
+        artifacts,
         logger,
       });
-    } catch (error) {
-      throw new HookError('afterEmit', { cause: error });
+      written.push({ output, files: writtenPaths });
+
+      // 7. afterEmit — once per output, right after that output is written.
+      checkSignal();
+      const outputDir =
+        (output.mode === 'package' ? output.packagesDir : output.dir) ??
+        config.rootDir;
+      try {
+        await config.hooks?.afterEmit?.({
+          outputDir,
+          files: writtenPaths,
+          logger,
+        });
+      } catch (error) {
+        throw new HookError('afterEmit', { cause: error });
+      }
     }
   }
 
-  return { ir, order, files, artifacts };
+  return { ir, order, files, artifacts, written };
 }

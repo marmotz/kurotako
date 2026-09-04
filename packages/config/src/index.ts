@@ -15,6 +15,7 @@ export {
   DriverOptionsError,
   DuplicateGeneratorError,
   NoDefaultExportError,
+  UnknownGeneratorError,
   UnknownNamespaceError,
 } from './errors.js';
 export { type LoadResult, loadConfig } from './load.js';

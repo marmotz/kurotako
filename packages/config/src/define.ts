@@ -25,7 +25,7 @@ export function defineConfig<
 >(config: {
   sources: S & { [K in keyof S]: SourceEntry<S[K]['use']> };
   generators: G & { [K in keyof G]: GeneratorEntry<G[K]['use']> };
-  output?: OutputOption;
+  outputs: readonly OutputOption[];
   hooks?: TakoHooks;
 }): TakoConfig {
   return config as TakoConfig;

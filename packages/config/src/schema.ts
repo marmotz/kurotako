@@ -46,14 +46,18 @@ export const TakoConfigSchema = v.object({
       namespaces: v.optional(v.array(v.pipe(v.string(), v.minLength(1)))),
     }),
   ),
-  output: v.optional(
-    v.object({
-      dir: v.optional(v.string()),
-      mode: v.optional(v.picklist(['dir', 'package'])),
-      packagesDir: v.optional(v.string()),
-      scope: v.optional(v.string()),
-      packageManager: v.optional(v.picklist(['bun', 'pnpm', 'yarn', 'npm'])),
-    }),
+  outputs: v.pipe(
+    v.array(
+      v.object({
+        dir: v.optional(v.string()),
+        mode: v.optional(v.picklist(['dir', 'package'])),
+        packagesDir: v.optional(v.string()),
+        scope: v.optional(v.string()),
+        packageManager: v.optional(v.picklist(['bun', 'pnpm', 'yarn', 'npm'])),
+        generators: v.optional(v.array(v.pipe(v.string(), v.minLength(1)))),
+      }),
+    ),
+    v.minLength(1),
   ),
   hooks: v.optional(
     v.object({

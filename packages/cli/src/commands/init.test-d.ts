@@ -15,7 +15,7 @@ export const config = defineConfig({
     pg: { use: prismaParser, options: { schema: './prisma/schema.prisma' } },
   },
   generators: [{ use: zodGenerator }],
-  output: { dir: './generated/kurotako' },
+  outputs: [{ dir: './generated/kurotako' }],
 });
 
 // `PrismaParserOptions` is a `v.strictObject` — an unknown key is a type error at

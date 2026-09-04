@@ -94,6 +94,21 @@ export class UnknownNamespaceError extends TakoError {
   }
 }
 
+/** An `outputs[i].generators` allowlist names a generator absent from `generators`. */
+export class UnknownGeneratorError extends TakoError {
+  readonly outputIndex: number;
+  readonly generator: string;
+
+  constructor(outputIndex: number, generator: string) {
+    super(
+      'config_unknown_generator',
+      `outputs[${outputIndex}] restricts to generator '${generator}', which is not declared in generators`,
+    );
+    this.outputIndex = outputIndex;
+    this.generator = generator;
+  }
+}
+
 /** An entry's `options` failed `use.optionsSchema` (or was passed unexpectedly). */
 export class DriverOptionsError extends TakoError {
   readonly role: 'parser' | 'generator';

@@ -40,7 +40,7 @@ export interface ResolvedConfig {
   sources: Record<string, SourceConfig>;
   /** Key === `Generator.name` (short name). */
   generators: Record<string, GeneratorConfig>;
-  output: OutputConfig;
+  outputs: OutputConfig[];
   hooks?: Hooks;
 }
 
@@ -69,6 +69,8 @@ export interface OutputConfig {
   scope?: string;
   /** Mode B, optional — consumed by output-modes. */
   packageManager?: 'bun' | 'pnpm' | 'yarn' | 'npm';
+  /** Restrict this destination to a subset of `config.generators`; default = all. */
+  generators?: string[];
 }
 
 // --- driver contracts ---------------------------------------------------------
@@ -176,4 +178,6 @@ export interface RunResult {
   files: VirtualFile[];
   /** Generator short name -> its artifact. */
   artifacts: Record<string, GeneratorArtifact>;
+  /** One entry per `config.outputs[]`, in order; `[]` when `write: false`. */
+  written: { output: OutputConfig; files: string[] }[];
 }

@@ -14,7 +14,7 @@ describe('CONFIG_TEMPLATE', () => {
     );
     expect(CONFIG_TEMPLATE).toContain('export default defineConfig(');
     expect(CONFIG_TEMPLATE).toContain(
-      "output: { dir: './generated/kurotako' }",
+      "outputs: [{ dir: './generated/kurotako' }]",
     );
   });
 
@@ -45,7 +45,7 @@ describe('CONFIG_TEMPLATE', () => {
       // The generator entry omits `options`; the all-default optionsSchema
       // still resolves to its defaults.
       expect(config.generators.g?.options).toEqual({ zodVersion: 4 });
-      expect(config.output.dir).toBe(join(root, 'generated', 'kurotako'));
+      expect(config.outputs[0]?.dir).toBe(join(root, 'generated', 'kurotako'));
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

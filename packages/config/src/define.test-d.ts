@@ -59,6 +59,7 @@ export const ok = defineConfig({
     pg2: { use: withOptions },
   },
   generators: [{ use: noOptions }, { use: allDefaultOptions }],
+  outputs: [],
 });
 
 export const badGeneratorOptions = defineConfig({
@@ -67,6 +68,7 @@ export const badGeneratorOptions = defineConfig({
     // @ts-expect-error — `no-options` declares no optionsSchema, so `options` is rejected
     { use: noOptions, options: {} },
   ],
+  outputs: [],
 });
 
 export const badAllDefaultOptions = defineConfig({
@@ -75,6 +77,7 @@ export const badAllDefaultOptions = defineConfig({
     // @ts-expect-error — `bad` is not a known option key
     { use: allDefaultOptions, options: { bad: 1 } },
   ],
+  outputs: [],
 });
 
 export const badParserOptions = defineConfig({
@@ -83,12 +86,14 @@ export const badParserOptions = defineConfig({
     pg: { use: withOptions, options: { schema: 42 } },
   },
   generators: [],
+  outputs: [],
 });
 
 // `requiredOptions.optionsSchema` has a required `host` => `options` is required.
 export const requiredOk = defineConfig({
   sources: { pg: { use: requiredOptions, options: { host: 'x' } } },
   generators: [],
+  outputs: [],
 });
 
 export const missingRequiredOptions = defineConfig({
@@ -97,4 +102,5 @@ export const missingRequiredOptions = defineConfig({
     pg: { use: requiredOptions },
   },
   generators: [],
+  outputs: [],
 });

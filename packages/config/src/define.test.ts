@@ -6,7 +6,7 @@ describe('defineConfig', () => {
     const input = {
       sources: {},
       generators: [],
-      output: { dir: './out' },
+      outputs: [{ dir: './out' }],
     };
     expect(defineConfig(input)).toBe(input);
   });
