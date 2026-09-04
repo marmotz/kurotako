@@ -1,6 +1,6 @@
 # backend — @kurotako/gen-angular deep relation mode (nested FormGroup / FormArray)
 
-**Status**: to do **Type**: backend **Issue**: [#42](https://github.com/marmotz/kurotako/issues/42)
+**Status**: done **Type**: backend **Issue**: [#42](https://github.com/marmotz/kurotako/issues/42)
 
 Reference: [../features/generator-angular/technical.md §Relations](../features/generator-angular/technical.md#relations-renderrelationsts).
 

@@ -100,12 +100,12 @@ design: [technical.md](features/generator-angular/technical.md)
 
 | Done | Issue                                                | Task                                                                        | Description                                                                             |
 |------|------------------------------------------------------|----------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
-|      | [#38](https://github.com/marmotz/kurotako/issues/38) | [38-gen-angular-scaffold](tasks/38-gen-angular-scaffold.md)                 | `package.json`/`tsconfig`, `options.ts`, `errors.ts`, `names.ts`, `zod-artifact.ts` reader, `generator.ts` skeleton |
-|      | [#39](https://github.com/marmotz/kurotako/issues/39) | [39-gen-angular-controls-variants](tasks/39-gen-angular-controls-variants.md) | `render/controls.ts` scalar → `FormControl<T>` map + `Create`/`Update` variant field sets |
-|      | [#40](https://github.com/marmotz/kurotako/issues/40) | [40-gen-angular-reactive-service](tasks/40-gen-angular-reactive-service.md)   | `render/reactive.ts` `@Injectable` factory + `emit/runtime.ts` path-distributed `zodValidator` |
-|      | [#41](https://github.com/marmotz/kurotako/issues/41) | [41-gen-angular-signal-forms](tasks/41-gen-angular-signal-forms.md)           | `render/signal.ts` `schema` + model factory + `zodTreeValidate` root tree validator     |
-|      | [#42](https://github.com/marmotz/kurotako/issues/42) | [42-gen-angular-relations-deep](tasks/42-gen-angular-relations-deep.md)       | `render/relations.ts` `relations: 'deep'` nested `FormGroup`/`FormArray`, lazy builders  |
-|      | [#43](https://github.com/marmotz/kurotako/issues/43) | [43-gen-angular-emit-artifact-run](tasks/43-gen-angular-emit-artifact-run.md) | `emit/entity.ts`+`barrel.ts`, `artifact.ts` (`AngularArtifactExtra`), `generate()` wiring + e2e tests |
+| [x]  | [#38](https://github.com/marmotz/kurotako/issues/38) | [38-gen-angular-scaffold](tasks/38-gen-angular-scaffold.md)                 | `package.json`/`tsconfig`, `options.ts`, `errors.ts`, `names.ts`, `zod-artifact.ts` reader, `generator.ts` skeleton |
+| [x]  | [#39](https://github.com/marmotz/kurotako/issues/39) | [39-gen-angular-controls-variants](tasks/39-gen-angular-controls-variants.md) | `render/controls.ts` scalar → `FormControl<T>` map + `Create`/`Update` variant field sets |
+| [x]  | [#40](https://github.com/marmotz/kurotako/issues/40) | [40-gen-angular-reactive-service](tasks/40-gen-angular-reactive-service.md)   | `render/reactive.ts` `@Injectable` factory + `emit/runtime.ts` path-distributed `zodValidator` |
+| [x]  | [#41](https://github.com/marmotz/kurotako/issues/41) | [41-gen-angular-signal-forms](tasks/41-gen-angular-signal-forms.md)           | `render/signal.ts` `schema` + model factory + `zodTreeValidate` root tree validator     |
+| [x]  | [#42](https://github.com/marmotz/kurotako/issues/42) | [42-gen-angular-relations-deep](tasks/42-gen-angular-relations-deep.md)       | `render/relations.ts` `relations: 'deep'` nested `FormGroup`/`FormArray`, lazy builders  |
+| [x]  | [#43](https://github.com/marmotz/kurotako/issues/43) | [43-gen-angular-emit-artifact-run](tasks/43-gen-angular-emit-artifact-run.md) | `emit/entity.ts`+`barrel.ts`, `artifact.ts` (`AngularArtifactExtra`), `generate()` wiring + e2e tests |
 
 ## `tako` CLI (`@kurotako/cli`)
 

@@ -92,7 +92,7 @@ export const packageWriter: Writer = {
       written.push(pkgJsonPath);
 
       const tsconfigPath = path.join(pkgDir, 'tsconfig.json');
-      await fs.writeFile(tsconfigPath, buildTsconfig(), 'utf8');
+      await fs.writeFile(tsconfigPath, buildTsconfig(namespace), 'utf8');
       written.push(tsconfigPath);
 
       const sortedEntries = entries.sort();
@@ -307,11 +307,26 @@ function buildPackageJson(
   return `${JSON.stringify(pkg, null, 2)}\n`;
 }
 
-function buildTsconfig(): string {
+/**
+ * A generator's emitted imports use the artifact-reported, namespace-prefixed
+ * module specifier verbatim (e.g. `pg/zod/User.schema`,
+ * `generator-angular/technical.md` §Naming) — including across sub-trees within
+ * the same namespace/package (`gen-angular` importing a `gen-zod` symbol). Mode
+ * B collapses one namespace into one package with the `<ns>/` prefix stripped
+ * from `src/` (step 3), so those bare specifiers only resolve if the package
+ * self-references its own `<ns>/*` prefix back to `./src/*` — hence the
+ * `paths` entry below, which both this file (for humans building the package
+ * standalone) and the internal `tsup` build (`buildPackages`, same
+ * `tsconfig.json` path) rely on.
+ */
+function buildTsconfig(namespace: string): string {
   const body = JSON.stringify(
     {
       extends: '../../tsconfig.base.json',
-      compilerOptions: { outDir: 'dist' },
+      compilerOptions: {
+        outDir: 'dist',
+        paths: { [`${namespace}/*`]: ['./src/*'] },
+      },
       include: ['src'],
     },
     null,

@@ -1,6 +1,6 @@
 # backend — @kurotako/gen-angular Signal Forms schema, model factory and tree validator
 
-**Status**: to do **Type**: backend **Issue**: [#41](https://github.com/marmotz/kurotako/issues/41)
+**Status**: done **Type**: backend **Issue**: [#41](https://github.com/marmotz/kurotako/issues/41)
 
 Reference: [../features/generator-angular/technical.md §Signal Forms schema + model factory](../features/generator-angular/technical.md#signal-forms-schema--model-factory-rendersignalts),
 [§`zodValidator` — reactive, path-distributed errors](../features/generator-angular/technical.md#zodvalidator--reactive-path-distributed-errors-emitruntimets)

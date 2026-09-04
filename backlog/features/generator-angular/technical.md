@@ -69,8 +69,10 @@ surfaces (typed reactive forms + Signal Forms) the overview settled on.
   as of Angular 22).
 - **Reactive surface**: one `@Injectable({ providedIn: 'root' })` factory service per
   entity (e.g. `UserFormFactory`). **Signal Forms surface**: pure exported
-  `schema` + model-factory functions (the `form()` call belongs in the consumer
-  component, so no DI wrapper).
+  `schema` + model-factory functions, plus a `create<Entity><Variant>Form` convenience
+  wrapper around `form(signal(model), schema)` — a plain function, not a DI service (`form()`
+  resolves its injector from Angular's ambient injection context, same rule `inject()`
+  follows).
 - **Form variants**: `Create` (built on Zod `Create`) and `Update` (built on Zod
   `Update`, partial + primary key). No full-model form.
 - **Validation delegated entirely to Zod.** No native `Validators`, no Signal Forms
@@ -367,7 +369,9 @@ export function zodValidator(schema: ZodType): ValidatorFn {
 Per entity, emitted when `forms` includes `'signal'`:
 
 ```ts
-import { schema } from '@angular/forms/signals'
+import { signal } from '@angular/core'
+import { form, schema } from '@angular/forms/signals'
+import type { FieldTree } from '@angular/forms/signals'
 import { UserCreateSchema } from './user.schema'
 import type { UserCreateDto } from './user.schema'
 import { zodTreeValidate } from './zod-forms.runtime'
@@ -379,10 +383,22 @@ export function createUserCreateModel(init?: Partial<UserCreateDto>): UserCreate
 export const userCreateFormSchema = schema<UserCreateDto>((path) => {
   zodTreeValidate(path, UserCreateSchema)   // ONE root tree validator; no required()/minLength()/... rules
 })
+
+export function createUserCreateForm(init?: Partial<UserCreateDto>): FieldTree<UserCreateDto> {
+  return form(signal(createUserCreateModel(init)), userCreateFormSchema)
+}
 ```
 
-- The consumer calls `form(signal(createUserCreateModel()), userCreateFormSchema)` in its
-  component — the generator does not emit the `form()` call or any component.
+- **Reversed from the original decision below**: the generator *does* emit a
+  `create<Entity><Variant>Form` convenience wrapper around `form(signal(model), schema)`.
+  It stays a plain function, not a DI service (only the reactive surface gets an
+  `@Injectable`) — `form()` resolves its injector from Angular's ambient injection context
+  when none is passed explicitly (`FormOptions.injector`, same rule `inject()` follows), so
+  calling the wrapper from a component field initializer or constructor behaves exactly
+  like calling `form()` inline there. The consumer may still call
+  `form(signal(createUserCreateModel()), userCreateFormSchema)` directly if they need a
+  custom `FormOptions` (e.g. an explicit `injector` or `name`) — the wrapper only covers the
+  common case. No component or template is emitted either way.
 - `zodTreeValidate(path, schema)` (shared runtime) wraps the Signal Forms tree-level
   validator API: it runs `schema.safeParse(rootValue)` and returns the issues mapped to
   descendant fields by `issue.path` (Signal Forms' tree validator can attach errors to
@@ -416,7 +432,8 @@ import type { GeneratorArtifact, EntitySymbols } from '@kurotako/core'
 // EntitySymbols.module === `${namespace}/angular/${entity}.form`   (post-amendment)
 // EntitySymbols.symbols keyed by role:
 //   createControls, createForm, updateControls, updateForm, factory,
-//   createSchema (SF), updateSchema (SF), createModel, updateModel
+//   createSchema (SF), updateSchema (SF), createModel, updateModel,
+//   createSignalForm (SF), updateSignalForm (SF)
 //   (+ createDeepControls / createDeepForm / ... when relations: 'deep')
 
 export interface AngularArtifactExtra {

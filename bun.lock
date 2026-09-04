@@ -59,10 +59,19 @@
       "name": "@kurotako/gen-angular",
       "version": "0.0.0",
       "dependencies": {
+        "@kurotako/ir": "workspace:*",
+        "valibot": "1.4.2",
+      },
+      "devDependencies": {
         "@kurotako/config": "workspace:*",
         "@kurotako/core": "workspace:*",
         "@kurotako/gen-zod": "workspace:*",
-        "@kurotako/ir": "workspace:*",
+        "typescript": "5.9.3",
+      },
+      "peerDependencies": {
+        "@kurotako/config": "workspace:*",
+        "@kurotako/core": "workspace:*",
+        "@kurotako/gen-zod": "workspace:*",
       },
     },
     "packages/gen-zod": {
