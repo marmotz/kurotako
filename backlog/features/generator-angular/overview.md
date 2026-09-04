@@ -19,7 +19,7 @@ two surfaces — a `providedIn: 'root'` reactive factory service and Signal Form
 - Package `@kurotako/gen-angular`, short name `angular`.
 - **Hard dependency on `zod`**: `dependsOn: ['zod']` is mandatory. There is no
   Validators-from-IR fallback in v1; the generator consumes the artifact exposed by
-  `gen-zod` ([ADR-0002](../../../docs/adr/0002-no-middle-generators-dag.md)).
+  `gen-zod` ([docs/architecture.md](../../../docs/architecture.md)).
 - **Angular target**: typed reactive forms, minimum Angular 17. The typed forms API is
   mandatory (no pre-typed-forms compat mode). Emitting the Signal Forms surface raises the
   effective minimum to the Angular release that ships `@angular/forms/signals` as a stable
@@ -49,7 +49,7 @@ two surfaces — a `providedIn: 'root'` reactive factory service and Signal Form
 - **Enums**: reuse the `const` string array emitted by `gen-zod`; the control type is the
   string union. Validation of the enum value is part of the Zod schema.
 - Deterministic identifiers, output per namespace
-  ([ADR-0004](../../../docs/adr/0004-ir-namespace-first.md)).
+  ([docs/architecture.md](../../../docs/architecture.md)).
 
 ## Open questions
 

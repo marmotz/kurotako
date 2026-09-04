@@ -4,8 +4,8 @@
 
 ## Context
 
-`docs/` at the repo root contains internal design documentation (vision, architecture, IR,
-ADR), referenced by the backlog features. There is no user-facing documentation:
+`docs/` at the repo root contains internal design documentation (vision, architecture, IR),
+referenced by the backlog features. There is no user-facing documentation:
 installation, configuration reference, writing a parser or a generator, catalog of the
 available parsers and generators, output modes. The GitHub repo will be public, so a
 published site is expected.
@@ -15,7 +15,7 @@ published site is expected.
 A published static documentation site living inside the monorepo, covering the user-facing
 surface of `tako`: quick start, `tako.config` reference, the parser/generator catalog, the
 output modes, and a generated API reference. The site is a product artifact, kept distinct
-from the internal `docs/` (ADR and vision stay design documents).
+from the internal `docs/` (architecture and vision stay design documents).
 
 ## Decisions made
 
@@ -38,7 +38,8 @@ from the internal `docs/` (ADR and vision stay design documents).
   user-facing content (including a "Concepts" section covering parser / generator / IR /
   DAG / namespaces); `docs/` is not imported or duplicated. The site links to GitHub for
   design documents when relevant.
-- **Vocabulary**: align on the ADR-0006 `parser` / `generator` terms. Guides are
+- **Vocabulary**: align on the `parser` / `generator` terms (see
+  [docs/glossary.md](../../../docs/glossary.md)). Guides are
   "writing a parser" and "writing a generator", not "writing a driver". The `driver-kit`
   reference is dropped in favour of a coherent name (e.g. `plugin-kit`, or
   `parser-kit` / `generator-kit`), to be decided in its own feature.

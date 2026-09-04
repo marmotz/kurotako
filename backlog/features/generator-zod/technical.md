@@ -2,9 +2,7 @@
 
 Design for `@kurotako/gen-zod`. Product decisions come from [overview.md](overview.md); the
 generator role and the DAG/artifact model live in
-[docs/architecture.md](../../../docs/architecture.md),
-[ADR-0002](../../../docs/adr/0002-no-middle-generators-dag.md) and
-[ADR-0004](../../../docs/adr/0004-ir-namespace-first.md). This document turns the overview
+[docs/architecture.md](../../../docs/architecture.md). This document turns the overview
 into a concrete package, an IR → Zod source-text mapping, and the artifact shape the
 overview deferred here.
 
@@ -49,18 +47,16 @@ overview deferred here.
   consumer (`dependsOn: ['zod']`) — it always reads this generator's artifact
   (`Create` / `Update` / `*Deep*` roles + `ZodArtifactExtra.perNamespace[ns].enums`). The
   artifact shape is therefore a required contract, not a nice-to-have.
-- Relevant ADRs: [ADR-0002](../../../docs/adr/0002-no-middle-generators-dag.md) (full
-  generator, not a middle stage; the DAG / hard-vs-optional dependency model),
-  [ADR-0004](../../../docs/adr/0004-ir-namespace-first.md) (deterministic identifiers, never
-  namespace-prefixed; namespace drives output location only),
-  [ADR-0005](../../../docs/adr/0005-output-modes.md) (single entry point, mode-B friendly),
-  [ADR-0006](../../../docs/adr/0006-parser-generator-vocabulary.md) (`generator` role,
-  package `@kurotako/gen-<x>`, one short name).
+- Relevant design decisions (see [docs/architecture.md](../../../docs/architecture.md)
+  and [docs/glossary.md](../../../docs/glossary.md)): full generator, not a middle stage
+  (the DAG / hard-vs-optional dependency model); deterministic identifiers, never
+  namespace-prefixed; namespace drives output location only; single entry point,
+  mode-B friendly; `generator` role, package `@kurotako/gen-<x>`, one short name.
 
 ## Package shape
 
 Single entry point (keeps the `exports` map identical to the bootstrap skeleton and to what
-mode B emits — [ADR-0005](../../../docs/adr/0005-output-modes.md)).
+mode B emits — [docs/architecture.md](../../../docs/architecture.md)).
 
 ```
 packages/gen-zod/src/
@@ -125,20 +121,20 @@ export const zodGenerator: TakoGenerator<ZodGeneratorOptions> = {
 ```
 
 - `name: 'zod'` — the short name / config key
-  ([ADR-0006](../../../docs/adr/0006-parser-generator-vocabulary.md)). One package, one
+  ([docs/glossary.md](../../../docs/glossary.md)). One package, one
   short name.
 - `dependsOn` / `optionalDependsOn` are **absent** — the Zod generator reads nothing but
   the IR.
 - `generate` is **synchronous and pure**: same IR + same options → deep-equal `GenOutput`
   (required by [drift-guard](../drift-guard/overview.md)).
 - **Options kept minimal for v1** (decided): only `zodVersion`. Export names are fixed by
-  [ADR-0004](../../../docs/adr/0004-ir-namespace-first.md) / the overview and are **not**
+  [docs/architecture.md](../../../docs/architecture.md) / the overview and are **not**
   configurable; the scalar-rendering defaults (overview "pragmatic defaults") are **not**
   configurable in v1 — an override map is a later evolution.
 
 ## Naming (`names.ts`) — deterministic, never namespace-prefixed
 
-Entity `User`, per [ADR-0004](../../../docs/adr/0004-ir-namespace-first.md) and the
+Entity `User`, per [docs/architecture.md](../../../docs/architecture.md) and the
 overview (`UserSchema` + `UserDto` locked):
 
 | Variant | flat family schema / type | deep family schema / type |
@@ -169,7 +165,7 @@ overview (`UserSchema` + `UserDto` locked):
 ## File layout (decided: one file per entity + shared enums file)
 
 Under the output root, per namespace `<ns>` (namespace drives location only —
-[ADR-0004](../../../docs/adr/0004-ir-namespace-first.md)):
+[docs/architecture.md](../../../docs/architecture.md)):
 
 ```
 generated/<ns>/

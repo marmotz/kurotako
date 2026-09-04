@@ -16,11 +16,11 @@ from the source submodule, with a barrel per namespace.
 
 - Package `@kurotako/gen-zod`, short name `zod`.
 - A full-fledged generator, not a "middle" stage
-  ([ADR-0002](../../../docs/adr/0002-no-middle-generators-dag.md)).
+  ([docs/architecture.md](../../../docs/architecture.md)).
 - **Zod target**: emit the Zod v4 API by default, with an opt-in compatibility mode that
   falls back to the v3 API. Generator carries the cost of supporting both.
 - **Export naming** (deterministic, namespace never prefixes —
-  [ADR-0004](../../../docs/adr/0004-ir-namespace-first.md)):
+  [docs/architecture.md](../../../docs/architecture.md)):
   entity `User` → schema `UserSchema`, inferred type `UserDto`. Variant schemas follow
   the same pattern (`UserCreateSchema`, `UserCreateDto`, ...).
 - **Schema variants (v1)**: per entity, emit the full model plus `Create`, `Update`,

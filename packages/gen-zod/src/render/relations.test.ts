@@ -1,6 +1,6 @@
 import type { Relation } from '@kurotako/ir';
 import { describe, expect, it, vi } from 'vitest';
-import { relationExpr } from './relations.js';
+import { relationExpr, relationTypeExpr } from './relations.js';
 
 function rel(partial: Partial<Relation>): Relation {
   return {
@@ -63,5 +63,78 @@ describe('relationExpr', () => {
     );
     expect(out).toBeNull();
     expect(debug).toHaveBeenCalledOnce();
+  });
+});
+
+describe('relationTypeExpr', () => {
+  it('flat family -> null', () => {
+    expect(relationTypeExpr(rel({}), 'flat', 'full', opts)).toBeNull();
+  });
+
+  it('deep to-one required -> PostDeepDto, not optional', () => {
+    expect(relationTypeExpr(rel({}), 'deep', 'full', opts)).toEqual({
+      type: 'PostDeepDto',
+      optional: false,
+    });
+  });
+
+  it('deep to-one optional -> optional: true', () => {
+    expect(
+      relationTypeExpr(rel({ optional: true }), 'deep', 'full', opts),
+    ).toEqual({ type: 'PostDeepDto', optional: true });
+  });
+
+  it('deep to-many -> array type, always optional', () => {
+    expect(
+      relationTypeExpr(rel({ cardinality: 'many' }), 'deep', 'full', opts),
+    ).toEqual({ type: 'PostDeepDto[]', optional: true });
+  });
+
+  it('deep update -> optional even when the relation itself is required', () => {
+    expect(relationTypeExpr(rel({}), 'deep', 'update', opts)).toEqual({
+      type: 'PostUpdateDeepDto',
+      optional: true,
+    });
+  });
+
+  it('deep create variant references the Create Dto', () => {
+    expect(relationTypeExpr(rel({}), 'deep', 'create', opts)).toEqual({
+      type: 'PostCreateDeepDto',
+      optional: false,
+    });
+  });
+
+  it('deep select -> boolean-or-Dto union, optional', () => {
+    expect(relationTypeExpr(rel({}), 'deep', 'select', opts)).toEqual({
+      type: 'boolean | PostSelectDeepDto',
+      optional: true,
+    });
+  });
+
+  it('deep where to-one -> Dto, optional', () => {
+    expect(relationTypeExpr(rel({}), 'deep', 'where', opts)).toEqual({
+      type: 'PostWhereDeepDto',
+      optional: true,
+    });
+  });
+
+  it('deep where to-many -> some/every/none shape, optional', () => {
+    expect(
+      relationTypeExpr(rel({ cardinality: 'many' }), 'deep', 'where', opts),
+    ).toEqual({
+      type: '{ some?: PostWhereDeepDto; every?: PostWhereDeepDto; none?: PostWhereDeepDto }',
+      optional: true,
+    });
+  });
+
+  it('cross-source relation -> null', () => {
+    expect(
+      relationTypeExpr(
+        rel({ target: { namespace: 'other', entity: 'Thing' } }),
+        'deep',
+        'full',
+        opts,
+      ),
+    ).toBeNull();
   });
 });

@@ -26,6 +26,13 @@ export interface LoadAndRunResult {
   rootDir: string;
 }
 
+/** The directory named in the `wrote N files -> …` summary line. */
+export function outputSummaryDir(config: ResolvedConfig): string {
+  return config.output.mode === 'package'
+    ? (config.output.packagesDir ?? config.rootDir)
+    : (config.output.dir ?? config.rootDir);
+}
+
 /**
  * The shared body of `generate`, `validate` and each watch cycle: resolve +
  * load the config, then run the pipeline. `write: false` also skips the
@@ -92,9 +99,8 @@ export const generateCommand = defineCommand({
       return;
     }
 
-    const outputDir = config.output.dir ?? config.rootDir;
     reporter.info(
-      `wrote ${result.files.length} files -> ${relative(cwd, outputDir)}`,
+      `wrote ${result.files.length} files -> ${relative(cwd, outputSummaryDir(config))}`,
     );
   },
 });

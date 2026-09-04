@@ -36,6 +36,9 @@ import type {
 
 const DEFAULT_OUTPUT_DIR = './generated/kurotako';
 
+/** `${scope}/${namespace}` becomes the generated package.json `name`; no '/'. */
+const NPM_SCOPE_RE = /^@[a-z0-9][a-z0-9._-]*$/;
+
 export interface LoadResult {
   /** The `@kurotako/core` shape. */
   config: ResolvedConfig;
@@ -116,6 +119,11 @@ export async function loadConfig(opts?: {
       missing.push({
         path: 'output.scope',
         message: "required when output.mode is 'package'",
+      });
+    } else if (!NPM_SCOPE_RE.test(output.scope)) {
+      missing.push({
+        path: 'output.scope',
+        message: `'${output.scope}' is not a valid npm scope: it must look like '@name' (letters, digits, '-', '.', '_' only — no '/'). Generated package names are '\${scope}/\${namespace}', so an extra '/' here would nest the generated package under a subdirectory instead of naming it.`,
       });
     }
     if (missing.length > 0) {

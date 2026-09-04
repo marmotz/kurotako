@@ -43,17 +43,19 @@ namespace), config system, output modes.
 
 ## Decisions already made
 
-See the [ADRs](adr/README.md). In summary:
-
-- Name `kurotako`, packages `@kurotako/*`, CLI binary `tako` ([ADR-0001](adr/0001-name-kurotako.md)).
-- No "middle" stage: generators form a DAG via `dependsOn`, the core computes the topological order
-  ([ADR-0002](adr/0002-no-middle-generators-dag.md)).
+- **Naming**: project name **kurotako** (黒蛸, "black octopus" in Japanese), npm scope
+  **`@kurotako/*`**, CLI binary **`tako`**. The octopus metaphor (a central body, semi-autonomous
+  arms each acting on their own) mirrors the target architecture (a `core` + independent
+  `generators`).
+- No "middle" stage: generators form a DAG via `dependsOn`, the core computes the topological order.
 - Several parsers active simultaneously, each config key is a namespace, the same parser package can be instantiated
-  several times ([ADR-0003](adr/0003-multiple-parsers-namespaces.md)).
+  several times.
 - IR keyed `(namespace, entity)`, no merging of homonyms, generated identifiers are deterministic (never prefixed), the
-  namespace only drives the output location ([ADR-0004](adr/0004-ir-namespace-first.md)).
-- Two output modes: A directory (default), B npm package per source ([ADR-0005](adr/0005-output-modes.md)).
-- `parser` / `generator` vocabulary ([ADR-0006](adr/0006-parser-generator-vocabulary.md)).
+  namespace only drives the output location.
+- Two output modes: A directory (default), B npm package per source.
+- `parser` / `generator` vocabulary.
+- English throughout the project — code, docs, repo metadata, CLI output (see
+  [`AGENTS.md`](../AGENTS.md) "Working conventions").
 
 ## Open questions
 

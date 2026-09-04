@@ -22,9 +22,9 @@ the primitives this feature builds on live in
 - Upstream contracts consumed as-is: `loadConfig()` / `LoadResult` from
   [`@kurotako/config`](../config-system/technical.md); `run()` / `RunResult` / `Writer` /
   `selectWriter` / `TakoError` from [`@kurotako/core`](../core-pipeline/technical.md).
-- Relevant ADRs: [ADR-0005](../../../docs/adr/0005-output-modes.md) (modes A / B),
-  [ADR-0004](../../../docs/adr/0004-ir-namespace-first.md) (deterministic identifiers —
-  the whole feature rests on byte-deterministic regeneration).
+- Relevant design decisions (see [docs/architecture.md](../../../docs/architecture.md)):
+  modes A / B; deterministic identifiers — the whole feature rests on byte-deterministic
+  regeneration.
 - Ordering: **post-v1 fast-follow** (overview). Depends on
   [core-pipeline](../core-pipeline/overview.md), [cli](../cli/overview.md) and
   [output-modes](../output-modes/overview.md) being fully implemented (all three writers +

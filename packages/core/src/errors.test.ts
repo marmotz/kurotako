@@ -7,8 +7,10 @@ import {
   InvalidDependencyError,
   InvalidOutputPathError,
   IrValidationError,
+  MissingPackageWorkspaceFilesError,
   NamespaceMismatchError,
   OutputCollisionError,
+  OutputNotGeneratedError,
   OutputPeerConflictError,
   PackageBuildError,
   PackageInstallError,
@@ -28,12 +30,20 @@ describe('errors', () => {
       [new DependencyCycleError(['a', 'b', 'a']), 'dependency_cycle'],
       [new OutputCollisionError('x', ['a', 'b']), 'output_collision'],
       [new InvalidOutputPathError('../x', 'a'), 'invalid_output_path'],
+      [
+        new OutputNotGeneratedError('/pkgs/kurotako-pg'),
+        'output_not_generated',
+      ],
       [new UnsupportedOutputModeError('weird'), 'unsupported_output_mode'],
       [
         new OutputPeerConflictError('pg', 'zod', ['^3', '^4'], ['a', 'b']),
         'output_peer_conflict',
       ],
       [new PackageBuildError('pg'), 'package_build_error'],
+      [
+        new MissingPackageWorkspaceFilesError('/repo', ['tsconfig.base.json']),
+        'missing_package_workspace_files',
+      ],
       [new PackageInstallError('bun'), 'package_install_error'],
       [new DriverError('parser', 'prisma'), 'driver_error'],
       [new HookError('afterEmit'), 'hook_error'],
@@ -44,6 +54,31 @@ describe('errors', () => {
       expect(error.code).toBe(code);
       expect(error.name).toBe(error.constructor.name);
     }
+  });
+
+  it('MissingPackageWorkspaceFilesError embeds ready-to-paste file content per missing item', () => {
+    const error = new MissingPackageWorkspaceFilesError('/repo', [
+      'tsconfig.base.json',
+      'tsup.config.base.{ts,js,mjs,cjs}',
+      "'typescript' (devDependency, needed for the .d.ts build)",
+    ]);
+    expect(error.message).toContain("Create '/repo/tsconfig.base.json'");
+    expect(error.message).toContain('"moduleResolution": "bundler"');
+    expect(error.message).toContain("Create '/repo/tsup.config.base.ts'");
+    expect(error.message).toContain('export const basePreset');
+    expect(error.message).toContain("Run, from '/repo'");
+    expect(error.message).toContain('add -D typescript');
+  });
+
+  it('OutputCollisionError appends the optional hint to its message', () => {
+    const withHint = new OutputCollisionError(
+      'pg/index.ts',
+      ['a', 'b'],
+      'use the prefix',
+    );
+    expect(withHint.message).toContain('use the prefix');
+    const without = new OutputCollisionError('pg/index.ts', ['a', 'b']);
+    expect(without.message).not.toContain('use the prefix');
   });
 
   it('preserves cause where set', () => {

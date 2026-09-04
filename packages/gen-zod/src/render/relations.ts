@@ -12,7 +12,12 @@ import type { Logger } from '@kurotako/core';
 import type { Relation } from '@kurotako/ir';
 import { isCrossSource } from '@kurotako/ir';
 import type { FamilyName } from '../names.js';
-import { schemaName, VARIANT_TOKEN, type VariantName } from '../names.js';
+import {
+  schemaName,
+  typeName,
+  VARIANT_TOKEN,
+  type VariantName,
+} from '../names.js';
 
 export interface RelationExprOptions {
   fromNamespace: string;
@@ -59,4 +64,60 @@ export function relationExpr(
     expr += '.optional()';
   }
   return expr;
+}
+
+/**
+ * The TS-type sibling of `relationExpr`. A `deep`-family relation field's type
+ * always names the *target*'s hand-written `Dto` (never `z.infer<typeof
+ * <name>Schema>`), because two entities with relations pointing at each other
+ * — the ordinary shape of a Prisma one-to-many/many-to-one pair, not an edge
+ * case — makes every relation-carrying `z.object(...)` mutually circular:
+ * TypeScript can't emit a `.d.ts` for a value whose type can only be inferred
+ * by inferring the other value's type, which in turn needs this one's.
+ * Naming the type explicitly breaks the cycle (mutually recursive `type`
+ * aliases, unlike const initializers, are fine).
+ */
+export interface RelationType {
+  /** The bare TS type — never includes `| undefined`; see `optional`. */
+  type: string;
+  /** Whether the *field* is optional (`fieldName?:`) at this variant. */
+  optional: boolean;
+}
+
+export function relationTypeExpr(
+  rel: Relation,
+  family: FamilyName,
+  variant: VariantName,
+  opts: RelationExprOptions,
+): RelationType | null {
+  if (family === 'flat') {
+    return null;
+  }
+  if (isCrossSource(opts.fromNamespace, rel)) {
+    return null;
+  }
+
+  const target = rel.target.entity;
+  const many = rel.cardinality === 'many';
+
+  if (variant === 'where') {
+    const dto = typeName(target, 'Where', 'Deep');
+    return {
+      type: many ? `{ some?: ${dto}; every?: ${dto}; none?: ${dto} }` : dto,
+      optional: true,
+    };
+  }
+
+  if (variant === 'select') {
+    const dto = typeName(target, 'Select', 'Deep');
+    return { type: `boolean | ${dto}`, optional: true };
+  }
+
+  const dto = typeName(target, VARIANT_TOKEN[variant], 'Deep');
+  return {
+    type: many ? `${dto}[]` : dto,
+    // `update` wraps the whole object in `.partial()`, so every field —
+    // required relation included — ends up optional at runtime.
+    optional: rel.optional || many || variant === 'update',
+  };
 }

@@ -39,7 +39,7 @@ and [§Package
 4. Fill in the `references` of the root "solution" `tsconfig.json`.
 5. `bun install`, then check `bun run typecheck`, `bun run test`, `bun run build` OK.
 6. The skeleton must stay a valid template for what mode B will emit
-   ([ADR-0005](https://github.com/marmotz/kurotako/blob/main/docs/adr/0005-output-modes.md)).
+   ([docs/architecture.md](https://github.com/marmotz/kurotako/blob/main/docs/architecture.md)).
 7. `packages/core/package.json` additionally lists `tsup` under `dependencies` (not just
    the root devDependency): [output-modes](../features/output-modes/technical.md) put the
    mode-B `packageWriter` (which runs a tsup build per generated package) inside

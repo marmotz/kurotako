@@ -46,7 +46,6 @@ from source.
 - [`docs/vision.md`](docs/vision.md) — problem, positioning, MVP scope
 - [`docs/architecture.md`](docs/architecture.md) — parsers, generators, IR, DAG, output modes
 - [`docs/ir.md`](docs/ir.md) — intermediate representation
-- [`docs/adr/`](docs/adr/README.md) — architecture decision records
 
 ## Contributing
 

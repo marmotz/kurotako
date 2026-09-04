@@ -21,9 +21,9 @@ modes behind one package.
 ## Decisions made
 
 - Package `@kurotako/parser-prisma`, short name `prisma`
-  ([ADR-0006](../../../docs/adr/0006-parser-generator-vocabulary.md)).
+  ([docs/glossary.md](../../../docs/glossary.md)).
 - Instantiable multiple times (several `schema.prisma` sources), each instance under its
-  own namespace ([ADR-0003](../../../docs/adr/0003-multiple-parsers-namespaces.md)).
+  own namespace ([docs/architecture.md](../../../docs/architecture.md)).
 - Produces a `SourceIR` conforming to [`@kurotako/ir`](../ir-model/overview.md).
 - **One package, two version modes.** `@kurotako/parser-prisma` handles both Prisma ≤ 7
   and Prisma 8 behind a single config key (`prisma`). The parser detects the input format

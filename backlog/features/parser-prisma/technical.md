@@ -28,18 +28,16 @@ concrete package, a DMMF → `SourceIR` mapping, and a version-mode seam.
     and `parse(ctx, options)`. `@kurotako/config` validates `options` against
     `optionsSchema` and **curries it away** before handing core a plain `Parser`
     ([config-system/technical.md §Config shape](../config-system/technical.md#config-shape-and-defineconfig-typests-definets)).
-- Relevant ADRs:
-  [ADR-0003](../../../docs/adr/0003-multiple-parsers-namespaces.md) (namespace = config key,
-  one parser package instantiated several times),
-  [ADR-0004](../../../docs/adr/0004-ir-namespace-first.md) (key `(namespace, entity)`,
-  deterministic identifiers, no homonym merge),
-  [ADR-0006](../../../docs/adr/0006-parser-generator-vocabulary.md) (`parser` role, package
-  name `@kurotako/parser-<x>`).
+- Relevant design decisions (see
+  [docs/architecture.md](../../../docs/architecture.md) and
+  [docs/vision.md](../../../docs/vision.md#decisions-already-made)): namespace = config key,
+  one parser package instantiated several times; key `(namespace, entity)`, deterministic
+  identifiers, no homonym merge; `parser` role, package name `@kurotako/parser-<x>`.
 
 ## Package shape
 
 Single entry point (keeps the `exports` map identical to the bootstrap skeleton and to what
-mode B emits — [ADR-0005](../../../docs/adr/0005-output-modes.md)).
+mode B emits — [docs/architecture.md](../../../docs/architecture.md)).
 
 ```
 packages/parser-prisma/src/
@@ -113,9 +111,9 @@ export const prismaParser: TakoParser<PrismaParserOptions> = {
 }
 ```
 
-- `name: 'prisma'` — the short name / config key ([ADR-0006](../../../docs/adr/0006-parser-generator-vocabulary.md)).
+- `name: 'prisma'` — the short name / config key ([docs/glossary.md](../../../docs/glossary.md)).
   One package, **one** short name; the version mode is internal.
-- Multiple instantiation ([ADR-0003](../../../docs/adr/0003-multiple-parsers-namespaces.md))
+- Multiple instantiation ([docs/architecture.md](../../../docs/architecture.md))
   needs nothing special: `prismaParser` is a stateless object, `parse` is called once per
   namespace with a different `ctx.namespace` and `options.schema`.
 - `parserVersion` on the builder is set to `` `prisma@${detectedPrismaVersion}` `` (mode 7:
@@ -213,7 +211,7 @@ the same shape later without touching the mapping logic.
 
 Everything below is expressed through the `createSourceIR` builder. Entity/field/enum names
 are used verbatim (deterministic identifiers, never namespaced —
-[ADR-0004](../../../docs/adr/0004-ir-namespace-first.md)).
+[docs/architecture.md](../../../docs/architecture.md)).
 
 ### Scalars (`map/scalars.ts`)
 
@@ -323,7 +321,7 @@ DMMF relation fields have `kind: 'object'`. The two sides share a `relationName`
   `NoAction→noAction`.
 - `target`: `{ namespace: ctx.namespace, entity: <related model> }` — always same-namespace
   for a single Prisma schema. (Cross-source targets are an IR-level capability only,
-  [ADR-0003](../../../docs/adr/0003-multiple-parsers-namespaces.md).)
+  [docs/architecture.md](../../../docs/architecture.md).)
 
 The backing scalar column (e.g. `authorId`) stays an ordinary `Field`; it is referenced by
 `relation.fkFields`, not removed — consistent with

@@ -18,7 +18,7 @@ versioned format with its own shape, not modelled on any generator's schema libr
 
 - **Own format.** The IR *shape* has its own design, not modelled on any generator's
   schema library, and nothing Prisma/Zod/Angular specific in it
-  ([ADR-0004](../../../docs/adr/0004-ir-namespace-first.md)). The serialized IR stays
+  ([docs/architecture.md](../../../docs/architecture.md)). The serialized IR stays
   plain JSON (no classes / `Date` / `RegExp`), so a third party can consume an
   `--emit-ir` dump without any kurotako dependency.
 - **Validation library: Valibot (schema-first).** The IR types are *inferred* from a set
@@ -29,7 +29,7 @@ versioned format with its own shape, not modelled on any generator's schema libr
   and `@kurotako/core`. `@kurotako/ir` gains a single runtime dependency (`valibot`).
 - **Structure** = `{ irVersion, sources: Record<namespace, SourceIR> }`
   ([docs/ir.md](../../../docs/ir.md)). Entity key `(namespace, name)`, no merging of
-  homonyms ([ADR-0004](../../../docs/adr/0004-ir-namespace-first.md)).
+  homonyms ([docs/architecture.md](../../../docs/architecture.md)).
 - **Closed `ScalarType` list.** A small fixed set (`string`, `boolean`, `int`, `bigint`,
   `float`, `decimal`, `date`, `datetime`, `uuid`, `bytes`, `json`), plus an `unknown`
   escape hatch with a `hint`. Semantic string types (`email`, `url`, `cuid`, ISO
@@ -47,7 +47,7 @@ versioned format with its own shape, not modelled on any generator's schema libr
   entity-local first, then source-level.
 - **Relations modelled in depth for v1.** Logical relation + qualified `target`
   (`namespace.entity`, cross-source possible at format level, ignored by v1 drivers —
-  [ADR-0003](../../../docs/adr/0003-multiple-parsers-namespaces.md)) + `cardinality`
+  [docs/architecture.md](../../../docs/architecture.md)) + `cardinality`
   (`one`/`many`) + `optional` + owning side + back-relation + explicit foreign-key
   field(s) + referential actions (`onDelete`/`onUpdate`).
 - **Metadata carried from v1.** Doc comments, `@map`/`@@map`, indexes, composite unique

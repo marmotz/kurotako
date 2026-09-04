@@ -18,22 +18,35 @@ describe('emitEntity', () => {
   const out = userFile();
 
   it('emits every variant x family schema + its Dto type', () => {
+    // Flat family: no relations rendered, so no circularity risk — plain
+    // `export const X = ...` + `export type Dto = z.infer<typeof X>`.
     for (const name of [
       'UserSchema',
-      'UserDeepSchema',
       'UserCreateSchema',
-      'UserCreateDeepSchema',
       'UserUpdateSchema',
-      'UserUpdateDeepSchema',
-      'UserWhereSchema',
-      'UserWhereDeepSchema',
       'UserSelectSchema',
-      'UserSelectDeepSchema',
     ]) {
       expect(out).toContain(`export const ${name} = `);
       expect(out).toContain(
         `export type ${name.replace('Schema', 'Dto')} = z.infer<typeof ${name}>;`,
       );
+    }
+    // Deep family: `User` and `Post` relate to each other, so every deep
+    // variant's relation field would make `z.infer` circular. Each gets an
+    // explicit `z.ZodType<Dto>` annotation, with `Dto` hand-composed from an
+    // unexported, relation-free `<name>Base` (see `emitEntity`'s doc comment).
+    for (const name of [
+      'UserDeepSchema',
+      'UserCreateDeepSchema',
+      'UserUpdateDeepSchema',
+      'UserWhereSchema',
+      'UserWhereDeepSchema',
+      'UserSelectDeepSchema',
+    ]) {
+      const dto = name.replace('Schema', 'Dto');
+      expect(out).toContain(`export const ${name}: z.ZodType<${dto}> = `);
+      expect(out).toContain(`export type ${dto} = `);
+      expect(out).toContain(`z.infer<typeof ${name}Base>`);
     }
   });
 
@@ -64,7 +77,7 @@ describe('emitEntity', () => {
 
   it('where wraps each field in its filter schema and adds AND/OR/NOT', () => {
     const where = out.slice(
-      out.indexOf('export const UserWhereSchema'),
+      out.indexOf('const UserWhereSchemaBase'),
       out.indexOf('export type UserWhereDto'),
     );
     expect(where).toContain('email: StringFilter.optional()');

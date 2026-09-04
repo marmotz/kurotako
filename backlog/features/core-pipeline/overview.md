@@ -17,11 +17,11 @@ with clear errors (duplicate namespace, missing dependency, cycle, driver not fo
 
 ### Roles and graph
 
-- Two roles: `parser` and `generator` ([ADR-0006](../../../docs/adr/0006-parser-generator-vocabulary.md)).
+- Two roles: `parser` and `generator` ([docs/glossary.md](../../../docs/glossary.md)).
 - Generators form a DAG via `dependsOn`, topological order computed by the core
-  ([ADR-0002](../../../docs/adr/0002-no-middle-generators-dag.md)).
+  ([docs/architecture.md](../../../docs/architecture.md)).
 - Partial IRs merged keyed by namespace; rejected if two sources share a key
-  ([ADR-0004](../../../docs/adr/0004-ir-namespace-first.md)).
+  ([docs/architecture.md](../../../docs/architecture.md)).
 - Missing hard dependency -> error; optional dependency -> the generator adapts.
 - The core enforces IR-version compatibility: a parser/generator declaring an
   incompatible `irVersion` is rejected (see [ir-model](../ir-model/overview.md)).

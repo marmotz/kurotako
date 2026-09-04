@@ -19,12 +19,12 @@ amendments the "new workspace + Pages deployment" decision forces on
   [config-system/technical.md](../config-system/technical.md) (the `tako.config.ts`
   reference it documents). It touches **no** package source; it only reads their public
   entry points for the API reference.
-- Relevant ADRs (external design docs — absolute links):
-  - [ADR-0001](https://github.com/marmotz/kurotako/blob/main/docs/adr/0001-name-kurotako.md)
+- Relevant design docs (external, absolute links):
+  - [docs/vision.md](https://github.com/marmotz/kurotako/blob/main/docs/vision.md)
     — scope `@kurotako/*`, binary `tako`.
-  - [ADR-0005](https://github.com/marmotz/kurotako/blob/main/docs/adr/0005-output-modes.md)
+  - [docs/architecture.md](https://github.com/marmotz/kurotako/blob/main/docs/architecture.md)
     — the two output modes the site documents.
-  - [ADR-0006](https://github.com/marmotz/kurotako/blob/main/docs/adr/0006-parser-generator-vocabulary.md)
+  - [docs/glossary.md](https://github.com/marmotz/kurotako/blob/main/docs/glossary.md)
     — `parser` / `generator` vocabulary the site must use.
 
 ## Package — `apps/docs`
@@ -120,8 +120,9 @@ no reliance on a content-archiving plugin, not necessarily React-tied.
   [docs/architecture.md](https://github.com/marmotz/kurotako/blob/main/docs/architecture.md)
   or
   [docs/glossary.md](https://github.com/marmotz/kurotako/blob/main/docs/glossary.md),
-  which stay design documents. Where a design rationale matters, the page links to the
-  ADR on GitHub.
+  which stay design documents. Where a design rationale matters, the page links to
+  [docs/architecture.md](https://github.com/marmotz/kurotako/blob/main/docs/architecture.md)
+  on GitHub.
 - `reference/tako-config.md` — the `tako.config.ts` reference: `defineConfig`, the
   `parsers` map (config key = namespace), the `generators` array, `dependsOn`, `output`
   (`mode` / `dir` / `packagesDir` / `scope`), `hooks.afterEmit`. Mirrors
@@ -133,7 +134,7 @@ no reliance on a content-archiving plugin, not necessarily React-tied.
   (`gen-zod`, `gen-angular`), each linking to its own README / options.
 - `reference/output-modes.md` — mode A (directory, default) vs mode B (npm package per
   source), from [output-modes/technical.md](../output-modes/technical.md) and
-  [ADR-0005](https://github.com/marmotz/kurotako/blob/main/docs/adr/0005-output-modes.md).
+  [docs/architecture.md](https://github.com/marmotz/kurotako/blob/main/docs/architecture.md).
 - `api/` — generated (next section).
 
 Deferred to a fast-follow (overview): the "writing a parser" and "writing a generator"
@@ -142,7 +143,7 @@ guides, which belong with the future `plugin-kit` / `parser-kit` feature.
 ### Vocabulary
 
 The site uses `parser` / `generator` throughout
-([ADR-0006](https://github.com/marmotz/kurotako/blob/main/docs/adr/0006-parser-generator-vocabulary.md)).
+([docs/glossary.md](https://github.com/marmotz/kurotako/blob/main/docs/glossary.md)).
 "driver" and the placeholder name `driver-kit` do not appear.
 
 ## API reference — TypeDoc
@@ -283,7 +284,7 @@ on that feature (see
   Docusaurus' local search plugin for launch. Lean local-search for launch.
 - `preset-classic` blog: off for v1 (no blog decided). Revisit if release notes want a
   home other than the changelog.
-- i18n: English only ([ADR-0007](https://github.com/marmotz/kurotako/blob/main/docs/adr/0007-english-only.md));
+- i18n: English only ([AGENTS.md](https://github.com/marmotz/kurotako/blob/main/AGENTS.md));
   single locale, no i18n scaffolding.
 
 ## Découpage en tâches d'implémentation

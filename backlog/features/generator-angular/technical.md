@@ -2,9 +2,7 @@
 
 Design for `@kurotako/gen-angular`. Product decisions come from [overview.md](overview.md);
 the generator role, the DAG and the artifact model live in
-[docs/architecture.md](../../../docs/architecture.md),
-[ADR-0002](../../../docs/adr/0002-no-middle-generators-dag.md) and
-[ADR-0004](../../../docs/adr/0004-ir-namespace-first.md). This document turns the overview
+[docs/architecture.md](../../../docs/architecture.md). This document turns the overview
 into a concrete package, a Zod-artifact → Angular-source mapping, and the two form
 surfaces (typed reactive forms + Signal Forms) the overview settled on.
 
@@ -55,13 +53,11 @@ surfaces (typed reactive forms + Signal Forms) the overview settled on.
     ([generator-zod/technical.md §Artifact](../generator-zod/technical.md#artifact-artifactts--the-shape-the-overview-deferred-here)).
 - Downstream: [output-modes](../output-modes/overview.md) (mode B `package.json` +
   banner), [cli](../cli/overview.md) (invokes `run()`). None implemented.
-- Relevant ADRs: [ADR-0002](../../../docs/adr/0002-no-middle-generators-dag.md) (full
-  generator, hard dependency on `zod`),
-  [ADR-0004](../../../docs/adr/0004-ir-namespace-first.md) (deterministic identifiers,
-  never namespace-prefixed; namespace drives output location only),
-  [ADR-0005](../../../docs/adr/0005-output-modes.md) (single entry point, mode-B friendly),
-  [ADR-0006](../../../docs/adr/0006-parser-generator-vocabulary.md) (`generator` role,
-  package `@kurotako/gen-<x>`, one short name).
+- Relevant design decisions (see [docs/architecture.md](../../../docs/architecture.md)
+  and [docs/glossary.md](../../../docs/glossary.md)): full generator, hard dependency
+  on `zod`; deterministic identifiers, never namespace-prefixed; namespace drives output
+  location only; single entry point, mode-B friendly; `generator` role, package
+  `@kurotako/gen-<x>`, one short name.
 
 ## Decisions carried from the overview (recap)
 
@@ -92,7 +88,7 @@ surfaces (typed reactive forms + Signal Forms) the overview settled on.
 ## Package shape
 
 Single entry point (keeps the `exports` map identical to the bootstrap skeleton and to
-what mode B emits — [ADR-0005](../../../docs/adr/0005-output-modes.md)).
+what mode B emits — [docs/architecture.md](../../../docs/architecture.md)).
 
 ```
 packages/gen-angular/src/
@@ -162,7 +158,7 @@ export const angularGenerator: TakoGenerator<AngularGeneratorOptions> = {
 ```
 
 - `name: 'angular'` — the short name / config key
-  ([ADR-0006](../../../docs/adr/0006-parser-generator-vocabulary.md)).
+  ([docs/glossary.md](../../../docs/glossary.md)).
 - `dependsOn: ['zod']` — **hard**. Core rejects a config that enables `angular` without
   `zod` (`UnknownDependencyError`,
   [core-pipeline/technical.md §Error model](../core-pipeline/technical.md#error-model-errorsts)),
@@ -174,13 +170,13 @@ export const angularGenerator: TakoGenerator<AngularGeneratorOptions> = {
   async refinements — [generator-zod/technical.md](../generator-zod/technical.md)).
 - **Options minimal for v1**: `forms` and `relations` only. `providedIn: 'root'` is fixed
   (not configurable); service/type names are fixed by
-  [ADR-0004](../../../docs/adr/0004-ir-namespace-first.md).
+  [docs/architecture.md](../../../docs/architecture.md).
 - `dependsOn: ['zod']` with `forms: []` is still valid (emits types + models, no form
   builder) but pointless; documented, not rejected.
 
 ## Naming (`names.ts`) — deterministic, never namespace-prefixed
 
-Entity `User` ([ADR-0004](../../../docs/adr/0004-ir-namespace-first.md)):
+Entity `User` ([docs/architecture.md](../../../docs/architecture.md)):
 
 | Concept | `Create` | `Update` |
 |---|---|---|
@@ -212,7 +208,7 @@ Entity `User` ([ADR-0004](../../../docs/adr/0004-ir-namespace-first.md)):
 
 ## File layout (per namespace `<ns>`)
 
-Namespace drives location only ([ADR-0004](../../../docs/adr/0004-ir-namespace-first.md)):
+Namespace drives location only ([docs/architecture.md](../../../docs/architecture.md)):
 
 ```
 generated/<ns>/

@@ -1,7 +1,39 @@
 import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import type { ResolvedConfig } from '@kurotako/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { runCli } from '../cli.js';
+import { outputSummaryDir } from './generate.js';
+
+function resolvedConfig(output: ResolvedConfig['output']): ResolvedConfig {
+  return { rootDir: '/root', sources: {}, generators: {}, output };
+}
+
+describe('outputSummaryDir', () => {
+  it("mode 'dir' (default) -> output.dir, falling back to rootDir", () => {
+    expect(outputSummaryDir(resolvedConfig({ dir: '/root/out' }))).toBe(
+      '/root/out',
+    );
+    expect(outputSummaryDir(resolvedConfig({}))).toBe('/root');
+  });
+
+  it("mode 'package' -> output.packagesDir, not the unrelated dir default", () => {
+    expect(
+      outputSummaryDir(
+        resolvedConfig({
+          mode: 'package',
+          dir: '/root/generated/kurotako',
+          packagesDir: '/root/packages',
+          scope: '@acme',
+        }),
+      ),
+    ).toBe('/root/packages');
+  });
+
+  it("mode 'package' with no packagesDir -> falls back to rootDir", () => {
+    expect(outputSummaryDir(resolvedConfig({ mode: 'package' }))).toBe('/root');
+  });
+});
 
 const PKG_DIR = join(import.meta.dirname, '..', '..');
 
@@ -57,7 +89,7 @@ describe('tako generate', () => {
     await runCli(['generate']);
     expect(process.exitCode ?? 0).toBe(0);
     expect(existsSync(join(root, 'out', 'pg', 'zod', 'user.ts'))).toBe(true);
-    expect(stderr).toContain('wrote 1 files -> out');
+    expect(stderr).toContain('wrote 2 files -> out');
   });
 
   it('--dry-run writes nothing and says so, exit 0', async () => {
@@ -65,7 +97,7 @@ describe('tako generate', () => {
     await runCli(['generate', '--dry-run']);
     expect(process.exitCode ?? 0).toBe(0);
     expect(existsSync(join(root, 'out'))).toBe(false);
-    expect(stderr).toContain('1 files would be written');
+    expect(stderr).toContain('2 files would be written');
   });
 
   it('a throwing driver exits 1 and renderError names the driver', async () => {

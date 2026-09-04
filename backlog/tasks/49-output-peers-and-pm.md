@@ -1,6 +1,6 @@
 # backend — output mode B: peer-dependency aggregation and package-manager resolution
 
-**Status**: to do **Type**: backend **Issue**: [#49](https://github.com/marmotz/kurotako/issues/49)
+**Status**: done **Type**: backend **Issue**: [#49](https://github.com/marmotz/kurotako/issues/49)
 
 Reference: [../features/output-modes/technical.md §`packageWriter` (mode B)](../features/output-modes/technical.md#packagewriter-mode-b) step 4,
 [§Package manager (mode B)](../features/output-modes/technical.md#package-manager-mode-b).
