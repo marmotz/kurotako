@@ -42,14 +42,20 @@ function loadResult(sources: Record<string, unknown> = {}) {
       rootDir: '/proj',
       sources,
       generators: {},
-      output: { mode: 'dir' as const, dir: '/proj/out' },
+      outputs: [{ mode: 'dir' as const, dir: '/proj/out' }],
     },
     configFile: '/proj/tako.config.ts',
     rootDir: '/proj',
   };
 }
 
-const runResult = { ir: {}, order: [], files: [], artifacts: {} };
+const runResult = {
+  ir: {},
+  order: [],
+  files: [],
+  artifacts: {},
+  written: [],
+};
 
 let reporter: ConsoleReporter;
 let fw: ReturnType<typeof fakeWatcher>;

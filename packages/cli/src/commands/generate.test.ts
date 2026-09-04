@@ -1,37 +1,37 @@
 import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { ResolvedConfig } from '@kurotako/core';
+import type { OutputConfig, ResolvedConfig } from '@kurotako/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { runCli } from '../cli.js';
 import { outputSummaryDir } from './generate.js';
 
-function resolvedConfig(output: ResolvedConfig['output']): ResolvedConfig {
-  return { rootDir: '/root', sources: {}, generators: {}, output };
-}
+const ROOT_CONFIG: ResolvedConfig = {
+  rootDir: '/root',
+  sources: {},
+  generators: {},
+  outputs: [],
+};
 
 describe('outputSummaryDir', () => {
   it("mode 'dir' (default) -> output.dir, falling back to rootDir", () => {
-    expect(outputSummaryDir(resolvedConfig({ dir: '/root/out' }))).toBe(
+    expect(outputSummaryDir({ dir: '/root/out' }, ROOT_CONFIG)).toBe(
       '/root/out',
     );
-    expect(outputSummaryDir(resolvedConfig({}))).toBe('/root');
+    expect(outputSummaryDir({}, ROOT_CONFIG)).toBe('/root');
   });
 
   it("mode 'package' -> output.packagesDir, not the unrelated dir default", () => {
-    expect(
-      outputSummaryDir(
-        resolvedConfig({
-          mode: 'package',
-          dir: '/root/generated/kurotako',
-          packagesDir: '/root/packages',
-          scope: '@acme',
-        }),
-      ),
-    ).toBe('/root/packages');
+    const output: OutputConfig = {
+      mode: 'package',
+      dir: '/root/generated/kurotako',
+      packagesDir: '/root/packages',
+      scope: '@acme',
+    };
+    expect(outputSummaryDir(output, ROOT_CONFIG)).toBe('/root/packages');
   });
 
   it("mode 'package' with no packagesDir -> falls back to rootDir", () => {
-    expect(outputSummaryDir(resolvedConfig({ mode: 'package' }))).toBe('/root');
+    expect(outputSummaryDir({ mode: 'package' }, ROOT_CONFIG)).toBe('/root');
   });
 });
 
@@ -49,7 +49,7 @@ const HAPPY_CONFIG = `
   export default {
     sources: { pg: { use: parser } },
     generators: [{ use: gen }],
-    output: { dir: './out' },
+    outputs: [{ dir: './out' }],
   }
 `;
 
@@ -103,7 +103,7 @@ describe('tako generate', () => {
   it('a throwing driver exits 1 and renderError names the driver', async () => {
     writeConfig(`
       const parser = { name: 'p', parse: () => { throw new Error('kaboom') } }
-      export default { sources: { pg: { use: parser } }, generators: [] }
+      export default { sources: { pg: { use: parser } }, generators: [], outputs: [{ dir: './out' }] }
     `);
     await runCli(['generate']);
     expect(process.exitCode).toBe(1);
@@ -131,7 +131,7 @@ describe('tako validate', () => {
       const parser = { name: 'p', parse: () => ({ namespace: 'pg', parser: 'p', entities: {}, enums: {} }) }
       const a = { name: 'a', dependsOn: ['b'], generate: () => ({ files: [], artifact: { entities: {} } }) }
       const b = { name: 'b', dependsOn: ['a'], generate: () => ({ files: [], artifact: { entities: {} } }) }
-      export default { sources: { pg: { use: parser } }, generators: [{ use: a }, { use: b }], output: { dir: './out' } }
+      export default { sources: { pg: { use: parser } }, generators: [{ use: a }, { use: b }], outputs: [{ dir: './out' }] }
     `);
     await runCli(['validate']);
     expect(process.exitCode).toBe(1);

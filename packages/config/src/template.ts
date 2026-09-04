@@ -13,6 +13,6 @@ export default defineConfig({
   generators: [
     // { use: zodGenerator },
   ],
-  output: { dir: './generated/kurotako' },
+  outputs: [{ dir: './generated/kurotako' }],
 })
 `;

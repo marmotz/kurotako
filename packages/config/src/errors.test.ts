@@ -7,6 +7,7 @@ import {
   DriverOptionsError,
   DuplicateGeneratorError,
   NoDefaultExportError,
+  UnknownGeneratorError,
   UnknownNamespaceError,
 } from './errors.js';
 
@@ -22,6 +23,7 @@ describe('config errors', () => {
       [new ConfigShapeError([{ path: 'a', message: 'b' }]), 'config_invalid'],
       [new DuplicateGeneratorError('zod'), 'config_duplicate_generator'],
       [new UnknownNamespaceError('zod', 'nope'), 'config_unknown_namespace'],
+      [new UnknownGeneratorError(1, 'nope'), 'config_unknown_generator'],
       [
         new DriverOptionsError(
           'parser',

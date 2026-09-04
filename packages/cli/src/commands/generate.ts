@@ -5,7 +5,8 @@
  */
 import { relative } from 'node:path';
 import { type LoadResult, loadConfig } from '@kurotako/config';
-import { type ResolvedConfig, type RunResult, run } from '@kurotako/core';
+import type { OutputConfig, ResolvedConfig, RunResult } from '@kurotako/core';
+import { run } from '@kurotako/core';
 import { defineCommand } from 'citty';
 import { sharedArgs } from '../args.js';
 import { ConsoleReporter } from '../reporter.js';
@@ -26,11 +27,14 @@ export interface LoadAndRunResult {
   rootDir: string;
 }
 
-/** The directory named in the `wrote N files -> …` summary line. */
-export function outputSummaryDir(config: ResolvedConfig): string {
-  return config.output.mode === 'package'
-    ? (config.output.packagesDir ?? config.rootDir)
-    : (config.output.dir ?? config.rootDir);
+/** The directory named in the `wrote N files -> …` summary line, for one output. */
+export function outputSummaryDir(
+  output: OutputConfig,
+  config: ResolvedConfig,
+): string {
+  return output.mode === 'package'
+    ? (output.packagesDir ?? config.rootDir)
+    : (output.dir ?? config.rootDir);
 }
 
 /**
@@ -99,8 +103,9 @@ export const generateCommand = defineCommand({
       return;
     }
 
-    reporter.info(
-      `wrote ${result.files.length} files -> ${relative(cwd, outputSummaryDir(config))}`,
-    );
+    const dirs = config.outputs
+      .map((output) => relative(cwd, outputSummaryDir(output, config)))
+      .join(', ');
+    reporter.info(`wrote ${result.files.length} files -> ${dirs}`);
   },
 });

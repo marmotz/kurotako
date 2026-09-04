@@ -14,6 +14,7 @@ describe('TakoConfigSchema', () => {
     const result = parse({
       sources: { pg: { use: parser } },
       generators: [{ use: generator }],
+      outputs: [{}],
     });
     expect(result.success).toBe(true);
   });
@@ -44,20 +45,46 @@ describe('TakoConfigSchema', () => {
     expect(result.success).toBe(false);
   });
 
-  it("passes output.mode 'package' alone (cross-field check is in load.ts)", () => {
+  it('rejects an empty outputs array', () => {
     const result = parse({
       sources: { pg: { use: parser } },
       generators: [],
-      output: { mode: 'package' },
+      outputs: [],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('accepts a minimal one-entry outputs array', () => {
+    const result = parse({
+      sources: { pg: { use: parser } },
+      generators: [],
+      outputs: [{}],
     });
     expect(result.success).toBe(true);
   });
 
-  it('rejects an unknown output.packageManager', () => {
+  it("passes outputs[].mode 'package' alone (cross-field check is in load.ts)", () => {
     const result = parse({
       sources: { pg: { use: parser } },
       generators: [],
-      output: { packageManager: 'deno' },
+      outputs: [{ mode: 'package' }],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects an unknown outputs[].packageManager', () => {
+    const result = parse({
+      sources: { pg: { use: parser } },
+      generators: [],
+      outputs: [{ packageManager: 'deno' }],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects a config with no outputs field at all', () => {
+    const result = parse({
+      sources: { pg: { use: parser } },
+      generators: [],
     });
     expect(result.success).toBe(false);
   });

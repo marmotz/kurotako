@@ -10,6 +10,7 @@ import {
   DriverOptionsError,
   DuplicateGeneratorError,
   NoDefaultExportError,
+  UnknownGeneratorError,
   UnknownNamespaceError,
 } from './errors.js';
 import { loadConfig } from './load.js';
@@ -40,6 +41,7 @@ describe('loadConfig', () => {
       export default {
         sources: { pg: { use: parser } },
         generators: [{ use: gen }],
+        outputs: [{}],
         hooks,
       }
     `);
@@ -49,8 +51,9 @@ describe('loadConfig', () => {
     expect(config.rootDir).toBe(root);
     expect(Object.keys(config.generators)).toEqual(['zod']);
     expect(config.generators.zod?.generator.dependsOn).toEqual(['x']);
-    expect(config.output.mode).toBe('dir');
-    expect(config.output.dir).toBe(join(root, 'generated', 'kurotako'));
+    expect(config.outputs).toHaveLength(1);
+    expect(config.outputs[0]?.mode).toBe('dir');
+    expect(config.outputs[0]?.dir).toBe(join(root, 'generated', 'kurotako'));
     expect(typeof config.hooks?.afterEmit).toBe('function');
   });
 
@@ -67,6 +70,7 @@ describe('loadConfig', () => {
       export default {
         sources: { pg: { use: parser, options: { n: 21 } } },
         generators: [],
+        outputs: [{}],
       }
       export const _peek = () => seen
     `);
@@ -90,6 +94,7 @@ describe('loadConfig', () => {
       export default {
         sources: { pg: { use: { name: 'p', parse: () => ({ namespace: 'pg', parser: 'p', entities: {}, enums: {} }) } } },
         generators: [{ use: gen }],
+        outputs: [{}],
       }
     `);
     const { config } = await loadConfig({ cwd: root });
@@ -104,7 +109,7 @@ describe('loadConfig', () => {
         optionsSchema: v.object({ schema: v.string() }),
         parse: () => ({ namespace: 'pg', parser: 'prisma', entities: {}, enums: {} }),
       }
-      export default { sources: { pg: { use: parser, options: { schema: 42 } } }, generators: [] }
+      export default { sources: { pg: { use: parser, options: { schema: 42 } } }, generators: [], outputs: [{}] }
     `);
     try {
       await loadConfig({ cwd: root });
@@ -123,6 +128,7 @@ describe('loadConfig', () => {
       export default {
         sources: { pg: { use: { name: 'p', parse: () => ({ namespace: 'pg', parser: 'p', entities: {}, enums: {} }) } } },
         generators: [{ use: gen, options: 'nope' }],
+        outputs: [{}],
       }
     `);
     await expect(loadConfig({ cwd: root })).rejects.toBeInstanceOf(
@@ -136,6 +142,7 @@ describe('loadConfig', () => {
       export default {
         sources: { pg: { use: { name: 'p', parse: () => ({ namespace: 'pg', parser: 'p', entities: {}, enums: {} }) } } },
         generators: [{ use: gen }, { use: { ...gen } }],
+        outputs: [{}],
       }
     `);
     await expect(loadConfig({ cwd: root })).rejects.toBeInstanceOf(
@@ -149,6 +156,7 @@ describe('loadConfig', () => {
       export default {
         sources: { pg: { use: { name: 'p', parse: () => ({ namespace: 'pg', parser: 'p', entities: {}, enums: {} }) } } },
         generators: [{ use: gen, namespaces: ['nope'] }],
+        outputs: [{}],
       }
     `);
     await expect(loadConfig({ cwd: root })).rejects.toBeInstanceOf(
@@ -159,12 +167,12 @@ describe('loadConfig', () => {
   const parserSrc =
     "{ name: 'p', parse: () => ({ namespace: 'pg', parser: 'p', entities: {}, enums: {} }) }";
 
-  it("rejects output.mode 'package' with neither packagesDir nor scope", async () => {
+  it("rejects outputs[].mode 'package' with neither packagesDir nor scope", async () => {
     writeConfig(`
       export default {
         sources: { pg: { use: ${parserSrc} } },
         generators: [],
-        output: { mode: 'package' },
+        outputs: [{ mode: 'package' }],
       }
     `);
     await expect(loadConfig({ cwd: root })).rejects.toBeInstanceOf(
@@ -172,12 +180,12 @@ describe('loadConfig', () => {
     );
   });
 
-  it("rejects output.mode 'package' with packagesDir but no scope", async () => {
+  it("rejects outputs[].mode 'package' with packagesDir but no scope", async () => {
     writeConfig(`
       export default {
         sources: { pg: { use: ${parserSrc} } },
         generators: [],
-        output: { mode: 'package', packagesDir: './pkgs' },
+        outputs: [{ mode: 'package', packagesDir: './pkgs' }],
       }
     `);
     try {
@@ -186,17 +194,17 @@ describe('loadConfig', () => {
     } catch (err) {
       expect(err).toBeInstanceOf(ConfigShapeError);
       expect((err as ConfigShapeError).issues.map((i) => i.path)).toEqual([
-        'output.scope',
+        'outputs.0.scope',
       ]);
     }
   });
 
-  it("rejects output.mode 'package' with scope but no packagesDir", async () => {
+  it("rejects outputs[].mode 'package' with scope but no packagesDir", async () => {
     writeConfig(`
       export default {
         sources: { pg: { use: ${parserSrc} } },
         generators: [],
-        output: { mode: 'package', scope: '@acme' },
+        outputs: [{ mode: 'package', scope: '@acme' }],
       }
     `);
     try {
@@ -205,17 +213,17 @@ describe('loadConfig', () => {
     } catch (err) {
       expect(err).toBeInstanceOf(ConfigShapeError);
       expect((err as ConfigShapeError).issues.map((i) => i.path)).toEqual([
-        'output.packagesDir',
+        'outputs.0.packagesDir',
       ]);
     }
   });
 
-  it("rejects output.mode 'package' with a scope containing a '/' (would nest the generated package dir)", async () => {
+  it("rejects outputs[].mode 'package' with a scope containing a '/' (would nest the generated package dir)", async () => {
     writeConfig(`
       export default {
         sources: { pg: { use: ${parserSrc} } },
         generators: [],
-        output: { mode: 'package', packagesDir: './pkgs', scope: '@acme/dto' },
+        outputs: [{ mode: 'package', packagesDir: './pkgs', scope: '@acme/dto' }],
       }
     `);
     try {
@@ -224,7 +232,7 @@ describe('loadConfig', () => {
     } catch (err) {
       expect(err).toBeInstanceOf(ConfigShapeError);
       const issues = (err as ConfigShapeError).issues;
-      expect(issues.map((i) => i.path)).toEqual(['output.scope']);
+      expect(issues.map((i) => i.path)).toEqual(['outputs.0.scope']);
       expect(issues[0]?.message).toContain('not a valid npm scope');
     }
   });
@@ -235,6 +243,7 @@ describe('loadConfig', () => {
       export default {
         sources: { pg: { use: ${parserSrc} } },
         generators: [{ use: gen, options: new Date() }],
+        outputs: [{}],
       }
     `);
     await expect(loadConfig({ cwd: root })).rejects.toBeInstanceOf(
@@ -242,19 +251,76 @@ describe('loadConfig', () => {
     );
   });
 
-  it("resolves output.mode 'package' with both packagesDir and scope, passing packageManager through", async () => {
+  it("resolves outputs[].mode 'package' with both packagesDir and scope, passing packageManager through", async () => {
     writeConfig(`
       export default {
         sources: { pg: { use: { name: 'p', parse: () => ({ namespace: 'pg', parser: 'p', entities: {}, enums: {} }) } } },
         generators: [],
-        output: { mode: 'package', packagesDir: './pkgs', scope: '@acme', packageManager: 'pnpm' },
+        outputs: [{ mode: 'package', packagesDir: './pkgs', scope: '@acme', packageManager: 'pnpm' }],
       }
     `);
     const { config } = await loadConfig({ cwd: root });
-    expect(config.output.mode).toBe('package');
-    expect(config.output.packagesDir).toBe(join(root, 'pkgs'));
-    expect(config.output.scope).toBe('@acme');
-    expect(config.output.packageManager).toBe('pnpm');
+    expect(config.outputs[0]?.mode).toBe('package');
+    expect(config.outputs[0]?.packagesDir).toBe(join(root, 'pkgs'));
+    expect(config.outputs[0]?.scope).toBe('@acme');
+    expect(config.outputs[0]?.packageManager).toBe('pnpm');
+  });
+
+  it('rejects outputs[1].generators naming a generator absent from generators[]', async () => {
+    writeConfig(`
+      const gen = { name: 'zod', generate: () => ({ files: [], artifact: { entities: {} } }) }
+      export default {
+        sources: { pg: { use: ${parserSrc} } },
+        generators: [{ use: gen }],
+        outputs: [{}, { generators: ['nope'] }],
+      }
+    `);
+    try {
+      await loadConfig({ cwd: root });
+      expect.unreachable();
+    } catch (err) {
+      expect(err).toBeInstanceOf(UnknownGeneratorError);
+      expect((err as UnknownGeneratorError).outputIndex).toBe(1);
+      expect((err as UnknownGeneratorError).generator).toBe('nope');
+    }
+  });
+
+  it("rejects outputs[].mode 'package' missing scope in the second of two outputs, leaving the first unaffected", async () => {
+    writeConfig(`
+      export default {
+        sources: { pg: { use: ${parserSrc} } },
+        generators: [],
+        outputs: [{ mode: 'dir' }, { mode: 'package', packagesDir: './pkgs' }],
+      }
+    `);
+    try {
+      await loadConfig({ cwd: root });
+      expect.unreachable();
+    } catch (err) {
+      expect(err).toBeInstanceOf(ConfigShapeError);
+      expect((err as ConfigShapeError).issues.map((i) => i.path)).toEqual([
+        'outputs.1.scope',
+      ]);
+    }
+  });
+
+  it('resolves a valid two-entry outputs, each dir/packagesDir absolutized independently', async () => {
+    writeConfig(`
+      export default {
+        sources: { pg: { use: ${parserSrc} } },
+        generators: [],
+        outputs: [
+          { dir: './out-a' },
+          { mode: 'package', packagesDir: './pkgs-b', scope: '@acme' },
+        ],
+      }
+    `);
+    const { config } = await loadConfig({ cwd: root });
+    expect(config.outputs).toHaveLength(2);
+    expect(config.outputs[0]?.dir).toBe(join(root, 'out-a'));
+    expect(config.outputs[1]?.mode).toBe('package');
+    expect(config.outputs[1]?.packagesDir).toBe(join(root, 'pkgs-b'));
+    expect(config.outputs[1]?.scope).toBe('@acme');
   });
 
   it('wraps an import-time throw as ConfigLoadError with cause', async () => {

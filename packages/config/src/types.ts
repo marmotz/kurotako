@@ -123,6 +123,8 @@ export interface OutputOption {
   scope?: string;
   /** Mode B, optional — output-modes auto-installs. */
   packageManager?: 'bun' | 'pnpm' | 'yarn' | 'npm';
+  /** Restrict this destination to a subset of `generators`; default = all. */
+  generators?: string[];
 }
 
 export interface TakoHooks {
@@ -134,7 +136,7 @@ export interface TakoConfig {
   sources: Record<string, AnySourceEntry>;
   /** Array; order irrelevant (core resolves the DAG). */
   generators: readonly AnyGeneratorEntry[];
-  /** Default `{ dir: './generated/kurotako' }`. */
-  output?: OutputOption;
+  /** Required — no implicit single-output default. */
+  outputs: readonly OutputOption[];
   hooks?: TakoHooks;
 }
