@@ -10,6 +10,9 @@ packages/config/tmp-*
 # Transient test fixtures (@kurotako/parser-prisma detect.test.ts / parser.test.ts)
 packages/parser-prisma/tmp-*
 
+# Transient build output (@kurotako meta-package bin.test.ts)
+packages/kurotako/dist-test
+
 # Docs site (apps/docs) — generated / build output
 apps/docs/build
 apps/docs/.docusaurus

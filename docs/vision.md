@@ -54,6 +54,9 @@ namespace), config system, output modes.
   namespace only drives the output location.
 - Two output modes: A directory (default), B npm package per source.
 - `parser` / `generator` vocabulary.
+- Single umbrella package **`kurotako`** (unscoped): one install gives the `tako` binary
+  and re-exports `defineConfig` (`import { defineConfig } from 'kurotako'`).
+  `@kurotako/cli` and `@kurotako/config` stay published for advanced/programmatic use.
 - English throughout the project — code, docs, repo metadata, CLI output (see
   [`AGENTS.md`](../AGENTS.md) "Working conventions").
 

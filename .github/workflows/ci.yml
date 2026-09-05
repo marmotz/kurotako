@@ -24,3 +24,13 @@ jobs:
         run: node packages/cli/dist/bin/tako.js --version
       - name: Smoke — tako --version under Bun
         run: bun packages/cli/dist/bin/tako.js --version
+      - name: Smoke — kurotako meta bin --version under Node
+        run: |
+          expected=$(node -p "require('./packages/kurotako/package.json').version")
+          got=$(node packages/kurotako/dist/bin/tako.js --version)
+          test "$got" = "$expected" || { echo "expected $expected, got $got"; exit 1; }
+      - name: Smoke — kurotako meta bin --version under Bun
+        run: |
+          expected=$(node -p "require('./packages/kurotako/package.json').version")
+          got=$(bun packages/kurotako/dist/bin/tako.js --version)
+          test "$got" = "$expected" || { echo "expected $expected, got $got"; exit 1; }

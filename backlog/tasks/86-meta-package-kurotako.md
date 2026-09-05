@@ -1,6 +1,6 @@
 # backend — `kurotako` meta-package (single install, re-exports `defineConfig`)
 
-**Status**: to do
+**Status**: done
 **Type**: backend
 **Issue**: [#86](https://github.com/marmotz/kurotako/issues/86)
 

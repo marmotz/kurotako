@@ -12,23 +12,24 @@ A `tako.config.ts` has three parts: **`sources`** (what schema comes in, via a p
 **`generators`** (what code comes out), and **`outputs`** (where that code is written and
 how it is packaged). All three are covered below.
 
-## 1. Install the CLI
+## 1. Install kurotako
 
 `tako` needs **Node.js >= 24**. It runs unmodified on both Node and Bun, and installs
-with any package manager. Install `@kurotako/cli` as a project dev dependency:
+with any package manager. Install `kurotako` as a project dev dependency — one package
+gives you the `tako` binary and the `defineConfig` helper your `tako.config.ts` imports:
 
 ```bash
-npm install -D @kurotako/cli
-# bun add -d @kurotako/cli
-# pnpm add -D @kurotako/cli
-# yarn add -D @kurotako/cli
+npm install -D kurotako
+# bun add -d kurotako
+# pnpm add -D kurotako
+# yarn add -D kurotako
 ```
 
 or globally, if you prefer a system-wide `tako`:
 
 ```bash
-npm install -g @kurotako/cli
-# bun add -g @kurotako/cli
+npm install -g kurotako
+# bun add -g kurotako
 ```
 
 ## 2. Add the parser and generators you need
@@ -64,7 +65,7 @@ Point a parser at your schema, list the generators to run, and declare where the
 goes:
 
 ```ts title="tako.config.ts"
-import { defineConfig } from '@kurotako/config';
+import { defineConfig } from 'kurotako';
 import { prismaParser } from '@kurotako/parser-prisma';
 import { zodGenerator } from '@kurotako/gen-zod';
 import { angularGenerator } from '@kurotako/gen-angular';

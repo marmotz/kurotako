@@ -211,7 +211,7 @@ the full pipeline (Prisma parser + Zod/Angular generators) against real consumer
 
 | Done | Issue                                                | Task                                                          | Description                                                                        |
 |------|------------------------------------------------------|--------------------------------------------------------------|-----------------------------------------------------------------------------------|
-|      | [#86](https://github.com/marmotz/kurotako/issues/86) | [86-meta-package-kurotako](tasks/86-meta-package-kurotako.md) | `packages/kurotako` — bin re-exposes `tako` (own `--version`), barrel re-exports `defineConfig`; docs + CI smoke |
+| [x]  | [#86](https://github.com/marmotz/kurotako/issues/86) | [86-meta-package-kurotako](tasks/86-meta-package-kurotako.md) | `packages/kurotako` — bin re-exposes `tako` (own `--version`), barrel re-exports `defineConfig`; docs + CI smoke |
 
 ## Running `tako` in a consumer monorepo
 
