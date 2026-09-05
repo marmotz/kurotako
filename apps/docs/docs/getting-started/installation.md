@@ -22,23 +22,35 @@ sidebar_position: 2
 kurotako is a set of small packages under the `@kurotako/*` scope. Nothing is bundled —
 you install the CLI once, then add a parser and generators as your pipeline needs them.
 
-### 1. The CLI and the config helper (always)
+### 1. The `kurotako` package (always)
 
 | Package | Role |
 |---|---|
-| `@kurotako/cli` | the `tako` binary |
-| `@kurotako/config` | `defineConfig`, imported by your `tako.config.ts` |
+| `kurotako` | the `tako` binary **and** `defineConfig`, in one install |
 
 ```bash
-npm install -D @kurotako/cli @kurotako/config
-# bun add -d @kurotako/cli @kurotako/config
+npm install -D kurotako
+# bun add -d kurotako
+# pnpm add -D kurotako
+# yarn add -D kurotako
 ```
 
-The `tako` binary itself can also be installed globally (`npm install -g @kurotako/cli`,
-`bun add -g @kurotako/cli`); `@kurotako/config` stays a project dependency because your
+Your `tako.config.ts` then imports from it:
+
+```ts
+import { defineConfig } from 'kurotako';
+```
+
+The `tako` binary can also be installed globally (`npm install -g kurotako`,
+`bun add -g kurotako`); `kurotako` still stays a project dev dependency because your
 `tako.config.ts` imports it.
-`@kurotako/ir` and `@kurotako/core` are pulled in transitively — you only depend on them
-directly for programmatic use (see the [API reference](../api/)).
+
+`kurotako` is an umbrella over `@kurotako/cli` (the binary) and `@kurotako/config`
+(`defineConfig`), both pulled in transitively. Install those two directly only for
+advanced use — the CLI's programmatic API (`runCli`, reporters) or the config loader
+internals (`loadConfig`, `TakoConfigSchema`, error classes). `@kurotako/ir` and
+`@kurotako/core` come in transitively too; depend on them directly only for programmatic
+use (see the [API reference](../api/)).
 
 ### 2. One parser, per schema source
 

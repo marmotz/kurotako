@@ -126,9 +126,15 @@ The module name (`@kurotako/pg`) is identical in both modes; only the resolution
 
 ## CLI
 
-`tako` binary (package `@kurotako/cli`). Commands: `tako init`, `tako generate`
-(`--watch`, `--dry-run`), `tako validate`, `tako check`. Incremental regeneration: out of
-scope for v1.
+`tako` binary. Commands: `tako init`, `tako generate` (`--watch`, `--dry-run`),
+`tako validate`, `tako check`. Incremental regeneration: out of scope for v1.
+
+Projects install the single umbrella package **`kurotako`**, which provides the `tako`
+binary and re-exports `defineConfig` (`import { defineConfig } from 'kurotako'`). It is an
+umbrella over `@kurotako/cli` (the binary and its programmatic `runCli` API) and
+`@kurotako/config` (`defineConfig` plus the config loader/validator); both scoped packages
+stay published for advanced use. The meta `tako` bin owns `--version` (reporting the
+installed `kurotako` version) and delegates everything else to `@kurotako/cli` unchanged.
 
 `tako check` (drift guard) regenerates in memory and compares the result against the
 committed output tree — exit 0 in sync, exit 1 (with the list of `modified` / `missing` /

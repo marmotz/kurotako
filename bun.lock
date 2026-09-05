@@ -120,6 +120,17 @@
         "valibot": "1.4.2",
       },
     },
+    "packages/kurotako": {
+      "name": "kurotako",
+      "version": "0.0.0",
+      "bin": {
+        "tako": "./dist/bin/tako.js",
+      },
+      "dependencies": {
+        "@kurotako/cli": "workspace:*",
+        "@kurotako/config": "workspace:*",
+      },
+    },
     "packages/parser-prisma": {
       "name": "@kurotako/parser-prisma",
       "version": "0.0.0",
@@ -1853,6 +1864,8 @@
     "klaw-sync": ["klaw-sync@6.0.0", "", { "dependencies": { "graceful-fs": "^4.1.11" } }, "sha512-nIeuVSzdCCs6TDPTqI8w1Yre34sSq7AkZ4B3sfOBbI2CgVSB4Du4aLQijFU2+lhAFCwt9+42Hel6lQNIv6AntQ=="],
 
     "kleur": ["kleur@3.0.3", "", {}, "sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w=="],
+
+    "kurotako": ["kurotako@workspace:packages/kurotako"],
 
     "latest-version": ["latest-version@7.0.0", "", { "dependencies": { "package-json": "^8.1.0" } }, "sha512-KvNT4XqAMzdcL6ka6Tl3i2lYeFDgXNCuIX+xNx6ZMVR1dFq+idXd9FLKNMOIx0t9mJ9/HudyX4oZWXZQ0UJHeg=="],
 

@@ -65,6 +65,13 @@ No cycle: core never imports config (it receives an already-built `ResolvedConfi
   `@kurotako/ir` only" ([core-pipeline/technical.md §Package shape](../core-pipeline/technical.md));
   adding `jiti` + `valibot` there breaks that and pulls a TS loader into the orchestration
   core.
+> **Note (meta-package, #86):** the documented import in user projects is
+> `import { defineConfig } from 'kurotako'` — the `kurotako` umbrella package re-exports
+> `defineConfig` / `defineParser` / `defineGenerator` and the config type surface.
+> `@kurotako/config` stays published as the direct-dependency escape hatch for consumers
+> that need the loader internals (`loadConfig`, `TakoConfigSchema`, error classes,
+> `CONFIG_TEMPLATE`).
+
 - **Fold into `@kurotako/cli`.** Rejected: the user's `tako.config.ts` does
   `import { defineConfig } from '@kurotako/config'`; sourcing it from `@kurotako/cli`
   makes every config file depend on the whole executable (arg parser, reporters). A

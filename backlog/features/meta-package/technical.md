@@ -188,8 +188,11 @@ Add `{ "path": "packages/kurotako" }` to the root solution `tsconfig.json` refer
 
 - `@kurotako/cli` needs **no change**: `runCli` is already exported, the bin already
   delegates to it, and the meta bin handles `--version` before delegating.
-- `@kurotako/config` needs **no change**: its barrel already exports the three `define*`
-  helpers and `export type * from './types.js'`.
+- `@kurotako/config` needs **no change for the meta-package itself**: its barrel already
+  exports the three `define*` helpers and `export type * from './types.js'`. (Separately
+  decided as a follow-up: `CONFIG_TEMPLATE` — what `tako init` writes — switches its
+  import line to `from 'kurotako'`; see the follow-up task below and
+  [overview.md](overview.md) "Decisions made".)
 - No cycle: `kurotako → @kurotako/cli → @kurotako/config → @kurotako/core → @kurotako/ir`,
   and `kurotako → @kurotako/config` directly (already on that chain).
 - `bun install` resolves one extra small package; negligible.
@@ -198,7 +201,13 @@ Add `{ "path": "packages/kurotako" }` to the root solution `tsconfig.json` refer
 
 One task is enough — the package is thin and touches no existing package source.
 
-1. **`packages/kurotako` skeleton + bin + re-export + tests** — the package above, the
-   root `tsconfig.json` reference, the CI smoke-test matrix entry, a changeset, and the
-   doc edits (`config-system/technical.md` note, `apps/docs` getting-started switch).
-   Deps: `@kurotako/cli` and `@kurotako/config` implemented (done).
+1. **`packages/kurotako` skeleton + bin + re-export + tests**
+   ([86-meta-package-kurotako](../../tasks/86-meta-package-kurotako.md), done) — the
+   package above, the root `tsconfig.json` reference, the CI smoke-test matrix entry, a
+   changeset, and the doc edits (`config-system/technical.md` note, `apps/docs`
+   getting-started switch).
+2. **`tako init` writes `from 'kurotako'`**
+   ([94-tako-init-kurotako-import-surface](../../tasks/94-tako-init-kurotako-import-surface.md))
+   — `CONFIG_TEMPLATE` / `CONFIG_TEMPLATE_MONOREPO` import line + `reference/*` docs.
+   Follow-up from the post-merge review; depends on
+   [#90](https://github.com/marmotz/kurotako/issues/90).

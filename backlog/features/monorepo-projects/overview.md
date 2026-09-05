@@ -1,6 +1,6 @@
 # Running `tako` in a consumer monorepo
 
-**Status**: in discussion
+**Status**: technical design ready — see [`technical.md`](./technical.md)
 
 ## Context
 
@@ -10,18 +10,38 @@ First real use of `tako` was against `viktor`, itself a monorepo:
 - the Prisma schema in a sub-project: `libs/db/prisma/schema.prisma`;
 - Prisma (and therefore `@prisma/internals`) is a concern of `libs/db`, not the root.
 
-Observed:
+Observed: `tako generate` failed with `prisma_peer_missing` until `@prisma/internals`
+was installed **at the repo root**. Installing it in `libs/db` (next to the schema) did
+not help. The user's objection: kurotako must not force `@prisma/internals` (a heavy dep
+that pulls `@prisma/engines` and downloads a schema-engine binary) into the monorepo
+root just because the config file lives there.
 
-1. `tako generate` failed with `prisma_peer_missing` (surfaced as `driver_error` — see the
-   `renderError` cause note below) until `@prisma/internals` was installed. Installing it
-   in `libs/db` (next to the schema) did **not** help. Installing it at the **repo root**
-   did.
-2. The user's objection: kurotako must not force `@prisma/internals` (a heavy dep that
-   pulls `@prisma/engines` and downloads a schema-engine binary) into the monorepo root.
-   And more generally: how does a single root `tako.config.ts` handle **sources that live
-   in different sub-projects** and **outputs targeted at different sub-projects**?
+## Already handled elsewhere (do not re-litigate)
 
-## Why (1) happens
+Two of the three concerns from the original draft have since been solved outside this
+feature:
+
+- **Outputs targeted at different sub-projects** — `outputs[]`
+  ([`ResolvedConfig.outputs`](../../../packages/core/src/types.ts), `OutputConfig`) is
+  now an array; each entry has its own `dir` / `mode` and an optional `generators`
+  filter. `GeneratorConfig.namespaces` narrows a generator to a subset of namespaces.
+  The `examples/nestjs11-prisma7-angular22-outputdir` project demonstrates a root
+  config emitting Zod into `apps/backend` and Angular into `apps/frontend`. See
+  [output-modes](../output-modes/overview.md).
+- **Unreadable error** — `cli` `renderError`
+  ([`packages/cli/src/errors.ts`](../../../packages/cli/src/errors.ts)) now prints the
+  wrapped `cause` with its `TakoError` code, so `prisma_peer_missing` is visible even
+  though `@kurotako/core` `run()` still rewraps it into a generic `DriverError`. Any
+  further tightening (having `run()` rethrow `TakoError`s unchanged) belongs in
+  [core-pipeline](../core-pipeline/overview.md).
+
+## Goal
+
+`tako` is usable from the root of a consumer monorepo without hoisting a parser's
+schema-toolchain dependency to the root: each source resolves its own tooling from
+where that source's schema lives.
+
+## The remaining problem — toolchain resolution base
 
 [`packages/parser-prisma/src/dmmf/load.ts`](../../../packages/parser-prisma/src/dmmf/load.ts)
 `resolveInternals` does:
@@ -31,71 +51,49 @@ const require = createRequire(join(ctx.cwd, 'noop.js'));
 entry = require.resolve('@prisma/internals');
 ```
 
-`ctx.cwd` is `rootDir` — the directory of `tako.config.ts` (from
-[`config/load.ts`](../../../packages/config/src/load.ts): `rootDir = resolve(configFile, '..')`).
-So `@prisma/internals` is resolved from the **config file's directory**, not from the
-schema file's directory. `libs/db/node_modules/@prisma/internals` is never consulted;
-`<root>/node_modules/@prisma/internals` is.
+`ctx.cwd` is `config.rootDir` — the directory of `tako.config.ts`
+([`run.ts`](../../../packages/core/src/run.ts), `cwd: config.rootDir`;
+[`config/load.ts`](../../../packages/config/src/load.ts), `rootDir = resolve(configFile, '..')`).
+So `@prisma/internals` is resolved from the config file's directory, never from the
+schema file's directory. `libs/db/node_modules/@prisma/internals` is never consulted.
+`options.schema` itself is also resolved against `ctx.cwd`
+([`detect.ts`](../../../packages/parser-prisma/src/detect.ts), `resolve(cwd, o.schema)`).
 
-Same reasoning will apply to any future parser that dynamically resolves a
-schema-toolchain dependency from `ctx.cwd`.
-
-## Goal
-
-`tako` is usable from the root of a consumer monorepo without hoisting every parser's
-toolchain dependency to the root: each source resolves its own tooling from where that
-source (its schema) lives, and outputs can be directed per sub-project.
+The same reasoning applies to any future parser that dynamically resolves a
+schema-toolchain dependency.
 
 ## Decisions made
 
-_(none yet — to be settled in discussion)_
+- **Per-source anchor directory.** A source's schema-toolchain dependency
+  (`@prisma/internals` and future equivalents) is resolved from the directory the
+  source's schema lives in, letting Node walk up `node_modules` to the repo root as a
+  natural fallback. No hoisting to the config-file directory required.
+- **Core concern, not parser-specific.** `@kurotako/core` gains a new
+  `ParseContext.anchorDir` (the resolved source directory). Every current and future
+  parser that resolves a toolchain dependency uses it. `ParseContext.cwd` is unchanged.
+- **Anchor is reported by the parser.** The `Parser` contract gains an optional
+  `anchor?(options, rootDir): string | undefined` hook: the parser (which alone
+  understands its options) returns the source directory; `run()` calls it before
+  `parse()` and falls back to `rootDir` when it is absent or returns `undefined`.
+  `parser-prisma` returns `dirname(resolve(rootDir, options.schema))`.
+- **`options.schema` resolution is untouched.** It stays relative to `rootDir` (the
+  config-file directory). `anchorDir` only changes the resolution base for the
+  toolchain dependency, so existing configs keep working with no change.
+- **`@prisma/internals` stays an optional peer** of `@kurotako/parser-prisma`.
+  kurotako never bundles it; only the resolution base changes.
+- **`tako init` monorepo mode.** Auto-detected from a `workspaces` field in the nearest
+  `package.json`; a `--monorepo` flag forces it. In that mode the scaffolded config
+  points `sources` / `outputs` at sub-project paths with adapted comments.
 
 ## Open questions
 
-### Dependency resolution per source
-
-- Resolve `@prisma/internals` (and equivalents) from the **schema file's directory** and
-  walk up, instead of from `ctx.cwd`? That would make `libs/db/node_modules` work and
-  still fall back to the root.
-- Or add a `ParseContext` field for "the directory this source is anchored at" that the
-  parser uses for both schema resolution and dependency resolution?
-- Or an explicit escape hatch: a parser option pointing at the toolchain package
-  (`internalsFrom: './libs/db'`)?
-- Keep `@prisma/internals` an **optional peer** of `@kurotako/parser-prisma` (it already
-  is) — the question is only the resolution base, not whether kurotako bundles it.
-
-### Multiple sources / multiple outputs across sub-projects
-
-- A root config with `sources: { db: …, auth: … }` where each schema is in a different
-  package — does anything today assume a single anchor directory? (`rootDir` is used for
-  parser `cwd` **and** as the base for relative `output.dir`.)
-- Should `output` allow **per-namespace** targets (e.g. generated Zod for `db` lands in
-  `libs/db/src/generated`, generated Angular for `db` lands in `apps/web/src/generated`)?
-  Currently `output.dir` is a single directory; `output-modes` mode B is "one npm package
-  per source" but still under one `packagesDir`.
-- Interaction with [output-modes](../output-modes/overview.md): is "per sub-project
-  output" a third mode, or a refinement of mode A (`output.dir` becomes a function of
-  `namespace` / `generator`)?
-- Does `tako init` need a `--monorepo` awareness, or is documentation enough?
-
-### Error surfacing (minor, noted here)
-
-- `prisma_peer_missing` / `prisma_schema_invalid` are precise `TakoError`s but
-  `@kurotako/core` `run()` re-wraps any non-`DriverError` throw into a generic
-  `DriverError`, and `cli` `renderError` does not print `error.cause`. Result: the user
-  saw only `parser 'prisma' … threw during parse`. Fix candidates: `run()` should rethrow
-  any `TakoError` unchanged (like it already does for `DriverError`); and/or
-  `renderError` should append `cause`. Small, could be folded into
-  [core-pipeline](../core-pipeline/overview.md) / [cli](../cli/overview.md) rather than this
-  feature.
+_(none — ready for `technical.md`)_
 
 ## Depends on / touches
 
-- [`@kurotako/parser-prisma`](../parser-prisma/overview.md) — `dmmf/load.ts`
-  resolution base, `detect.ts`, options.
-- [`@kurotako/core`](../core-pipeline/overview.md) — `ParseContext` shape, `run()` error
-  rewrapping.
-- [`@kurotako/config`](../config-system/overview.md) — `rootDir` semantics, `output`
-  resolution.
-- [output-modes](../output-modes/overview.md) — per-project / per-namespace output.
-- [cli](../cli/overview.md) — `renderError` cause, `tako init`.
+- [`@kurotako/parser-prisma`](../parser-prisma/overview.md) — `dmmf/load.ts` and
+  `detect.ts` resolution base, options.
+- [`@kurotako/core`](../core-pipeline/overview.md) — `ParseContext` shape.
+- [`@kurotako/config`](../config-system/overview.md) — `rootDir` semantics.
+- [output-modes](../output-modes/overview.md) — already covers per-project output.
+- [cli](../cli/overview.md) — `tako init`.

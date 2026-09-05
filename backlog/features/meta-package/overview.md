@@ -52,16 +52,18 @@ the docs simply stop mentioning them in the getting-started path.
 - **`@kurotako/config` stays published and public**, not made `private`. Cheap, and it
   keeps the door open for a non-CLI embedder.
 - **Published, independently versioned** (changesets), like the other public packages.
+- **`tako --version` reports the `kurotako` version**, injected at build — the number the
+  user installed, not the underlying `@kurotako/cli` version. (Settled in
+  [technical.md](technical.md); implemented in the meta bin.)
+- **`tako init` writes `import { defineConfig } from 'kurotako'` unconditionally** — it is
+  the documented install path; a project depending on `@kurotako/config` directly edits
+  one line. This means `CONFIG_TEMPLATE` (and `CONFIG_TEMPLATE_MONOREPO`) and the
+  getting-started / `reference/*` docs move off `@kurotako/config` as the authoring
+  surface. Deferred out of the initial meta-package tasks; tracked as a follow-up task.
 
 ## Open questions
 
-- Does `tako --version` report the `kurotako` version or the underlying `@kurotako/cli`
-  version? (Leaning: the `kurotako` version, injected at build — that is the number the
-  user installed.)
-- Should `tako init` write `import { defineConfig } from 'kurotako'` unconditionally, or
-  detect whether the project depends on `kurotako` vs `@kurotako/config` directly?
-  (Leaning: always `'kurotako'` — it is the documented path; a direct `@kurotako/config`
-  user can edit one line.)
+_(none)_
 
 ## Depends on
 

@@ -211,15 +211,21 @@ the full pipeline (Prisma parser + Zod/Angular generators) against real consumer
 
 | Done | Issue                                                | Task                                                          | Description                                                                        |
 |------|------------------------------------------------------|--------------------------------------------------------------|-----------------------------------------------------------------------------------|
-|      | [#86](https://github.com/marmotz/kurotako/issues/86) | [86-meta-package-kurotako](tasks/86-meta-package-kurotako.md) | `packages/kurotako` — bin re-exposes `tako` (own `--version`), barrel re-exports `defineConfig`; docs + CI smoke |
+| [x]  | [#86](https://github.com/marmotz/kurotako/issues/86) | [86-meta-package-kurotako](tasks/86-meta-package-kurotako.md) | `packages/kurotako` — bin re-exposes `tako` (own `--version`), barrel re-exports `defineConfig`; docs + CI smoke |
+| [ ]  | [#94](https://github.com/marmotz/kurotako/issues/94) | [94-tako-init-kurotako-import-surface](tasks/94-tako-init-kurotako-import-surface.md) | `tako init` writes `import { defineConfig } from 'kurotako'`; `reference/*` docs follow (post-merge review follow-up, depends on #90) |
 
 ## Running `tako` in a consumer monorepo
 
-[features/monorepo-projects/overview.md](features/monorepo-projects/overview.md)
-— in discussion. `@prisma/internals` is resolved from the `tako.config.ts` directory, not
-from the schema file's directory, so it must be hoisted to the monorepo root. Plus the
-open design question of sources / outputs spread across sub-projects. No tasks yet.
+[features/monorepo-projects/overview.md](features/monorepo-projects/overview.md) —
+technical design: [technical.md](features/monorepo-projects/technical.md). A per-source
+**anchor directory** so a parser resolves its own schema-toolchain dependency
+(`@prisma/internals`) from where the source's schema lives, not from the `tako.config.ts`
+directory; plus a monorepo-aware `tako init`.
 
-| Done                                       | Issue | Task | Description |
-|--------------------------------------------|-------|------|-------------|
-| _no tasks yet — needs `backlog-technical`_ |       |      |             |
+| Done | Issue                                                | Task                                                                                                  | Description                                                                       |
+|------|------------------------------------------------------|------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| [ ]  | [#89](https://github.com/marmotz/kurotako/issues/89) | [89-core-parse-context-anchor-dir](tasks/89-core-parse-context-anchor-dir.md)                         | core: `ParseContext.anchorDir`, `Parser.anchor` hook, `run()` wiring              |
+| [ ]  | [#90](https://github.com/marmotz/kurotako/issues/90) | [90-cli-tako-init-monorepo](tasks/90-cli-tako-init-monorepo.md)                                       | `tako init --monorepo` + auto-detection + `CONFIG_TEMPLATE_MONOREPO`              |
+| [ ]  | [#91](https://github.com/marmotz/kurotako/issues/91) | [91-config-parser-anchor-currying](tasks/91-config-parser-anchor-currying.md)                         | `@kurotako/config`: `TakoParser.anchor`, `defineParser`, currying in `load.ts`    |
+| [ ]  | [#92](https://github.com/marmotz/kurotako/issues/92) | [92-parser-prisma-anchor-internals-resolution](tasks/92-parser-prisma-anchor-internals-resolution.md) | parser-prisma: `anchor` impl + resolve `@prisma/internals` from the schema dir    |
+| [ ]  | [#93](https://github.com/marmotz/kurotako/issues/93) | [93-docs-monorepo-usage-and-example](tasks/93-docs-monorepo-usage-and-example.md)                     | docs "monorepo usage" page + move `@prisma/internals` into the example sub-project |
