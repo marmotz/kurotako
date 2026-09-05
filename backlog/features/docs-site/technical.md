@@ -80,6 +80,20 @@ TypeScript config (`docusaurus.config.ts`, `sidebars.ts`), `@docusaurus/preset-c
 (Docusaurus documents Bun support; npm is the fallback if a Bun-specific bug appears —
 this package is never published, so the "no `Bun.*`" rule does not apply here).
 
+**Bun store + webpack (implemented workaround).** With Bun's store layout
+(`node_modules/.bun/<pkg>@<ver>/node_modules/<pkg>` + symlinks), webpack's default
+`resolve.symlinks: true` resolves every dependency under many real paths and the module
+graph grows until the build runs out of memory. A tiny local plugin
+(`apps/docs/plugins/webpack-symlinks/`) sets `resolve.symlinks: false` via
+`configureWebpack`, which fixes it and keeps the Bun toolchain. The `typecheck` script is
+`tsc --noEmit` (Docusaurus 3.10 dropped the `docusaurus typecheck` subcommand).
+
+**`apps/docs/package.json` has no `"type": "module"`** (deviation from task #55). Docusaurus
+emits its CommonJS runtime helpers (`.docusaurus/registry.js`, `routes.js`, …) with a
+`.js` extension; under `"type": "module"` Node/webpack parse them as ESM and the server
+bundle fails at runtime with `require.resolveWeak is not a function`. `create-docusaurus`
+itself never sets the field. The rest of the monorepo stays `"type": "module"`.
+
 ### Why Docusaurus (alternatives considered)
 
 The deciding constraint is **folder-per-version documentation with a version selector**,
@@ -229,8 +243,12 @@ jobs:
         uses: actions/deploy-pages@v4
 ```
 
-- `bun run --filter '@kurotako/docs' build` also runs TypeDoc against the four packages'
-  `src/` (no `bun run build` of the packages needed — TypeDoc reads source).
+- `bun run --filter '@kurotako/docs' build` also runs TypeDoc against the four public
+  packages. TypeDoc resolves their public types from the built `dist/*.d.ts` (the repo
+  has no `@kurotako/* -> src` path mapping), so the workflow runs
+  `bun run --filter './packages/*' build` **before** the site build. The root
+  `bun run build` is scoped to `./packages/*` — the docs site is built by this workflow
+  only and never gates package CI (`ci.yml` unchanged).
 - **Custom domain**: `baseUrl: '/'`, `static/CNAME` holding the domain, GitHub Pages
   "Custom domain" set once in repo settings, "Enforce HTTPS" on. The exact domain is an
   open point (see below); until it is chosen the site can ship at

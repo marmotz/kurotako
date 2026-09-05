@@ -1,6 +1,6 @@
 # Docs — docs site v1 content set
 
-**Status**: to do **Type**: docs **Issue**: [#58](https://github.com/marmotz/kurotako/issues/58)
+**Status**: done **Type**: docs **Issue**: [#58](https://github.com/marmotz/kurotako/issues/58)
 
 Reference: [../features/docs-site/technical.md §Content architecture](../features/docs-site/technical.md#content-architecture).
 

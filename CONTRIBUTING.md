@@ -27,7 +27,9 @@ bun run build        # dist/ is gitignored; build once before using a package fr
 
 Run from the repo root:
 
-- `bun run build` — `bun run --filter '*' build`
+- `bun run build` — `bun run --filter './packages/*' build` (the publishable packages;
+  the docs site is built separately and never gates package CI)
+- `bun run build:docs` — build the packages, then the `apps/docs` Docusaurus site
 - `bun run typecheck` — `tsc -b`
 - `bun run test` — `vitest run`
 - `bun run lint` — `biome check .`
@@ -69,6 +71,29 @@ outside `tsc -b`).
   ```
 
   Commit the resulting `versioned_docs/`, `versioned_sidebars/` and `versions.json`.
+
+### API reference (TypeDoc)
+
+`bun run --filter '@kurotako/docs' build` runs `docusaurus-plugin-typedoc` over the four
+public packages (`@kurotako/ir`, `core`, `config`, `cli`) and writes the generated pages
+to `apps/docs/docs/api/` (git-ignored on `develop`, frozen into `versioned_docs/` when a
+version is cut). TypeDoc resolves each package's public types from its built
+`dist/*.d.ts`, so **build the packages first** (`bun run build`, or use
+`bun run build:docs` / the `docs.yml` workflow which does both). Public exported symbols
+of those packages **should carry TSDoc** — missing docs surface as a build warning today;
+this may become a
+hard gate later.
+
+### GitHub Pages — one-time repo settings
+
+The docs site deploys via `.github/workflows/docs.yml`. A maintainer must set, once, in
+the repository settings:
+
+- **Settings → Pages → Build and deployment → Source = GitHub Actions.**
+- When a custom domain is chosen: set it in **Settings → Pages → Custom domain**, add
+  `apps/docs/static/CNAME` with the same value, flip `baseUrl` to `'/'` in
+  `apps/docs/docusaurus.config.ts`, and enable **Enforce HTTPS**. Until then the site
+  ships at `https://marmotz.github.io/kurotako/` (`baseUrl: '/kurotako/'`).
 
 ## Code of Conduct
 

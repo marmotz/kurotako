@@ -152,10 +152,10 @@ design: [technical.md](features/generator-angular/technical.md)
 | Done | Issue                                                | Task                                                                                  | Description                                                                 |
 |------|------------------------------------------------------|---------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
 | [x]  | [#54](https://github.com/marmotz/kurotako/issues/54) | [54-apps-docs-workspace-accommodation](tasks/54-apps-docs-workspace-accommodation.md) | `apps/*` workspace root-file edits (also listed under Monorepo bootstrap)   |
-|      | [#55](https://github.com/marmotz/kurotako/issues/55) | [55-docs-site-scaffold](tasks/55-docs-site-scaffold.md)                               | `apps/docs` Docusaurus package: config, sidebar, tsconfig, placeholder page |
-|      | [#56](https://github.com/marmotz/kurotako/issues/56) | [56-docs-site-typedoc-api](tasks/56-docs-site-typedoc-api.md)                         | `docusaurus-plugin-typedoc` over ir/core/config/cli, generated `docs/api/`  |
-|      | [#57](https://github.com/marmotz/kurotako/issues/57) | [57-docs-site-deploy-workflow](tasks/57-docs-site-deploy-workflow.md)                 | `.github/workflows/docs.yml` + GitHub Pages deploy, `CNAME` / `baseUrl`     |
-|      | [#58](https://github.com/marmotz/kurotako/issues/58) | [58-docs-site-v1-content](tasks/58-docs-site-v1-content.md)                           | Minimal content set: getting-started, concepts, `reference/*`               |
+| [x]  | [#55](https://github.com/marmotz/kurotako/issues/55) | [55-docs-site-scaffold](tasks/55-docs-site-scaffold.md)                               | `apps/docs` Docusaurus package: config, sidebar, tsconfig, placeholder page |
+| [x]  | [#56](https://github.com/marmotz/kurotako/issues/56) | [56-docs-site-typedoc-api](tasks/56-docs-site-typedoc-api.md)                         | `docusaurus-plugin-typedoc` over ir/core/config/cli, generated `docs/api/`  |
+| [x]  | [#57](https://github.com/marmotz/kurotako/issues/57) | [57-docs-site-deploy-workflow](tasks/57-docs-site-deploy-workflow.md)                 | `.github/workflows/docs.yml` + GitHub Pages deploy, `CNAME` / `baseUrl`     |
+| [x]  | [#58](https://github.com/marmotz/kurotako/issues/58) | [58-docs-site-v1-content](tasks/58-docs-site-v1-content.md)                           | Minimal content set: getting-started, concepts, `reference/*`               |
 
 ## Docs reconciliation (post-MVP)
 
@@ -200,6 +200,18 @@ the full pipeline (Prisma parser + Zod/Angular generators) against real consumer
 | Done                                       | Issue | Task | Description |
 |--------------------------------------------|-------|------|-------------|
 | _no tasks yet — needs `backlog-technical`_ |       |      |             |
+
+## `kurotako` meta-package
+
+[features/meta-package/overview.md](features/meta-package/overview.md) — technical design:
+[technical.md](features/meta-package/technical.md). Single published package `kurotako`
+(unscoped) that depends on `@kurotako/cli` + `@kurotako/config` and re-exports
+`defineConfig`, so a project installs one name and writes
+`import { defineConfig } from 'kurotako'`. The parts stay published for advanced use.
+
+| Done | Issue                                                | Task                                                          | Description                                                                        |
+|------|------------------------------------------------------|--------------------------------------------------------------|-----------------------------------------------------------------------------------|
+|      | [#86](https://github.com/marmotz/kurotako/issues/86) | [86-meta-package-kurotako](tasks/86-meta-package-kurotako.md) | `packages/kurotako` — bin re-exposes `tako` (own `--version`), barrel re-exports `defineConfig`; docs + CI smoke |
 
 ## Running `tako` in a consumer monorepo
 

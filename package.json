@@ -12,7 +12,8 @@
     "bun": ">=1.4.0"
   },
   "scripts": {
-    "build": "bun run --filter '*' build",
+    "build": "bun run --filter './packages/*' build",
+    "build:docs": "bun run --filter './packages/*' build && bun run --filter '@kurotako/docs' build",
     "typecheck": "tsc -b",
     "test": "vitest run",
     "lint": "biome check .",

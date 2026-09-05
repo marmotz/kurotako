@@ -1,0 +1,12 @@
+{
+  // Docusaurus ships its own base config. This project is deliberately NOT
+  // `composite` and is NOT referenced by the root solution tsconfig.json:
+  // `apps/docs` is built by the Docusaurus CLI, never by `tsc -b`. Do not "fix"
+  // this by adding a project reference. See
+  // backlog/features/docs-site/technical.md.
+  "extends": "@docusaurus/tsconfig",
+  "compilerOptions": {
+    "baseUrl": "."
+  },
+  "exclude": [".docusaurus", "build"]
+}

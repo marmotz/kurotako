@@ -1,6 +1,6 @@
 # CI — docs site deployment workflow (GitHub Pages)
 
-**Status**: to do **Type**: CI **Issue**: [#57](https://github.com/marmotz/kurotako/issues/57)
+**Status**: done **Type**: CI **Issue**: [#57](https://github.com/marmotz/kurotako/issues/57)
 
 Reference: [../features/docs-site/technical.md §Deployment — GitHub Pages](../features/docs-site/technical.md#deployment--github-pages).
 
