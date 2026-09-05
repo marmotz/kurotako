@@ -8,6 +8,7 @@
  */
 import { TakoError } from '@kurotako/core';
 import { type CommandDef, defineCommand, renderUsage, runCommand } from 'citty';
+import { checkCommand } from './commands/check.js';
 import { generateCommand } from './commands/generate.js';
 import { initCommand } from './commands/init.js';
 import { validateCommand } from './commands/validate.js';
@@ -22,6 +23,7 @@ const subCommands = {
   init: initCommand,
   generate: generateCommand,
   validate: validateCommand,
+  check: checkCommand,
 };
 
 const main = defineCommand({

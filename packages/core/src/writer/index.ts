@@ -11,7 +11,7 @@ import type { Writer } from './types.js';
 
 export { directoryWriter } from './directory.js';
 export { packageWriter } from './package.js';
-export type { WriteInput, Writer } from './types.js';
+export type { PlannedFile, WriteInput, Writer } from './types.js';
 
 export function selectWriter(output: OutputConfig): Writer {
   const mode = output.mode ?? 'dir';

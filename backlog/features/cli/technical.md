@@ -90,6 +90,7 @@ tako --help  | -h          # citty-generated
 tako init    [--config <path>] [--force]
 tako generate [--config <path>] [--watch] [--dry-run]
 tako validate [--config <path>]
+tako check    [--config <path>]   # drift guard — see features/drift-guard/technical.md
 ```
 
 ### Global option
@@ -340,10 +341,16 @@ try {
   once the `tsconfig` `paths` alias to add (`"@kurotako/*": ["<relative output dir>/*"]`) —
   `tako` never edits `tsconfig.json` itself
   ([output-modes/technical.md §directoryWriter](../output-modes/technical.md#directorywriter-mode-a--unchanged-one-addition)).
-- **drift-guard**: `tako check` ([drift-guard/overview.md](../drift-guard/overview.md))
-  will be a fifth command in this same tree, reusing `ConsoleReporter`, `renderError`,
-  `loadAndRun({ write: false })` and `RunResult.files` to diff against disk. Noted, not
-  built here.
+- **drift-guard**: `tako check` ([drift-guard/technical.md](../drift-guard/technical.md))
+  is a fifth command in this same tree (`commands/check.ts` + `diff.ts`), reusing
+  `ConsoleReporter`, `renderError` and the top-level `TakoError` handler. It does **not**
+  diff `RunResult.files` (that sketch is superseded): it calls
+  `run(config, { logger, plan: true })` and compares the resulting
+  `RunResult.plan: PlannedFile[]` (absolute path + exact bytes, computed by each output's
+  `Writer.plan()`, mode B included) against disk in memory via `comparePlanToDisk`
+  (`modified` / `missing` / `orphan`, wholly-orphan directories collapsed). Exit 0 in
+  sync, exit 1 on any drift or `TakoError`. Delivered by task #53; the `plan` primitive by
+  tasks #51 / #52.
 - **docs**: [docs/architecture.md §CLI](../../../docs/architecture.md) ("Envisaged
   commands: `tako generate`, `tako init`. Watch / incremental: open questions") and
   [docs/vision.md §6](../../../docs/vision.md#open-questions) are now settled — reconcile

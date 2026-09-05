@@ -23,6 +23,24 @@ export interface WriteInput {
   logger?: Logger;
 }
 
+/**
+ * One file a `write()` would emit, resolved to its absolute on-disk path with
+ * the exact bytes it would serialise (banner already applied by the caller, as
+ * for `write`). `plan()` computes these without any disk I/O; `write()` is
+ * `plan()` plus materialisation, so the two never drift.
+ */
+export interface PlannedFile {
+  /** Absolute. */
+  path: string;
+  content: string;
+}
+
 export interface Writer {
   write(input: WriteInput): Promise<string[]>;
+  /**
+   * Same layout as `write()`, no disk I/O: the exact set of files `write()`
+   * would produce (mode B: `<pkgDir>/src/…` remap + synthesized manifest, but
+   * no `dist/`, no `pm install`).
+   */
+  plan(input: WriteInput): Promise<PlannedFile[]>;
 }

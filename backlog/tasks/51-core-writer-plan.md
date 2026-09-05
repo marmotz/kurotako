@@ -1,6 +1,6 @@
 # backend — @kurotako/core Writer.plan() + run({ plan: true })
 
-**Status**: to do
+**Status**: done
 **Type**: backend
 **Issue**: [#51](https://github.com/marmotz/kurotako/issues/51)
 
