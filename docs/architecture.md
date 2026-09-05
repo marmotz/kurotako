@@ -126,5 +126,14 @@ The module name (`@kurotako/pg`) is identical in both modes; only the resolution
 
 ## CLI
 
-`tako` binary (package `@kurotako/cli`). Envisaged commands: `tako generate`, `tako init`. Watch / incremental: open
-questions.
+`tako` binary (package `@kurotako/cli`). Commands: `tako init`, `tako generate`
+(`--watch`, `--dry-run`), `tako validate`, `tako check`. Incremental regeneration: out of
+scope for v1.
+
+`tako check` (drift guard) regenerates in memory and compares the result against the
+committed output tree — exit 0 in sync, exit 1 (with the list of `modified` / `missing` /
+`orphan` files) on any divergence. It relies on generators emitting byte-deterministic,
+already-formatted code: it does **not** run the `afterEmit` hook, so a project that
+formats generated code through an `afterEmit` Biome/Prettier hook would see `tako check`
+report spurious drift. `afterEmit` formatting is a `generate`-path convenience only. See
+[drift-guard](../backlog/features/drift-guard/technical.md).

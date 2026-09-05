@@ -1,6 +1,6 @@
 # backend — @kurotako/core packageWriter.plan() (mode B, no build/install)
 
-**Status**: to do
+**Status**: done
 **Type**: backend
 **Issue**: [#52](https://github.com/marmotz/kurotako/issues/52)
 

@@ -1,6 +1,6 @@
 # backend — @kurotako/cli tako check (drift guard)
 
-**Status**: to do
+**Status**: done
 **Type**: backend
 **Issue**: [#53](https://github.com/marmotz/kurotako/issues/53)
 

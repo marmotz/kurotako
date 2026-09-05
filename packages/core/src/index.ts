@@ -9,7 +9,7 @@ export { run } from './run.js';
 export type * from './types.js';
 export { applyBanner, BANNER, GITATTRIBUTES } from './writer/banner.js';
 export { synthesizeRootBarrels } from './writer/barrel.js';
-export type { WriteInput, Writer } from './writer/index.js';
+export type { PlannedFile, WriteInput, Writer } from './writer/index.js';
 export {
   directoryWriter,
   packageWriter,

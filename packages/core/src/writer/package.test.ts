@@ -196,6 +196,85 @@ describe('packageWriter', () => {
     await expect(write({ packageManager: 'bun' })).resolves.toBeDefined();
   });
 
+  it('plan() strips the <ns>/ prefix, synthesizes the manifest, and spawns nothing', async () => {
+    const mkdir = vi.spyOn(fs, 'mkdir');
+    const writeFile = vi.spyOn(fs, 'writeFile');
+
+    const planned = await packageWriter.plan({
+      files,
+      artifacts,
+      logger: logger(),
+      output: {
+        mode: 'package',
+        packagesDir: path.join(dir, 'packages'),
+        scope: '@kurotako',
+      },
+    });
+
+    const pkgDir = path.join(dir, 'packages', 'kurotako-pg');
+    const byPath = new Map(planned.map((p) => [p.path, p.content]));
+
+    expect(byPath.has(path.join(pkgDir, 'src/index.ts'))).toBe(true);
+    expect(byPath.get(path.join(pkgDir, 'src/zod/enums.ts'))).toBe(
+      'export const Role = 1;\n',
+    );
+    expect(byPath.has(path.join(pkgDir, 'package.json'))).toBe(true);
+    expect(byPath.has(path.join(pkgDir, 'tsconfig.json'))).toBe(true);
+    expect(byPath.has(path.join(pkgDir, 'tsup.config.ts'))).toBe(true);
+    expect(byPath.has(path.join(pkgDir, '.gitattributes'))).toBe(true);
+    expect(byPath.has(path.join(dir, 'packages', '.gitattributes'))).toBe(true);
+
+    const pkg = JSON.parse(
+      byPath.get(path.join(pkgDir, 'package.json')) as string,
+    );
+    expect(pkg.version).toBe('0.0.0');
+    expect(pkg.peerDependencies).toEqual({ zod: '^4' });
+
+    expect(
+      planned.some((p) => p.path.includes(`${path.sep}dist${path.sep}`)),
+    ).toBe(false);
+    expect(planned.map((p) => p.path)).toEqual(
+      [...planned.map((p) => p.path)].sort(),
+    );
+    expect(build).not.toHaveBeenCalled();
+    expect(vi.mocked(runInstall)).not.toHaveBeenCalled();
+    expect(mkdir).not.toHaveBeenCalled();
+    expect(writeFile).not.toHaveBeenCalled();
+
+    mkdir.mockRestore();
+    writeFile.mockRestore();
+  });
+
+  it('plan() is byte-identical to the src/ + manifest files write() produces', async () => {
+    const output = {
+      mode: 'package' as const,
+      packagesDir: path.join(dir, 'packages'),
+      scope: '@kurotako',
+      packageManager: 'bun' as const,
+    };
+    const planned = await packageWriter.plan({ files, artifacts, output });
+    await packageWriter.write({ files, artifacts, logger: logger(), output });
+
+    for (const entry of planned) {
+      expect(await fs.readFile(entry.path, 'utf8')).toBe(entry.content);
+    }
+  });
+
+  it('plan() is deterministic across calls', async () => {
+    const input = {
+      files,
+      artifacts,
+      output: {
+        mode: 'package' as const,
+        packagesDir: path.join(dir, 'packages'),
+        scope: '@kurotako',
+      },
+    };
+    expect(await packageWriter.plan(input)).toEqual(
+      await packageWriter.plan(input),
+    );
+  });
+
   it('overwrites a previously generated package and is byte-deterministic', async () => {
     const first = await write({ packageManager: 'bun' });
     const pkgDir = path.join(dir, 'packages', 'kurotako-pg');

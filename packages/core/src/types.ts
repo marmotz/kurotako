@@ -8,6 +8,9 @@
  * artifacts, hooks, the logger and the `run()` option / result shapes.
  */
 import type { IR, SourceIR } from '@kurotako/ir';
+import type { PlannedFile } from './writer/types.js';
+
+export type { PlannedFile } from './writer/types.js';
 
 // --- logging ---------------------------------------------------------------------
 
@@ -167,6 +170,14 @@ export interface RunOptions {
   signal?: AbortSignal;
   /** Default `true`; `false` => run everything, skip the Writer. */
   write?: boolean;
+  /**
+   * Default `false`. `true` => run everything up to (not including) emission,
+   * then ask each output's Writer for the files a `generate` would write
+   * (absolute path + exact bytes) via `Writer.plan()`, returned as
+   * `RunResult.plan`. No disk I/O, `afterEmit` does not fire. Wins over
+   * `write`: `{ plan: true, write: true }` still writes nothing.
+   */
+  plan?: boolean;
 }
 
 export interface RunResult {
@@ -180,4 +191,10 @@ export interface RunResult {
   artifacts: Record<string, GeneratorArtifact>;
   /** One entry per `config.outputs[]`, in order; `[]` when `write: false`. */
   written: { output: OutputConfig; files: string[] }[];
+  /**
+   * Present iff `opts.plan === true`: the files a fresh `generate` would write
+   * across every `config.outputs[]` entry, absolute paths, sorted by `path`.
+   * Basis of `tako check` (drift-guard).
+   */
+  plan?: PlannedFile[];
 }

@@ -2,7 +2,10 @@
  * `run()` — the single public entry point. Sequential, fail-fast: parse ->
  * merge -> order -> generate -> collect -> write -> afterEmit. `opts.signal` is
  * checked at each step boundary; `opts.write === false` runs everything but
- * skips the Writer (basis of `--dry-run` and `drift-guard`).
+ * skips the Writer (basis of `--dry-run`). `opts.plan === true` also stops
+ * before emission but calls `Writer.plan()` per output and returns the planned
+ * tree as `RunResult.plan` — no disk I/O, no `afterEmit` (basis of `tako check`
+ * / drift-guard); it wins over `opts.write`.
  *
  * Steps 5b/5c (synthesize root barrels, apply banner) are added to this file by
  * the output-modes feature; they are not part of the core-pipeline tasks.
@@ -19,9 +22,11 @@ import { mergeSources } from './merge.js';
 import type {
   GeneratorArtifact,
   OutputConfig,
+  PlannedFile,
   ResolvedConfig,
   RunOptions,
   RunResult,
+  VirtualFile,
 } from './types.js';
 import { applyBanner } from './writer/banner.js';
 import { synthesizeRootBarrels } from './writer/barrel.js';
@@ -133,30 +138,56 @@ export async function run(
   // synthesized barrels alike.
   const files = applyBanner(merged);
 
+  // The per-output tree: `collected` filtered to that output's generator subset,
+  // with its own synthesized root barrels and the banner applied. Shared by the
+  // write path (step 6) and the plan path (drift-guard).
+  const outputTree = (output: OutputConfig): VirtualFile[] => {
+    const names = new Set(output.generators ?? order);
+    const filteredFiles = collected.filter((file) =>
+      names.has(file.path.split('/')[1] ?? ''),
+    );
+    const outputBarrels = synthesizeRootBarrels(
+      filteredFiles,
+      artifacts,
+      logger,
+    );
+    return applyBanner(
+      mergeTrees([
+        { generator: '<filtered>', files: filteredFiles },
+        { generator: '<synthesized root barrel>', files: outputBarrels },
+      ]),
+    );
+  };
+
+  // 6a. Plan (drift-guard) — compute what a `generate` would write for every
+  // output, without touching disk and without firing `afterEmit`. Wins over
+  // `write`.
+  if (opts?.plan === true) {
+    const planned: PlannedFile[] = [];
+    for (const output of config.outputs) {
+      checkSignal();
+      const writer = selectWriter(output);
+      planned.push(
+        ...(await writer.plan({
+          files: outputTree(output),
+          output,
+          artifacts,
+          logger,
+        })),
+      );
+    }
+    planned.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+    return { ir, order, files, artifacts, written: [], plan: planned };
+  }
+
   // 6. Write (unless disabled) — one writer call per `config.outputs` entry.
   const written: { output: OutputConfig; files: string[] }[] = [];
   if (opts?.write !== false) {
     for (const output of config.outputs) {
       checkSignal();
-      const names = new Set(output.generators ?? order);
-      const filteredFiles = collected.filter((file) =>
-        names.has(file.path.split('/')[1] ?? ''),
-      );
-      const outputBarrels = synthesizeRootBarrels(
-        filteredFiles,
-        artifacts,
-        logger,
-      );
-      const outputTree = applyBanner(
-        mergeTrees([
-          { generator: '<filtered>', files: filteredFiles },
-          { generator: '<synthesized root barrel>', files: outputBarrels },
-        ]),
-      );
-
       const writer = selectWriter(output);
       const writtenPaths = await writer.write({
-        files: outputTree,
+        files: outputTree(output),
         output,
         artifacts,
         logger,

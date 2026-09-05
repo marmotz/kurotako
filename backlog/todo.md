@@ -140,9 +140,9 @@ design: [technical.md](features/generator-angular/technical.md)
 
 | Done | Issue                                                | Task                                                                    | Description                                                                                                  |
 |------|------------------------------------------------------|-------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
-|      | [#51](https://github.com/marmotz/kurotako/issues/51) | [51-core-writer-plan](tasks/51-core-writer-plan.md)                     | `Writer.plan()` + `PlannedFile`, `directoryWriter.plan()`, `RunOptions/RunResult.plan`, `run.ts` plan branch |
-|      | [#52](https://github.com/marmotz/kurotako/issues/52) | [52-output-package-writer-plan](tasks/52-output-package-writer-plan.md) | `packageWriter.plan()` — deterministic subset (src + manifest), no tsup build / no install                   |
-|      | [#53](https://github.com/marmotz/kurotako/issues/53) | [53-cli-check-command](tasks/53-cli-check-command.md)                   | `tako check` — `commands/check.ts` + `diff.ts` (`comparePlanToDisk`), citty entry                            |
+| [x]  | [#51](https://github.com/marmotz/kurotako/issues/51) | [51-core-writer-plan](tasks/51-core-writer-plan.md)                     | `Writer.plan()` + `PlannedFile`, `directoryWriter.plan()`, `RunOptions/RunResult.plan`, `run.ts` plan branch |
+| [x]  | [#52](https://github.com/marmotz/kurotako/issues/52) | [52-output-package-writer-plan](tasks/52-output-package-writer-plan.md) | `packageWriter.plan()` — deterministic subset (src + manifest), no tsup build / no install                   |
+| [x]  | [#53](https://github.com/marmotz/kurotako/issues/53) | [53-cli-check-command](tasks/53-cli-check-command.md)                   | `tako check` — `commands/check.ts` + `diff.ts` (`comparePlanToDisk`), citty entry                            |
 
 ## Documentation site
 
