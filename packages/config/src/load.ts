@@ -161,6 +161,10 @@ export async function loadConfig(opts?: {
       const watchPaths = use.watchPaths.bind(use);
       parser.watchPaths = (ctx) => watchPaths(ctx, parsedOptions);
     }
+    if (use.anchor) {
+      const anchor = use.anchor.bind(use);
+      parser.anchor = (rootDir) => anchor(rootDir, parsedOptions);
+    }
     sources[ns] = { parser, options: parsedOptions };
   }
 

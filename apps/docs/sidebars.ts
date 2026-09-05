@@ -43,6 +43,7 @@ const sidebars: SidebarsConfig = {
         'reference/cli',
         'reference/catalog',
         'reference/output-modes',
+        'reference/monorepo',
       ],
     },
     // The generated API category is appended only when TypeDoc has produced its

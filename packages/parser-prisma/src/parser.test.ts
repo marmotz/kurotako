@@ -260,3 +260,19 @@ describe('prismaParser.parse — errors', () => {
     ).rejects.toBeInstanceOf(PrismaInputError);
   });
 });
+
+describe('prismaParser.anchor', () => {
+  it('returns the directory the schema lives in, resolved against rootDir', () => {
+    expect(
+      prismaParser.anchor?.('/repo', {
+        schema: './libs/db/prisma/schema.prisma',
+      }),
+    ).toBe(join('/repo', 'libs', 'db', 'prisma'));
+  });
+
+  it('yields the parent directory for a schema folder', () => {
+    expect(prismaParser.anchor?.('/repo', { schema: './libs/db/prisma' })).toBe(
+      join('/repo', 'libs', 'db'),
+    );
+  });
+});

@@ -249,10 +249,8 @@ jobs:
   `bun run --filter './packages/*' build` **before** the site build. The root
   `bun run build` is scoped to `./packages/*` — the docs site is built by this workflow
   only and never gates package CI (`ci.yml` unchanged).
-- **Custom domain**: `baseUrl: '/'`, `static/CNAME` holding the domain, GitHub Pages
-  "Custom domain" set once in repo settings, "Enforce HTTPS" on. The exact domain is an
-  open point (see below); until it is chosen the site can ship at
-  `https://marmotz.github.io/kurotako/` with `baseUrl: '/kurotako/'` as a one-line flip.
+- **Custom domain**: `kurotako.marmotz.dev`. `baseUrl: '/'`, `static/CNAME` holds the
+  domain, GitHub Pages "Custom domain" set once in repo settings, "Enforce HTTPS" on.
 - `ci.yml` (the toolchain workflow) is **not** modified; docs never gate package CI and
   vice versa.
 
@@ -297,7 +295,6 @@ on that feature (see
 
 ## Open points (small, non-blocking)
 
-- Exact custom domain string (and its purchase). `baseUrl` / `CNAME` are ready to fill.
 - Whether to add Algolia DocSearch (needs an application, public site) or rely on
   Docusaurus' local search plugin for launch. Lean local-search for launch.
 - `preset-classic` blog: off for v1 (no blog decided). Revisit if release notes want a

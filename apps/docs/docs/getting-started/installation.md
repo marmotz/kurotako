@@ -90,6 +90,12 @@ Every parser and generator is a separate package. To add one:
 
 Everything available is listed in the [catalog](../reference/catalog.md).
 
+## Monorepos
+
+In a workspace repo, keep one `tako.config.ts` at the root and install
+`@prisma/internals` in the sub-project that owns the schema. `tako init --monorepo`
+scaffolds that layout. See [Using tako in a monorepo](../reference/monorepo.md).
+
 ## Versioning
 
 Packages are versioned independently (changesets). The documentation version selector

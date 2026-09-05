@@ -1,6 +1,6 @@
 # backend — core: `ParseContext.anchorDir` + `Parser.anchor` hook + `run()` wiring
 
-**Status**: to do
+**Status**: done
 **Type**: backend
 **Issue**: [#89](https://github.com/marmotz/kurotako/issues/89)
 

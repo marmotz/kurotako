@@ -1,6 +1,6 @@
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { CONFIG_TEMPLATE } from '@kurotako/config';
+import { CONFIG_TEMPLATE, CONFIG_TEMPLATE_MONOREPO } from '@kurotako/config';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { runCli } from '../cli.js';
 
@@ -63,5 +63,69 @@ describe('tako init', () => {
     expect(readFileSync(join(root, 'nested', 'custom.config.ts'), 'utf8')).toBe(
       CONFIG_TEMPLATE,
     );
+  });
+
+  describe('--monorepo', () => {
+    it('--monorepo forces the monorepo template even with a plain package.json', async () => {
+      writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'x' }));
+      await runCli(['init', '--monorepo']);
+      expect(readFileSync(join(root, 'tako.config.ts'), 'utf8')).toBe(
+        CONFIG_TEMPLATE_MONOREPO,
+      );
+      expect(stderr).toContain('monorepo layout');
+    });
+
+    it('--no-monorepo forces the single-project template even with workspaces', async () => {
+      writeFileSync(
+        join(root, 'package.json'),
+        JSON.stringify({ name: 'x', workspaces: ['packages/*'] }),
+      );
+      await runCli(['init', '--no-monorepo']);
+      expect(readFileSync(join(root, 'tako.config.ts'), 'utf8')).toBe(
+        CONFIG_TEMPLATE,
+      );
+    });
+
+    it('auto-detects a workspace from `workspaces` in package.json', async () => {
+      writeFileSync(
+        join(root, 'package.json'),
+        JSON.stringify({ name: 'x', workspaces: ['apps/*'] }),
+      );
+      await runCli(['init']);
+      expect(readFileSync(join(root, 'tako.config.ts'), 'utf8')).toBe(
+        CONFIG_TEMPLATE_MONOREPO,
+      );
+    });
+
+    it('auto-detects a workspace from `workspaces.packages`', async () => {
+      writeFileSync(
+        join(root, 'package.json'),
+        JSON.stringify({ name: 'x', workspaces: { packages: ['apps/*'] } }),
+      );
+      await runCli(['init']);
+      expect(readFileSync(join(root, 'tako.config.ts'), 'utf8')).toBe(
+        CONFIG_TEMPLATE_MONOREPO,
+      );
+    });
+
+    it('auto-detects a workspace from a sibling pnpm-workspace.yaml', async () => {
+      writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'x' }));
+      writeFileSync(
+        join(root, 'pnpm-workspace.yaml'),
+        "packages:\n  - 'apps/*'\n",
+      );
+      await runCli(['init']);
+      expect(readFileSync(join(root, 'tako.config.ts'), 'utf8')).toBe(
+        CONFIG_TEMPLATE_MONOREPO,
+      );
+    });
+
+    it('auto-detects a plain package.json as single-project', async () => {
+      writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'x' }));
+      await runCli(['init']);
+      expect(readFileSync(join(root, 'tako.config.ts'), 'utf8')).toBe(
+        CONFIG_TEMPLATE,
+      );
+    });
   });
 });

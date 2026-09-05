@@ -86,11 +86,28 @@ export interface Parser {
    * `run()` never calls it.
    */
   watchPaths?(ctx: ParseContext): string[] | Promise<string[]>;
+  /**
+   * The directory this source is anchored at, for toolchain-dependency
+   * resolution. Already curried (options bound). `run()` calls it before
+   * `parse()` and passes the result as `ParseContext.anchorDir`. Return
+   * `undefined` (or omit the hook) to anchor on `rootDir`. Must not throw for an
+   * ordinary "not found" case — a bad path is the parser's problem to surface
+   * during `parse()`.
+   */
+  anchor?(rootDir: string): string | undefined | Promise<string | undefined>;
 }
 
 export interface ParseContext {
   namespace: string;
+  /** Absolute; the config-file directory. Base for `options.schema` and output paths. */
   cwd: string;
+  /**
+   * Absolute; the directory this source is anchored at — where its schema lives.
+   * A parser resolves the source's own toolchain dependencies (`@prisma/internals`
+   * and equivalents) from here, letting Node walk up `node_modules` to `cwd` and
+   * beyond. Absent (⇒ treat as `cwd`) when the parser declares no `anchor` hook.
+   */
+  anchorDir?: string;
   logger: Logger;
 }
 

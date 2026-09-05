@@ -12,7 +12,6 @@
     "@kurotako/parser-prisma": "link:@kurotako/parser-prisma",
     "@kurotako/gen-zod": "link:@kurotako/gen-zod",
     "@kurotako/gen-angular": "link:@kurotako/gen-angular",
-    "@prisma/internals": "^7.10.0",
     "prisma": "^7.10.0"
   },
   "scripts": {

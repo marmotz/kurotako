@@ -39,6 +39,7 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.0",
     "@types/supertest": "^7.0.0",
+    "@prisma/internals": "^7.10.0",
     "prisma": "^7.10.0",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",

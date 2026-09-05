@@ -8,6 +8,16 @@
 import { defineConfig, type SourceEntry } from '@kurotako/config';
 import { zodGenerator } from '@kurotako/gen-zod';
 import { prismaParser } from '@kurotako/parser-prisma';
+import { initCommand } from './init.js';
+
+// `tako init --monorepo` is declared as a boolean flag with no `default`, so at
+// runtime citty leaves it `undefined` unless `--monorepo` / `--no-monorepo` is
+// passed; `init.ts` narrows with `typeof === 'boolean'` before falling back to
+// auto-detection.
+const initArgs = initCommand.args as {
+  monorepo: { type: 'boolean'; default?: boolean | undefined };
+};
+export const monorepoDefault: boolean | undefined = initArgs.monorepo.default;
 
 // The uncommented body of `CONFIG_TEMPLATE` (packages/config/src/template.ts).
 export const config = defineConfig({

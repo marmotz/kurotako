@@ -31,6 +31,15 @@ export function defineParser<
     ctx: ParseContext,
     options: DriverOptions<S>,
   ): string[] | Promise<string[]>;
+  /**
+   * Curried like `parse`; `run()` calls it before `parse()` and passes the
+   * result as `ParseContext.anchorDir`. Return `undefined` to anchor on
+   * `rootDir`. Must not throw for a "not found" case.
+   */
+  anchor?(
+    rootDir: string,
+    options: DriverOptions<S>,
+  ): string | undefined | Promise<string | undefined>;
 }): typeof driver {
   return driver;
 }

@@ -21,6 +21,11 @@ const withOptions = defineParser({
     options.schema.toUpperCase();
     return { namespace: 'pg', parser: 'with-options', entities: {}, enums: {} };
   },
+  anchor: (rootDir: string, options): string => {
+    // `options` is inferred as the schema Output: `schema` is a non-optional
+    // string here (defaulted), so `.toUpperCase()` type-checks.
+    return rootDir + options.schema.toUpperCase();
+  },
 });
 
 const requiredOptions = defineParser({
