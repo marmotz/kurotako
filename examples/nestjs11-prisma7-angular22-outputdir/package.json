@@ -1,0 +1,23 @@
+{
+  "name": "kurotako-example-outputdir",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*"
+  ],
+  "packageManager": "bun@1.4.0",
+  "devDependencies": {
+    "@kurotako/cli": "link:@kurotako/cli",
+    "@kurotako/config": "link:@kurotako/config",
+    "@kurotako/parser-prisma": "link:@kurotako/parser-prisma",
+    "@kurotako/gen-zod": "link:@kurotako/gen-zod",
+    "@kurotako/gen-angular": "link:@kurotako/gen-angular",
+    "@prisma/internals": "^7.10.0",
+    "prisma": "^7.10.0"
+  },
+  "scripts": {
+    "tako:generate": "tako generate",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev"
+  }
+}
