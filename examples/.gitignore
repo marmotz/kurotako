@@ -1,0 +1,9 @@
+# examples/ — regenerable tako output, not committed
+*/bun.lock
+*/apps/*/generated
+*/packages/example-*
+*/packages/.gitattributes
+
+# examples/ — local Prisma SQLite dev database, not committed (migrations are)
+*/apps/*/prisma/dev.db
+*/apps/*/prisma/dev.db-journal
