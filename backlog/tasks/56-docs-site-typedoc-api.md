@@ -1,6 +1,6 @@
 # CI — docs site API reference (TypeDoc)
 
-**Status**: to do **Type**: CI **Issue**: [#56](https://github.com/marmotz/kurotako/issues/56)
+**Status**: done **Type**: CI **Issue**: [#56](https://github.com/marmotz/kurotako/issues/56)
 
 Reference: [../features/docs-site/technical.md §API reference — TypeDoc](../features/docs-site/technical.md#api-reference--typedoc).
 

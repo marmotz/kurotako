@@ -1,6 +1,6 @@
 # CI — docs site scaffold (apps/docs, Docusaurus)
 
-**Status**: to do **Type**: CI **Issue**: [#55](https://github.com/marmotz/kurotako/issues/55)
+**Status**: done **Type**: CI **Issue**: [#55](https://github.com/marmotz/kurotako/issues/55)
 
 Reference: [../features/docs-site/technical.md §Package — apps/docs](../features/docs-site/technical.md#package--appsdocs)
 and [§Site generator — Docusaurus 3](../features/docs-site/technical.md#site-generator--docusaurus-3).
