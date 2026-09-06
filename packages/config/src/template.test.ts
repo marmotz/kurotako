@@ -7,11 +7,12 @@ import { CONFIG_TEMPLATE, CONFIG_TEMPLATE_MONOREPO } from './template.js';
 const PKG_DIR = join(import.meta.dirname, '..');
 
 describe('CONFIG_TEMPLATE', () => {
-  it('is a non-empty string importing defineConfig from @kurotako/config', () => {
+  it('is a non-empty string importing defineConfig from kurotako', () => {
     expect(CONFIG_TEMPLATE.length).toBeGreaterThan(0);
     expect(CONFIG_TEMPLATE).toContain(
-      "import { defineConfig } from '@kurotako/config'",
+      "import { defineConfig } from 'kurotako'",
     );
+    expect(CONFIG_TEMPLATE).not.toContain('@kurotako/config');
     expect(CONFIG_TEMPLATE).toContain('export default defineConfig(');
     expect(CONFIG_TEMPLATE).toContain(
       "outputs: [{ dir: './generated/kurotako' }]",
@@ -33,7 +34,7 @@ describe('CONFIG_TEMPLATE', () => {
           "  generators: [\n    { use: { name: 'g', optionsSchema: v.object({ zodVersion: v.optional(v.picklist([3, 4]), 4) }), generate: () => ({ files: [], artifact: { entities: {} } }) } },\n",
         )
         .replace(
-          "import { defineConfig } from '@kurotako/config'",
+          "import { defineConfig } from 'kurotako'",
           "import * as v from 'valibot'",
         );
       writeFileSync(
@@ -55,8 +56,9 @@ describe('CONFIG_TEMPLATE', () => {
 describe('CONFIG_TEMPLATE_MONOREPO', () => {
   it('imports defineConfig and carries per-sub-project outputs', () => {
     expect(CONFIG_TEMPLATE_MONOREPO).toContain(
-      "import { defineConfig } from '@kurotako/config'",
+      "import { defineConfig } from 'kurotako'",
     );
+    expect(CONFIG_TEMPLATE_MONOREPO).not.toContain('@kurotako/config');
     expect(CONFIG_TEMPLATE_MONOREPO).toContain('export default defineConfig(');
     expect(CONFIG_TEMPLATE_MONOREPO).toContain(
       "{ dir: './libs/db/src/generated', generators: ['zod'] }",

@@ -1,6 +1,6 @@
 # backend — `tako init` writes `import { defineConfig } from 'kurotako'`
 
-**Status**: to do
+**Status**: done
 **Type**: backend
 **Issue**: [#94](https://github.com/marmotz/kurotako/issues/94)
 
