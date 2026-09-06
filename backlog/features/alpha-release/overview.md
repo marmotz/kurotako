@@ -86,9 +86,8 @@ documentation versioning.
   the `docs/vision.md` status wording (remove "design phase" / "no code" / "private").
 - Add `SECURITY.md` and GitHub issue / PR templates.
 - Consider branch protection requiring `ci.yml` on `develop` (to confirm).
-- Let `changeset publish` + `changesets/action` create the per-package `pkg@0.1.0`
-  tags and one GitHub Release per package. No umbrella `v0.1.0` tag (versions are
-  independent).
+- `scripts/release-publish.sh` creates the per-package `pkg@0.1.0` tags and one GitHub
+  Release per package. No umbrella `v0.1.0` tag (versions are independent).
 
 ### Proposed rollout order
 
@@ -96,10 +95,12 @@ documentation versioning.
    internal deps to `workspace:^`.
 2. Per-package `package.json` metadata + per-package `README.md`.
 3. Refresh root `README.md` / `AGENTS.md`; add `SECURITY.md` + templates.
-4. User creates the npm org + `NPM_TOKEN` secret.
+4. User creates the npm org.
 5. Set all packages to `0.1.0`, dry-run publish, inspect tarballs.
-6. Run `release.yml` manually → publish; per-package tags + Releases are created by the
-   workflow.
+6. First `0.1.0` publish: manual + local (`npm login`, `bun run release`) — no trusted
+   publisher can exist yet. Then configure a trusted publisher per package on npmjs.org;
+   every release after runs `release.yml` with no secret. Per-package tags + Releases are
+   created by `scripts/release-publish.sh`.
 7. Smoke test: `npm create` / `bunx tako init` in a clean project against the published
    `0.1.0`.
 

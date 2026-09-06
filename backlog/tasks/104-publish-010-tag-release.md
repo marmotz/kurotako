@@ -6,33 +6,42 @@ and [§Consequences verified against current code](../features/alpha-release/tec
 
 ## Verified findings
 
-- Once versioned to `0.1.0`, publishing goes through `release.yml`
-  (`workflow_dispatch`), `bunx changeset publish`.
-- `ci.yml` runs the `--version` smoke checks on every push/PR; the "Version Packages"
-  state must be green before this task.
+- The original `bunx changeset publish` + `NPM_TOKEN` plan was dropped: `bun publish`
+  has no npm OIDC support, a classic publish token still triggers `EOTP` in CI, and
+  `npm publish` does not rewrite `workspace:`. See technical.md §5 (revised).
+- Publish path is now `scripts/release-publish.sh`: `bun pm pack` per package (rewrites
+  `workspace:^`) then `npm publish <tarball>` (OIDC in CI, `--provenance`). `release.yml`
+  uses `changesets/action` only for the "Version Packages" PR; the publish is a separate
+  step gated on `hasChangesets == 'false'`.
+- An OIDC trusted publisher cannot be created for a package that does not exist on npm,
+  so the first `0.1.0` publish is manual and local; every release after runs in CI.
+- `ci.yml` runs the `--version` smoke checks on every push/PR; keep it green.
 
 ## To do
 
-1. From a clean checkout on `develop` at the `0.1.0` commit: `bun install --frozen-lockfile`,
-   `bun run build`, `bunx changeset publish --dry-run`. Inspect each tarball
-   (`npm pack --dry-run` per package or the changesets output):
+1. Dry run: `bun install --frozen-lockfile`, then `RELEASE_DRY_RUN=1 bash scripts/release-publish.sh`.
+   Confirm for each of the 8 tarballs:
    - `workspace:^` rewritten to `^0.1.0` in `dependencies` and `peerDependencies`;
    - `dist/`, `README.md`, `LICENSE`, `CHANGELOG.md`, `package.json` present;
    - `bin` paths (`dist/bin/tako.js`) resolve for `@kurotako/cli` and `kurotako`.
-2. Trigger `release.yml` via `workflow_dispatch`. If it opens a "Version Packages" PR
-   (no changeset was left), there is nothing to version — re-run after confirming
-   `package.json` files already read `0.1.0`; the publish path runs when no changesets
-   are pending.
-3. Confirm all 8 packages are live on npm at `0.1.0` under the `latest` tag, with a
-   provenance badge.
-4. Confirm the release workflow created the artifacts it owns: one `pkg@0.1.0` git tag
-   per published package and one GitHub Release per package (`changeset publish` +
-   `changesets/action` `createGithubReleases`). No umbrella `v0.1.0` tag and no
-   repo-wide Release — versions are independent. Edit the 8 Release notes to link the
-   archived features (`backlog/_archives/done.md`) if the generated notes are too thin.
-5. Smoke test from a scratch directory: `npm i -D kurotako@0.1.0`, `bunx tako init`,
-   `bunx tako generate` on a tiny Prisma schema — or run the existing
-   `apps`/`examples` e2e against the published package if simpler.
+   (done for 0.1.0 — all green.)
+2. First publish (manual, local, one-time): `npm login` (provides the 2FA OTP), then on
+   a clean checkout at the `0.1.0` commit `bun run release`. npm prompts for the OTP per
+   package. No provenance badge on `0.1.0` (provenance is CI-only); acceptable.
+   Then `git push --tags` if the script could not.
+3. Configure a trusted publisher for each of the 8 packages on npmjs.org
+   (Settings → Trusted Publisher): org/user `marmotz`, repo `kurotako`, workflow
+   `release.yml`. From here on `release.yml` publishes with no secret.
+4. Confirm all 8 packages are live on npm at `0.1.0` under the `latest` tag. Provenance
+   badge appears from the first CI release onward, not on `0.1.0`.
+5. Confirm one `pkg@0.1.0` git tag and one GitHub Release per package (created by the
+   script). No umbrella `v0.1.0` tag, no repo-wide Release. Edit the 8 Release notes to
+   link the archived features (`backlog/_archives/done.md`) if the generated notes are
+   too thin.
+6. Smoke test from a scratch directory: `npm i -D kurotako@0.1.0`, `bunx tako init`,
+   `bunx tako generate` on a tiny Prisma schema.
+7. Backlog follow-up: once `bun publish` gains OIDC support, collapse
+   `scripts/release-publish.sh` back into `changeset publish`.
 
 ## Dependencies
 

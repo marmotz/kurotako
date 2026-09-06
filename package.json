@@ -19,7 +19,7 @@
     "lint": "biome check .",
     "format": "biome format --write .",
     "prepare": "lefthook install",
-    "release": "bun run build && changeset publish",
+    "release": "bash scripts/release-publish.sh",
     "update:minor": "bun x npm-check-updates -i -t minor -ws",
     "update:latest": "bun x npm-check-updates -i -t latest -ws"
   },
