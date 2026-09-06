@@ -6,7 +6,7 @@
     "packages/*",
     "apps/*"
   ],
-  "packageManager": "bun@1.4.0",
+  "packageManager": "bun@1.4.2",
   "engines": {
     "node": ">=24",
     "bun": ">=1.4.0"
@@ -19,16 +19,18 @@
     "lint": "biome check .",
     "format": "biome format --write .",
     "prepare": "lefthook install",
-    "release": "bun run build && changeset publish"
+    "release": "bun run build && changeset publish",
+    "update:minor": "bun x npm-check-updates -i -t minor -ws",
+    "update:latest": "bun x npm-check-updates -i -t latest -ws"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.11",
-    "@changesets/cli": "3.0.1",
-    "@types/node": "^24",
-    "@vitest/coverage-v8": "4.1.11",
+    "@biomejs/biome": "2.5.12",
+    "@changesets/cli": "3.0.2",
+    "@types/node": "^24.13.3",
+    "@vitest/coverage-v8": "5.0.0",
     "lefthook": "2.1.12",
     "tsup": "8.5.1",
     "typescript": "5.9.3",
-    "vitest": "4.1.11"
+    "vitest": "5.0.0"
   }
 }
