@@ -1,7 +1,7 @@
 # CI — enable the release workflow (manual), fix job order, add provenance
 
 **Status**: done **Type**: CI **Issue**: [#102](https://github.com/marmotz/kurotako/issues/102)
-Reference: [../features/alpha-release/technical.md §5](../features/alpha-release/technical.md#5-releaseyml--keep-manual-fix-ordering-add-provenance).
+Reference: [../features/alpha-release/technical.md §5](../features/alpha-release/technical.md#5-releaseyml--keep-manual-publish-via-npm-oidc-no-token).
 
 ## Verified findings
 

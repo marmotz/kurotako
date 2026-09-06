@@ -5,18 +5,24 @@ name: Release
 #      the "Version Packages" PR: it runs `changeset version`, which bumps every
 #      package.json, writes the CHANGELOGs and consumes the changeset files. Nothing is
 #      published. Review and merge that PR.
-#   2. Dispatch again on the merged commit -> no changesets remain, so changesets/action
-#      runs the `publish` command below.
+#   2. Dispatch again on the merged commit -> no changesets remain, so the publish step
+#      below runs `scripts/release-publish.sh`.
 #
-# Job order: the build MUST run after the version bump so the tsup `define`
-# `__TAKO_VERSION__` (packages/cli, packages/kurotako) stamps the release version into the
-# bins. Phase 1 does not build. Phase 2 builds inside `bun run release`
-# (`bun run build && changeset publish`), i.e. against the already-bumped package.json on
-# the merged commit. `ci.yml` asserts the `kurotako` bin `--version` == package.json
-# version and gates the "Version Packages" PR, catching any mismatch.
+# Publishing does NOT go through `changeset publish`:
+#   - `changeset publish` shells to `bun publish` (packageManager is bun), and bun does
+#     not support npm OIDC trusted publishing.
+#   - `npm publish` supports OIDC but does not rewrite the `workspace:` protocol.
+#   `scripts/release-publish.sh` packs each package with bun (rewrites `workspace:^`) and
+#   uploads the tarball with `npm publish` (authenticates via OIDC, `--provenance`).
 #
-# `NPM_TOKEN` (granular automation token for the `kurotako` npm org) must be set as a repo
-# secret before phase 2. Until then phase 2 fails at the publish step; phase 1 is safe.
+# Auth: npm OIDC trusted publishing, no `NPM_TOKEN`. Each package must have a trusted
+# publisher configured on npmjs.org (repo `marmotz/kurotako`, workflow `release.yml`).
+# A brand-new package cannot have one yet, so the FIRST publish of each package is done
+# manually from a maintainer's machine (`npm login` + `bun run release`); every release
+# after that runs here.
+#
+# `actions/setup-node` must NOT set `registry-url`: it would write an `.npmrc` with a
+# placeholder `_authToken` that npm prefers over the OIDC token exchange (npm/cli#8730).
 on:
   workflow_dispatch:
 
@@ -26,7 +32,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-      id-token: write # npm provenance attestation
+      id-token: write # npm provenance + OIDC trusted publishing
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -35,17 +41,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - name: Ensure npm supports OIDC trusted publishing
+        run: npm install -g npm@^11.5.1
       - run: bun install --frozen-lockfile
-      - name: Create "Version Packages" PR or publish
+      - name: Create "Version Packages" PR
+        id: changesets
         uses: changesets/action@v1
         with:
           version: bunx changeset version
-          # `bun run release` = `bun run build && changeset publish`, so the build always
-          # runs post-version. changesets detects `packageManager: bun@…` and shells to
-          # `bun publish`, which rewrites the `workspace:^` ranges to real caret versions.
-          publish: bun run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: 'true'
+      - name: Publish to npm
+        if: steps.changesets.outputs.hasChangesets == 'false'
+        run: bash scripts/release-publish.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

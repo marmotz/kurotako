@@ -14,7 +14,7 @@
   "homepage": "https://kurotako.marmotz.dev/",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/marmotz/kurotako.git",
+    "url": "https://github.com/marmotz/kurotako.git",
     "directory": "packages/parser-prisma"
   },
   "bugs": "https://github.com/marmotz/kurotako/issues",

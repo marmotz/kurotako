@@ -10,16 +10,16 @@ tree.
 |------|-------|----------|
 | Package versions | all `0.0.0` | every `packages/*/package.json` `"version": "0.0.0"` |
 | Publishable packages | 8 | `packages/{ir,core,config,cli,gen-zod,gen-angular,parser-prisma,kurotako}` |
-| Internal dep protocol | `workspace:*` everywhere (27 occurrences), incl. `peerDependencies` | e.g. [`packages/config/package.json`](../../../packages/config/package.json) `peerDependencies["@kurotako/core"] = "workspace:*"` |
+| Internal dep protocol | `workspace:*` everywhere (27 occurrences), incl. `peerDependencies` | e.g. [`packages/config/package.json`](../../../../packages/config/package.json) `peerDependencies["@kurotako/core"] = "workspace:*"` |
 | Package metadata | no `description`, `keywords`, `repository`, `homepage`, `bugs`, `license`, `author` in any package; `files: ["dist"]`; no `README.md` in any package | `packages/*/package.json` |
-| Release workflow | disabled, `workflow_dispatch` only, no `NPM_TOKEN`, header comment "DISABLED until the MVP packages leave 0.0.0" | [`.github/workflows/release.yml`](../../../.github/workflows/release.yml) |
+| Release workflow | disabled, `workflow_dispatch` only, no `NPM_TOKEN`, header comment "DISABLED until the MVP packages leave 0.0.0" | [`.github/workflows/release.yml`](../../../../.github/workflows/release.yml) |
 | Release job order | `bun install` → `bun run build` → `changesets/action` (`version` + `publish`) | `release.yml:24-38` |
-| Changesets config | `baseBranch: "main"`, `linked: []`, `fixed: []`, `updateInternalDependencies: "patch"`, `access: "public"`, `ignore: ["@kurotako/docs"]` | [`.changeset/config.json`](../../../.changeset/config.json) |
+| Changesets config | `baseBranch: "main"`, `linked: []`, `fixed: []`, `updateInternalDependencies: "patch"`, `access: "public"`, `ignore: ["@kurotako/docs"]` | [`.changeset/config.json`](../../../../.changeset/config.json) |
 | Default branch | `develop` (mismatch with `baseBranch`) | `gh repo view` |
 | Pending changesets | 6 real, never consumed: `drift-guard-plan`, `ir-model-schemas`, `meta-package-kurotako`, `monorepo-anchor-dir`, `outputs-array`, `tako-init-kurotako-import` | `.changeset/*.md` |
-| Version injection | build-time `define` `__TAKO_VERSION__` from `package.json` `version`, in `tsup.config.ts` of `cli` and `kurotako`; runtime fallback `'0.0.0-dev'` / `'0.0.0'` | [`packages/cli/src/cli.ts:18-20`](../../../packages/cli/src/cli.ts), [`packages/cli/tsup.config.ts`](../../../packages/cli/tsup.config.ts), [`packages/kurotako/tsup.config.ts`](../../../packages/kurotako/tsup.config.ts) |
-| CI | `ci.yml` on `push develop` + `pull_request`: typecheck, lint, test, build, 4 `--version` smoke checks (Node + Bun, `cli` and `kurotako`); the `kurotako` smoke asserts bin output `==` `package.json` version | [`.github/workflows/ci.yml`](../../../.github/workflows/ci.yml) |
-| Docs site | live at <https://kurotako.marmotz.dev/>, deployed by `docs.yml` on push to `develop` (Pages, custom domain, HTTPS approved); TypeDoc over `ir/core/config/cli`; version dropdown hidden until `versions.json` non-empty | [`.github/workflows/docs.yml`](../../../.github/workflows/docs.yml), [`apps/docs/docusaurus.config.ts:52-119`](../../../apps/docs/docusaurus.config.ts) |
+| Version injection | build-time `define` `__TAKO_VERSION__` from `package.json` `version`, in `tsup.config.ts` of `cli` and `kurotako`; runtime fallback `'0.0.0-dev'` / `'0.0.0'` | [`packages/cli/src/cli.ts:18-20`](../../../../packages/cli/src/cli.ts), [`packages/cli/tsup.config.ts`](../../../../packages/cli/tsup.config.ts), [`packages/kurotako/tsup.config.ts`](../../../../packages/kurotako/tsup.config.ts) |
+| CI | `ci.yml` on `push develop` + `pull_request`: typecheck, lint, test, build, 4 `--version` smoke checks (Node + Bun, `cli` and `kurotako`); the `kurotako` smoke asserts bin output `==` `package.json` version | [`.github/workflows/ci.yml`](../../../../.github/workflows/ci.yml) |
+| Docs site | live at <https://kurotako.marmotz.dev/>, deployed by `docs.yml` on push to `develop` (Pages, custom domain, HTTPS approved); TypeDoc over `ir/core/config/cli`; version dropdown hidden until `versions.json` non-empty | [`.github/workflows/docs.yml`](../../../../.github/workflows/docs.yml), [`apps/docs/docusaurus.config.ts:52-119`](../../../../apps/docs/docusaurus.config.ts) |
 | Repo | public, MIT (`LICENSE`, `Copyright (c) 2026 Marmotz`); no `SECURITY.md`, no `.github/ISSUE_TEMPLATE/`, no PR template | `gh`, `ls .github/` |
 | Stale prose | `README.md` "Status: design phase" / "packages are scaffolded empty"; root `AGENTS.md` "No implementation code exists yet" / "no `package.json`" / repo "holds the backlog issues"; `CONTRIBUTING.md` "TypeScript 7.x in-repo" (repo pins `typescript@5.9.3`); `docs/vision.md:67` "design phase" wording | files |
 
@@ -88,7 +88,7 @@ One-line fix; `main` does not exist. Affects which branch `changeset status` /
 - Create a **granular automation token** (publish scope, the 8 packages) and add it as
   the repo secret `NPM_TOKEN` (already referenced at `release.yml:38`).
 
-### 5. `release.yml` — keep manual, fix ordering, add provenance
+### 5. `release.yml` — keep manual, publish via npm OIDC (no token)
 
 - **Trigger:** stays `workflow_dispatch` only (`overview.md`). Remove the "DISABLED"
   header comment; document that the two-phase changesets flow (dispatch → "Version
@@ -103,17 +103,33 @@ One-line fix; `main` does not exist. Affects which branch `changeset status` /
     action's bundled `version`/`publish`, or a `prepublishOnly` build).
   The `kurotako` CI smoke check (`ci.yml`, bin `==` `package.json` version) will catch a
   mismatch on the release PR.
-- **Publish mechanism:** `bunx changeset publish`. changesets 3.x detects `bun`
-  (root `packageManager: "bun@1.4.0"`) and shells to `bun publish`, which performs the
-  `workspace:` → version rewrite. **Verify in a dry run** (§7); fallback is a
-  `prepublish` script that rewrites ranges, or `changeset publish` with an explicit
-  publish command.
-- **npm provenance** *(recommended)*: add `permissions: id-token: write` and
-  `NPM_CONFIG_PROVENANCE: "true"` (or `--provenance`). npm then records a signed,
-  publicly verifiable attestation tying each tarball to this exact workflow run and
-  commit, shown as a "provenance" badge on npmjs.com. Cost is ~3 lines of YAML since the
-  publish already runs in GitHub Actions; requires the publish to stay in CI (it does).
-  Drop it only if it blocks the first run.
+- **Publish mechanism (revised during #104 — npm OIDC trusted publishing, no token):**
+  the original plan was `bunx changeset publish` + a repo secret `NPM_TOKEN`. Dropped
+  because:
+  - `bun publish` (what `changeset publish` shells to, `packageManager: bun`) does **not**
+    support npm OIDC trusted publishing ([oven-sh/bun#24855](https://github.com/oven-sh/bun/issues/24855));
+  - a classic "Publish" `NPM_TOKEN` still triggers `EOTP` (2FA) in CI, and npm now steers
+    automation to trusted publishing;
+  - `npm publish` supports OIDC but does **not** rewrite the `workspace:` protocol (only
+    bun/pnpm/yarn do).
+  Resolution: [`scripts/release-publish.sh`](../../../../scripts/release-publish.sh) packs
+  each package with `bun pm pack` (rewrites `workspace:^` → `^<version>`, verified) and
+  uploads the tarball with `npm publish` (authenticates via OIDC in CI). `changesets/action`
+  is used only for the "Version Packages" PR; the publish is a separate workflow step
+  gated on `steps.changesets.outputs.hasChangesets == 'false'`.
+- **Trusted publisher bootstrap:** an OIDC trusted publisher cannot be configured for a
+  package that does not exist on npm yet (`npm trust` and the web UI both require it).
+  So the **first** publish of every package is done manually from a maintainer's machine
+  (`npm login` for the 2FA OTP, then `bun run release`); each release after that runs in
+  CI with no secret. After the first publish, configure a trusted publisher per package
+  on npmjs.org: repo `marmotz/kurotako`, workflow `release.yml`.
+- **npm provenance:** `scripts/release-publish.sh` passes `--provenance` only when
+  `GITHUB_ACTIONS=true` (repo is public, `id-token: write` is set). The manual first
+  `0.1.0` publish therefore has **no** provenance badge; every CI release after it does.
+- **`actions/setup-node` must not set `registry-url`** — it writes a placeholder
+  `_authToken` that npm prefers over the OIDC exchange
+  ([npm/cli#8730](https://github.com/npm/cli/issues/8730)). Package `repository.url` is
+  `https://…` (no `git+`) for the same matching reason.
 
 ### 6. Per-package `package.json` metadata
 
@@ -125,14 +141,14 @@ Add to each of the 8:
 "license": "MIT",
 "author": "Marmotz",
 "homepage": "https://kurotako.marmotz.dev/",
-"repository": { "type": "git", "url": "git+https://github.com/marmotz/kurotako.git", "directory": "packages/<name>" },
+"repository": { "type": "git", "url": "https://github.com/marmotz/kurotako.git", "directory": "packages/<name>" },
 "bugs": "https://github.com/marmotz/kurotako/issues"
 ```
 
-`files: ["dist", "CHANGELOG.md", "LICENSE"]` in every package. The release runs through
-`bun publish` (`changeset publish` detects `packageManager: bun`), and bun's packer only
-auto-includes `README` and `LICENSE` (when the file exists in the package dir), **not**
-`CHANGELOG.md` — unlike npm. So `CHANGELOG.md` must be listed explicitly, and the root
+`files: ["dist", "CHANGELOG.md", "LICENSE"]` in every package. Tarballs are built with
+`bun pm pack` (§5), whose packer only auto-includes `README` and `LICENSE` (when the
+file exists in the package dir), **not** `CHANGELOG.md`. So `CHANGELOG.md` is listed
+explicitly, and the root
 `LICENSE` is copied into each `packages/*/` (static copy; verified in the dry run).
 Confirm during the dry run that `exports`, `main`/`module`/`types` and the two `bin`
 entries (`cli`, `kurotako`) resolve inside the tarball, and that `LICENSE` +
@@ -152,9 +168,8 @@ entries (`cli`, `kurotako`) resolve inside the tarball, and that `LICENSE` +
   and adding a tool for it is out of scope for `0.1.0`.
 - **No umbrella tag or repo-wide GitHub Release.** Each package versions independently
   (`linked: []`, `fixed: []`), so a single `v0.1.0` tag would be meaningless once
-  versions diverge. `changeset publish` creates one `pkg@version` git tag per published
-  package and `changesets/action` (`createGithubReleases`, on by default) creates one
-  GitHub Release per package — both automatic, nothing manual.
+  versions diverge. [`scripts/release-publish.sh`](../../../../scripts/release-publish.sh)
+  creates one `pkg@version` git tag and one GitHub Release per published package.
 - **Root `README.md`** — drop the "design phase" admonition; add an **Install**
   (`npm i -D kurotako` / `bunx tako init`) and **Quickstart** section against the
   published `0.1.0`; keep a one-line "`0.x`: the API may change between minor versions".
@@ -192,8 +207,9 @@ repo-settings change, not code.
   `0.1.0` across the board.
 - **Build-time version stamping**: §5 job-order bug is real; `ci.yml`'s `kurotako`
   smoke check is the safety net on the "Version Packages" PR.
-- **`bun publish` `workspace:` rewrite**: relied upon by §2; must be confirmed by the
-  §7 dry run before the first real publish.
+- **`workspace:` rewrite**: done by `bun pm pack` in `scripts/release-publish.sh` (§5),
+  not by `npm publish` (npm keeps `workspace:` literal). Verified in the #104 dry run:
+  `workspace:^` → `^0.1.0` in `dependencies` and `peerDependencies` for all 8 tarballs.
 - **TypeDoc entry points** (`ir/core/config/cli`) already point at real source; the API
   reference will render the actual public surface — nothing to wire, only to eyeball
   after the first post-`0.1.0` docs build.
@@ -207,9 +223,9 @@ repo-settings change, not code.
 | [#98](https://github.com/marmotz/kurotako/issues/98) | [../../tasks/98-repo-hygiene-prose-and-community-files.md](../../tasks/98-repo-hygiene-prose-and-community-files.md) | §7, §8 — README / AGENTS.md / CONTRIBUTING.md / vision.md refresh, SECURITY.md + templates |
 | [#99](https://github.com/marmotz/kurotako/issues/99) | [../../tasks/99-package-metadata-and-readmes.md](../../tasks/99-package-metadata-and-readmes.md) | §6 — `package.json` metadata + per-package `README.md` |
 | [#100](https://github.com/marmotz/kurotako/issues/100) | [../../tasks/100-internal-deps-workspace-caret.md](../../tasks/100-internal-deps-workspace-caret.md) | §2, §3 — `workspace:^` migration + `baseBranch` fix |
-| [#101](https://github.com/marmotz/kurotako/issues/101) | [../../tasks/101-npm-org-and-token.md](../../tasks/101-npm-org-and-token.md) | §4 — npm org + `NPM_TOKEN` (manual) |
+| [#101](https://github.com/marmotz/kurotako/issues/101) | [../../tasks/101-npm-org-and-token.md](../../tasks/101-npm-org-and-token.md) | §4 — npm org (manual); `NPM_TOKEN` later dropped for OIDC (§5, #104) |
 | [#102](https://github.com/marmotz/kurotako/issues/102) | [../../tasks/102-release-workflow-enable.md](../../tasks/102-release-workflow-enable.md) | §5 — enable `release.yml`, fix job order, provenance (needs #100) |
 | [#103](https://github.com/marmotz/kurotako/issues/103) | [../../tasks/103-consolidate-changesets-version-010.md](../../tasks/103-consolidate-changesets-version-010.md) | §1, §7 — one changeset, `changeset version` → 0.1.0, CHANGELOGs (needs #99, #100) |
-| [#104](https://github.com/marmotz/kurotako/issues/104) | [../../tasks/104-publish-010-tag-release.md](../../tasks/104-publish-010-tag-release.md) | dry-run, publish, verify per-package tags + Releases, smoke test (needs #101, #102, #103) |
+| [#104](https://github.com/marmotz/kurotako/issues/104) | [../../tasks/104-publish-010-tag-release.md](../../tasks/104-publish-010-tag-release.md) | §5 — OIDC publish pipeline (`scripts/release-publish.sh`), manual first `0.1.0` publish, per-package tags + Releases, smoke test (needs #101, #102, #103) |
 
 Branch protection (§9) stays a maintainer decision, not tracked as a task.

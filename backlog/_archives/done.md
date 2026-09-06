@@ -222,3 +222,21 @@ decisions that now contradict `docs/architecture.md`, `docs/vision.md` and `docs
 | Done | Issue                                                | Task                                                                        | Description                                                                                                                                                                    |
 |------|------------------------------------------------------|-----------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [X]  | [#60](https://github.com/marmotz/kurotako/issues/60) | [60-docs-reconciliation-post-mvp](tasks/60-docs-reconciliation-post-mvp.md) | Reconcile `architecture.md` (contracts, hard `zod` dep, output tree, `.ts` config, CLI set), `vision.md` (close the settled open questions), `ir.md` (close the 3 open points) |
+
+## First public release (0.1.0)
+
+[features/alpha-release/overview.md](features/alpha-release/overview.md) — publish
+`kurotako` + `@kurotako/*` to npm as a plain `0.1.0` under `latest`: package metadata,
+npm org, single initial changeset, `workspace:^` migration, refreshed README, and an
+npm OIDC publish pipeline (`scripts/release-publish.sh`). Technical design:
+[technical.md](features/alpha-release/technical.md).
+
+| Done | Issue | Task | Description |
+|------|-------|------|-------------|
+| [X] | [#98](https://github.com/marmotz/kurotako/issues/98) | [98-repo-hygiene-prose-and-community-files](tasks/98-repo-hygiene-prose-and-community-files.md) | Refresh README / AGENTS.md / CONTRIBUTING.md / vision.md; add SECURITY.md + issue/PR templates |
+| [X] | [#99](https://github.com/marmotz/kurotako/issues/99) | [99-package-metadata-and-readmes](tasks/99-package-metadata-and-readmes.md) | `description` / `keywords` / `repository` / `homepage` / `bugs` in the 8 `package.json`; per-package `README.md` |
+| [X] | [#100](https://github.com/marmotz/kurotako/issues/100) | [100-internal-deps-workspace-caret](tasks/100-internal-deps-workspace-caret.md) | `workspace:*` → `workspace:^` (27 sites, incl. peer deps); `.changeset` `baseBranch` → `develop` |
+| [X] | [#101](https://github.com/marmotz/kurotako/issues/101) | [101-npm-org-and-token](tasks/101-npm-org-and-token.md) | Create the `kurotako` npm org + automation token → repo secret `NPM_TOKEN` (manual) |
+| [X] | [#102](https://github.com/marmotz/kurotako/issues/102) | [102-release-workflow-enable](tasks/102-release-workflow-enable.md) | Enable `release.yml` (manual), fix build-before-version order, add npm provenance |
+| [X] | [#103](https://github.com/marmotz/kurotako/issues/103) | [103-consolidate-changesets-version-010](tasks/103-consolidate-changesets-version-010.md) | Replace 6 changesets with one; `changeset version` → 0.1.0; per-package + root CHANGELOG |
+| [X] | [#104](https://github.com/marmotz/kurotako/issues/104) | [104-publish-010-tag-release](tasks/104-publish-010-tag-release.md) | OIDC publish pipeline, manual first 0.1.0 publish, per-package tags + GitHub Releases, scratch-project smoke test |

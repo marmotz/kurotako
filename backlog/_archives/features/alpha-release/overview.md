@@ -12,20 +12,20 @@ Infrastructure already in place:
 
 - The GitHub repo `marmotz/kurotako` is **public**, MIT licensed.
 - The documentation site is **live** at <https://kurotako.marmotz.dev/>, deployed
-  automatically by [`docs.yml`](../../../.github/workflows/docs.yml) on push to `develop`
+  automatically by [`docs.yml`](../../../../.github/workflows/docs.yml) on push to `develop`
   (GitHub Pages, custom domain, HTTPS active).
-- [`ci.yml`](../../../.github/workflows/ci.yml) runs on the default branch.
+- [`ci.yml`](../../../../.github/workflows/ci.yml) runs on the default branch.
 
 What still blocks a public release:
 
 - All eight publishable packages sit at `version` `0.0.0`.
-- [`release.yml`](../../../.github/workflows/release.yml) is disabled and no `NPM_TOKEN`
+- [`release.yml`](../../../../.github/workflows/release.yml) is disabled and no `NPM_TOKEN`
   secret is wired; the npm org `kurotako` does not exist yet.
 - Six unconsumed changesets (real, merged features) are queued under
-  [`.changeset/`](../../../.changeset/) and have never been versioned.
+  [`.changeset/`](../../../../.changeset/) and have never been versioned.
 - `.changeset/config.json` has `baseBranch: main`, but the default branch is `develop`.
 - `README.md` still says "Status: design phase" / "packages are scaffolded empty";
-  root [`AGENTS.md`](../../../AGENTS.md) still says "No implementation code exists yet"
+  root [`AGENTS.md`](../../../../AGENTS.md) still says "No implementation code exists yet"
   and "private".
 - Per-package `package.json` metadata (`description`, `keywords`, `repository.directory`,
   `homepage`, `bugs`, per-package `README.md`) is not release-ready.
@@ -61,7 +61,7 @@ documentation versioning.
 
 - The npm org **`kurotako` must be created** and an `NPM_TOKEN` automation token wired
   as a repo secret (manual, user-side prerequisites). `access: public` is already set.
-- [`release.yml`](../../../.github/workflows/release.yml) stays **manual
+- [`release.yml`](../../../../.github/workflows/release.yml) stays **manual
   (`workflow_dispatch`)** for now — every npm publish is a deliberate action. Enabling
   push-triggered publishing is deferred.
 - Before the real run: `changeset publish --dry-run` / `npm pack` inspection of every
@@ -86,9 +86,8 @@ documentation versioning.
   the `docs/vision.md` status wording (remove "design phase" / "no code" / "private").
 - Add `SECURITY.md` and GitHub issue / PR templates.
 - Consider branch protection requiring `ci.yml` on `develop` (to confirm).
-- Let `changeset publish` + `changesets/action` create the per-package `pkg@0.1.0`
-  tags and one GitHub Release per package. No umbrella `v0.1.0` tag (versions are
-  independent).
+- `scripts/release-publish.sh` creates the per-package `pkg@0.1.0` tags and one GitHub
+  Release per package. No umbrella `v0.1.0` tag (versions are independent).
 
 ### Proposed rollout order
 
@@ -96,10 +95,12 @@ documentation versioning.
    internal deps to `workspace:^`.
 2. Per-package `package.json` metadata + per-package `README.md`.
 3. Refresh root `README.md` / `AGENTS.md`; add `SECURITY.md` + templates.
-4. User creates the npm org + `NPM_TOKEN` secret.
+4. User creates the npm org.
 5. Set all packages to `0.1.0`, dry-run publish, inspect tarballs.
-6. Run `release.yml` manually → publish; per-package tags + Releases are created by the
-   workflow.
+6. First `0.1.0` publish: manual + local (`npm login`, `bun run release`) — no trusted
+   publisher can exist yet. Then configure a trusted publisher per package on npmjs.org;
+   every release after runs `release.yml` with no secret. Per-package tags + Releases are
+   created by `scripts/release-publish.sh`.
 7. Smoke test: `npm create` / `bunx tako init` in a clean project against the published
    `0.1.0`.
 
