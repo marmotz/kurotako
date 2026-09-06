@@ -86,7 +86,9 @@ documentation versioning.
   the `docs/vision.md` status wording (remove "design phase" / "no code" / "private").
 - Add `SECURITY.md` and GitHub issue / PR templates.
 - Consider branch protection requiring `ci.yml` on `develop` (to confirm).
-- Tag `v0.1.0` and create a GitHub Release with notes from the release changeset.
+- Let `changeset publish` + `changesets/action` create the per-package `pkg@0.1.0`
+  tags and one GitHub Release per package. No umbrella `v0.1.0` tag (versions are
+  independent).
 
 ### Proposed rollout order
 
@@ -96,7 +98,8 @@ documentation versioning.
 3. Refresh root `README.md` / `AGENTS.md`; add `SECURITY.md` + templates.
 4. User creates the npm org + `NPM_TOKEN` secret.
 5. Set all packages to `0.1.0`, dry-run publish, inspect tarballs.
-6. Run `release.yml` manually → publish; tag `v0.1.0` + GitHub Release.
+6. Run `release.yml` manually → publish; per-package tags + Releases are created by the
+   workflow.
 7. Smoke test: `npm create` / `bunx tako init` in a clean project against the published
    `0.1.0`.
 
