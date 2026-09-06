@@ -1,6 +1,6 @@
 # docs — reconcile `docs/architecture.md` and `docs/vision.md` with the locked feature designs
 
-**Status**: to do **Type**: docs **Issue**: [#60](https://github.com/marmotz/kurotako/issues/60)
+**Status**: done **Type**: docs **Issue**: [#60](https://github.com/marmotz/kurotako/issues/60)
 
 Reference: every feature `technical.md` "Consequences" section — each ends with a
 "reconcile the prose when this lands (doc-only, not this phase)" note. This task collects

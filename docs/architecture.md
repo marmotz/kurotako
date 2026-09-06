@@ -20,15 +20,26 @@ generators, feeds each its input, collects the artifacts.
 
 - Several parsers active simultaneously.
 - A source's **config key** is its **namespace** (`pg`, `mongo`, `crm`...).
-- The source's `parser` field designates the package (`prisma`, `mongoose`). The same package can be instantiated
-  several times under different namespaces (two
-  `schema.prisma` files).
-- Contract (draft):
+- The source's `use` field designates the parser object (`prismaParser`, …). The same package can be instantiated
+  several times under different namespaces (two `schema.prisma` files).
+- Config shape (user-facing, `defineConfig`): each source is
+  `{ use: <parser>, options?: { … } }`. `@kurotako/config` validates `options` against the parser's Valibot
+  `optionsSchema` and **curries the argument away**; `@kurotako/core` only ever sees the single-argument contract below.
+- Contract (`@kurotako/core`):
 
   ```ts
-  interface Parser<Options = unknown> {
-    name: string                        // "prisma"
-    parse(ctx: ParseContext<Options>): Promise<SourceIR> | SourceIR
+  interface Parser {
+    name: string                                                 // "prisma"
+    parse(ctx: ParseContext): Promise<SourceIR> | SourceIR
+    watchPaths?(ctx: ParseContext): string[] | Promise<string[]> // metadata for `tako generate --watch`; run() never calls it
+    anchor?(rootDir: string): string | undefined | Promise<string | undefined> // monorepo: where this source's schema lives
+  }
+
+  interface ParseContext {
+    namespace: string
+    cwd: string           // absolute; the config-file directory
+    anchorDir?: string     // absolute; where the schema lives (from `anchor()`), for toolchain-dependency resolution
+    logger: Logger
   }
   ```
 
@@ -45,22 +56,49 @@ See [ir.md](ir.md). Structural points:
 ## Generators and DAG
 
 - Each generator declares its dependencies; the core computes a topological order.
-- A generator receives the IR plus, for each dependency, a handle to its artifacts (handle shape: open question,
-  see [vision.md](vision.md#open-questions) §3).
-- Contract (draft):
+- A generator receives the namespace-filtered IR plus, for each dependency that ran, a structured artifact handle
+  (`GeneratorArtifact`, below) — never raw file paths.
+- Options are curried away by `@kurotako/config` exactly as for parsers; core sees the single-argument contract:
 
   ```ts
-  interface Generator<Options = unknown> {
-    name: string                        // "angular"
-    dependsOn?: string[]                // ["zod"]
-    generate(ctx: GenerateContext<Options>): Promise<GenOutput> | GenOutput
+  interface Generator {
+    name: string                       // "angular"
+    dependsOn?: string[]               // hard: absent from the config => core rejects
+    optionalDependsOn?: string[]       // optional: used if present, else ignored
+    generate(ctx: GenerateContext): Promise<GenOutput> | GenOutput
   }
+
+  interface GenerateContext {
+    ir: IR                                          // namespace-filtered deep clone of the merged IR
+    dependencies: Record<string, GeneratorArtifact> // only declared deps that actually ran
+    logger: Logger
+  }
+
+  interface GenOutput { files: VirtualFile[]; artifact: GeneratorArtifact }
   ```
 
-- **Hard** dependency: `gen-angular` with `dependsOn: ["zod"]` and `zod` absent from the config → the core rejects with
-  an explicit message.
-- **Optional** dependency (the case targeted for Angular): reuses the Zod DTOs if present, generates its own
-  `Validators` from the IR otherwise. Exact mechanism: open question.
+- Hard vs optional is expressed as **two separate arrays**, not a tagged union; a name may not appear in both.
+- **Hard** dependency: `gen-angular` declares `dependsOn: ['zod']`. With `zod` absent from the config the core rejects
+  (`UnknownDependencyError`). There is **no** "generate its own `Validators` from the IR" fallback — Zod is the single
+  source of validation truth, and the generated Angular forms delegate to it (`zodValidator(schema)`).
+
+### Artifact handle (`GeneratorArtifact`)
+
+```ts
+interface GeneratorArtifact {
+  entities: Record<string, EntitySymbols>   // key === `${namespace}.${entity}`
+  peerDependencies?: Record<string, string> // package -> semver range the emitted code imports (mode B: aggregated per namespace)
+  extra?: unknown                           // generator-defined; the consumer casts to the producer's published type
+}
+
+interface EntitySymbols {
+  module: string                    // module specifier a sibling generator imports from
+  symbols: Record<string, string>   // role -> exported identifier, e.g. { schema: "UserSchema", type: "User" }
+}
+```
+
+A dependent reads `ctx.dependencies.zod.entities['pg.User'].symbols.schema`, never a raw path — this is what decouples
+`gen-angular` from `gen-zod`'s output tree.
 
 ## Namespaces and output
 
@@ -74,22 +112,29 @@ See [ir.md](ir.md). Structural points:
   import { UserDto as MongoUserDto } from '@kurotako/mongo'
   ```
 
+The config file is `tako.config.ts` (typed, `defineConfig` from `kurotako`). `output` is the plural `outputs` array —
+one entry per destination, each optionally narrowed with `generators: ['zod', …]`.
+
 ### Mode A — directory (default)
 
-```yaml
-output:
-  dir: ./generated/kurotako
+```ts
+// tako.config.ts
+import { defineConfig } from 'kurotako'
+
+export default defineConfig({
+  outputs: [{ dir: './generated/kurotako' }],
+})
 ```
 
 ```
 generated/kurotako/
   pg/
     index.ts           # synthesized by tako: re-exports every generator's sub-tree
-    zod/     index.ts  user.schema.ts  enums.ts  filters.ts
-    angular/ index.ts  user.form.ts    zod-forms.runtime.ts
+    zod/     index.ts  enums.ts  filters.ts  User.schema.ts
+    angular/ index.ts  zod-forms.runtime.ts  User.form.ts
   mongo/
     index.ts
-    zod/     index.ts  user.schema.ts
+    zod/     index.ts  User.schema.ts
 ```
 
 Each generator owns a `<namespace>/<generatorName>/` sub-tree; `tako` synthesizes the
@@ -102,32 +147,50 @@ is enough, nothing to publish or install; every file carries a
 
 ### Mode B — npm package per source
 
-```yaml
-output:
-  mode: package
-  packagesDir: ./packages
-  scope: '@kurotako'
+```ts
+// tako.config.ts
+import { defineConfig } from 'kurotako'
+
+export default defineConfig({
+  outputs: [{
+    mode: 'package',
+    packagesDir: './packages',
+    scope: '@kurotako',
+    packageManager: 'bun',   // optional; auto-detected from the lockfile otherwise
+  }],
+})
 ```
 
 ```
 packages/
-  kurotako-pg/    package.json ({ "name": "@kurotako/pg", "version": "0.0.0" })  src/  dist/
+  kurotako-pg/    package.json ({ "name": "@kurotako/pg", "version": "0.0.0" })  src/  dist/  tsup.config.ts
   kurotako-mongo/ package.json ({ "name": "@kurotako/mongo", "version": "0.0.0" })
 ```
 
 Standard node resolution, no `paths` config. Suited to monorepo / private registry / independent versioning. `tako`
-generates the `package.json` per source (frozen `version: "0.0.0"`, runtime libs as
-`peerDependencies`), runs a `tsup` build per package (`dist` + types), and triggers the
-detected package manager's `install` on the first `generate`. The consumer declares the
-dependency (`workspace:*`). See
+generates one `package.json` per source (frozen `version: "0.0.0"`, never bumped by `tako`; runtime libs aggregated as
+`peerDependencies`) plus a `tsup.config.ts` extending the workspace base preset, runs an **explicit `tsup` build** per
+package (`dist` + types), and triggers the detected package manager's `install` on the first `generate`. The consumer
+declares the dependency (`workspace:*`) and owns real versioning (changesets). See
 [output-modes](../backlog/_archives/features/output-modes/technical.md).
 
 The module name (`@kurotako/pg`) is identical in both modes; only the resolution plumbing changes.
 
 ## CLI
 
-`tako` binary. Commands: `tako init`, `tako generate` (`--watch`, `--dry-run`),
-`tako validate`, `tako check`. Incremental regeneration: out of scope for v1.
+`tako` binary (citty command tree). Final command set:
+
+```
+tako init     [--config <path>] [--force] [--monorepo | --no-monorepo]
+tako generate [--config <path>] [--watch] [--dry-run]
+tako validate [--config <path>]
+tako check    [--config <path>]              # drift guard — post-v1
+```
+
+`--config <path>` is the one global option (spread into every command); `--debug` (or `TAKO_DEBUG`) switches the
+reporter to verbose. `tako init` writes `import { defineConfig } from 'kurotako'` and picks between the plain and the
+workspace-aware template (`--monorepo` forces it, otherwise auto-detected). Incremental regeneration: out of scope for
+v1 — every `generate` is a full parse + full generate + full wipe.
 
 Projects install the single umbrella package **`kurotako`**, which provides the `tako`
 binary and re-exports `defineConfig` (`import { defineConfig } from 'kurotako'`). It is an
