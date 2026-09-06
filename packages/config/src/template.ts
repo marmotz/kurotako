@@ -4,7 +4,7 @@
  * `CONFIG_TEMPLATE_MONOREPO` is its workspace-aware sibling (`tako init
  * --monorepo`).
  */
-export const CONFIG_TEMPLATE = `import { defineConfig } from '@kurotako/config'
+export const CONFIG_TEMPLATE = `import { defineConfig } from 'kurotako'
 // import { prismaParser } from '@kurotako/parser-prisma'
 // import { zodGenerator } from '@kurotako/gen-zod'
 
@@ -19,7 +19,7 @@ export default defineConfig({
 })
 `;
 
-export const CONFIG_TEMPLATE_MONOREPO = `import { defineConfig } from '@kurotako/config'
+export const CONFIG_TEMPLATE_MONOREPO = `import { defineConfig } from 'kurotako'
 // import { prismaParser } from '@kurotako/parser-prisma'
 // import { zodGenerator } from '@kurotako/gen-zod'
 

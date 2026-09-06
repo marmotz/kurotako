@@ -10,7 +10,7 @@ by walking up from the current directory). The file default-exports the result o
 `defineConfig`.
 
 ```ts
-import { defineConfig } from '@kurotako/config';
+import { defineConfig } from 'kurotako';
 import { prismaParser } from '@kurotako/parser-prisma';
 import { zodGenerator } from '@kurotako/gen-zod';
 import { angularGenerator } from '@kurotako/gen-angular';
@@ -23,6 +23,10 @@ export default defineConfig({
   outputs: [{ dir: './generated/kurotako' }],
 });
 ```
+
+`defineConfig` is re-exported from the `kurotako` umbrella package. If your project
+depends on `@kurotako/config` directly instead, import it from there — that is the only
+line that changes.
 
 ## `defineConfig(config)`
 

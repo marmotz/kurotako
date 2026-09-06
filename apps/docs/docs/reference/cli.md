@@ -5,8 +5,10 @@ sidebar_position: 2
 
 # CLI reference
 
-The `@kurotako/cli` package installs the `tako` binary. Run it with your package
-runner (`npx tako …`, `bunx tako …`, `pnpm exec tako …`).
+Installing `kurotako` provides the `tako` binary. Run it with your package
+runner (`npx tako …`, `bunx tako …`, `pnpm exec tako …`). The standalone
+`@kurotako/cli` package ships the same binary and the programmatic entry point for
+embedding the CLI in a script.
 
 ```text
 tako                       print help
