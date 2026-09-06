@@ -8,9 +8,9 @@ Write a changeset for every user-facing change:
 bunx changeset
 ```
 
-Versioning is **independent** per package (`linked: []`, `fixed: []`). All packages stay
-at `0.0.0` / `0.x` until the MVP works end to end. The release workflow is written but
-left disabled until the packages leave `0.0.0`.
+Versioning is **independent** per package (`linked: []`, `fixed: []`). Packages are on
+`0.x`; the public API may change between minor versions. `.github/workflows/release.yml`
+publishes on manual dispatch, in two phases (version PR, then publish).
 
 See [the docs](https://github.com/changesets/changesets/blob/main/docs/intro-to-using-changesets.md)
 for more.

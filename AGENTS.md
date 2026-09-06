@@ -14,10 +14,11 @@ no fixed middle stage. See [`docs/architecture.md`](docs/architecture.md).
 
 ## Project status
 
-Design phase. **No implementation code exists yet** — no `package.json`, no `src/`, no
-tooling. The repo currently holds only `docs/`, `backlog/`, and editor/tool config.
-Git branch `develop` has no commits pushed yet. The GitHub repo `marmotz/kurotako` exists
-and holds the backlog issues.
+MVP implemented: `kurotako` + `@kurotako/*` are versioned at `0.1.0` and published to npm
+under `latest`. Code lives under `packages/` (8 publishable packages) and `apps/` (the private
+Docusaurus site, deployed to <https://kurotako.marmotz.dev/>). The GitHub repo
+`marmotz/kurotako` is public; `develop` is the default branch and also carries the
+backlog issues. `0.x`: the public API may still change between minor versions.
 
 ## Where things live
 
@@ -40,7 +41,7 @@ must reference those docs, not duplicate them.
 - Two output modes: A directory (default), B npm package per source.
 - `parser` / `generator` vocabulary.
 
-## Planned toolchain (not yet in place)
+## Toolchain
 
 Defined in [`backlog/_archives/features/monorepo-bootstrap/technical.md`](backlog/_archives/features/monorepo-bootstrap/technical.md):
 Bun workspaces, TypeScript (`tsc -b`, project references), tsup build, vitest,
@@ -55,7 +56,7 @@ Node >= 24. Published code must run unmodified on Node and Bun — no `Bun.*` AP
   designs, tasks, `todo.md`). Chat with the user may be in another language, but nothing
   that lands in the repo or on GitHub is.
 - Every implementation (feature, fix, refactor) ships with its test changes; nothing is complete until its tests pass.
-- After a code change, run the affected tests and the typecheck (`tsc -b` once the toolchain exists).
+- After a code change, run the affected tests and the typecheck (`tsc -b`).
 - Every significant change to a published package (new public API, breaking change,
   notable fix) ships with a changeset (`bunx changeset` or a hand-written file under
   `.changeset/`, see [`.changeset/README.md`](.changeset/README.md)). Skip it only for

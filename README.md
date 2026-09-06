@@ -10,17 +10,54 @@ first-class output target, and several parsers can run in parallel, isolated by 
 
 The CLI binary is `tako`. Packages are published under `@kurotako/*`.
 
-> **Status: design phase.** The seven packages are scaffolded empty (a single exported
-> `version` const and one trivial test each) so the whole toolchain runs end to end. Real
-> content lands in the downstream features.
+`0.x`: the public API may change between minor versions.
 
 ## Requirements
 
-- **Node.js >= 24**
-- **Bun >= 1.4** (installer and script runner)
+- **Node.js >= 24** (the published packages run unmodified on Node and Bun)
 - Consumer-side **TypeScript >= 5.5**
 
-## Getting started
+## Install
+
+```bash
+npm install -D kurotako
+# bun add -d kurotako
+```
+
+One package gives you the `tako` binary and the `defineConfig` helper your
+`tako.config.ts` imports. Add a parser and the generators you need on top, for example a
+Prisma schema in, Zod schemas and Angular forms out:
+
+```bash
+npm install -D @kurotako/parser-prisma @kurotako/gen-zod @kurotako/gen-angular
+```
+
+## Quickstart
+
+```bash
+npx tako init          # writes a commented tako.config.ts (--force to overwrite)
+npx tako generate      # runs the pipeline into ./generated/kurotako
+```
+
+```ts title="tako.config.ts"
+import { defineConfig } from 'kurotako';
+import { prismaParser } from '@kurotako/parser-prisma';
+import { zodGenerator } from '@kurotako/gen-zod';
+import { angularGenerator } from '@kurotako/gen-angular';
+
+export default defineConfig({
+  sources: {
+    // the config key is the namespace
+    db: { use: prismaParser, options: { schema: './prisma/schema.prisma' } },
+  },
+  generators: [{ use: zodGenerator }, { use: angularGenerator }],
+  outputs: [{ dir: './generated/kurotako' }],
+});
+```
+
+Full walkthrough: <https://kurotako.marmotz.dev/docs/getting-started/quick-start>.
+
+## Working from a checkout
 
 ```bash
 bun install
@@ -43,6 +80,7 @@ from source.
 
 ## Documentation
 
+- <https://kurotako.marmotz.dev/> — guides, CLI and config reference, API
 - [`docs/vision.md`](docs/vision.md) — problem, positioning, MVP scope
 - [`docs/architecture.md`](docs/architecture.md) — parsers, generators, IR, DAG, output modes
 - [`docs/ir.md`](docs/ir.md) — intermediate representation

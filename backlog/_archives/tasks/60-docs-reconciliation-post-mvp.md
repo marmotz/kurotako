@@ -34,7 +34,7 @@ path.
    `check` (drift-guard, post-v1), global `--config`. Note the `afterEmit`-formatter
    incompatibility with `tako check`.
 6. Reconcile the artifact-handle prose with the settled `GeneratorArtifact`
-   (`{ entities, peerDependencies?, extra? }`) — [vision.md](../../docs/vision.md) open
+   (`{ entities, peerDependencies?, extra? }`) — [vision.md](../../../docs/vision.md) open
    question §3 is closed.
 
 ### `docs/vision.md`
@@ -50,9 +50,9 @@ path.
 
 ### `docs/ir.md`
 
-9. §"Open points" — close 1 (`@db.*` mapping — [parser-prisma](../_archives/features/parser-prisma/technical.md)),
+9. §"Open points" — close 1 (`@db.*` mapping — [parser-prisma](../features/parser-prisma/technical.md)),
    2 (`format` vocabulary — closed `StringFormat` union in
-   [ir-model](../_archives/features/ir-model/technical.md)), 3 (cross-ref checks — the `validate.ts`
+   [ir-model](../features/ir-model/technical.md)), 3 (cross-ref checks — the `validate.ts`
    table).
 
 ## Dependencies

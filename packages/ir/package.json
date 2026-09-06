@@ -1,6 +1,24 @@
 {
   "name": "@kurotako/ir",
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "Intermediate representation for kurotako: the schema model parsers produce and generators consume.",
+  "keywords": [
+    "kurotako",
+    "codegen",
+    "typescript",
+    "schema",
+    "ir",
+    "valibot"
+  ],
+  "license": "MIT",
+  "author": "Marmotz",
+  "homepage": "https://kurotako.marmotz.dev/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marmotz/kurotako.git",
+    "directory": "packages/ir"
+  },
+  "bugs": "https://github.com/marmotz/kurotako/issues",
   "type": "module",
   "sideEffects": false,
   "exports": {
