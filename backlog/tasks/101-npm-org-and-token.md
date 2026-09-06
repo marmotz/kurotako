@@ -1,6 +1,6 @@
 # Ops — create the npm org and wire `NPM_TOKEN`
 
-**Status**: to do **Type**: ops (manual, user-side) **Issue**: [#101](https://github.com/marmotz/kurotako/issues/101)
+**Status**: done **Type**: ops (manual, user-side) **Issue**: [#101](https://github.com/marmotz/kurotako/issues/101)
 Reference: [../features/alpha-release/technical.md §4](../features/alpha-release/technical.md#4-npm-org--token-manual-user-side--prerequisites).
 
 ## Verified findings
