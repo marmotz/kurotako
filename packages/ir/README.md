@@ -18,7 +18,7 @@ Needs **Node.js >= 24**; runs unmodified on Node and Bun.
 
 ## Documentation
 
-Concepts and API reference: <https://kurotako.marmotz.dev/docs/concepts/intermediate-representation>.
+Concepts and API reference: [https://kurotako.marmotz.dev/docs/concepts/intermediate-representation](https://kurotako.marmotz.dev/docs/concepts/intermediate-representation).
 
 `0.x`: the public API may change between minor versions.
 

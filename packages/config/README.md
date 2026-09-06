@@ -19,7 +19,7 @@ Needs **Node.js >= 24**; runs unmodified on Node and Bun.
 
 ## Documentation
 
-`tako.config.ts` reference: <https://kurotako.marmotz.dev/docs/reference/tako-config>.
+`tako.config.ts` reference: [https://kurotako.marmotz.dev/docs/reference/tako-config](https://kurotako.marmotz.dev/docs/reference/tako-config).
 
 `0.x`: the public API may change between minor versions.
 

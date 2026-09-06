@@ -35,7 +35,7 @@ await runCli(['generate', '--dry-run']);
 
 ## Documentation
 
-CLI reference: <https://kurotako.marmotz.dev/docs/reference/cli>.
+CLI reference: [https://kurotako.marmotz.dev/docs/reference/cli](https://kurotako.marmotz.dev/docs/reference/cli).
 
 `0.x`: the public API may change between minor versions.
 

@@ -31,7 +31,7 @@ export default defineConfig({
 
 ## Documentation
 
-Catalog and guides: <https://kurotako.marmotz.dev/>.
+Catalog and guides: [https://kurotako.marmotz.dev/](https://kurotako.marmotz.dev/).
 
 `0.x`: the public API may change between minor versions.
 

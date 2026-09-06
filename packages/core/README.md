@@ -18,7 +18,7 @@ Needs **Node.js >= 24**; runs unmodified on Node and Bun.
 
 ## Documentation
 
-Concepts and API reference: <https://kurotako.marmotz.dev/docs/concepts/parsers-and-generators>.
+Concepts and API reference: [https://kurotako.marmotz.dev/docs/concepts/parsers-and-generators](https://kurotako.marmotz.dev/docs/concepts/parsers-and-generators).
 
 `0.x`: the public API may change between minor versions.
 
