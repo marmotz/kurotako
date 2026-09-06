@@ -1,6 +1,6 @@
 # Release — dry-run, publish 0.1.0, verify per-package tags and Releases
 
-**Status**: to do **Type**: release **Issue**: [#104](https://github.com/marmotz/kurotako/issues/104)
+**Status**: done **Type**: release **Issue**: [#104](https://github.com/marmotz/kurotako/issues/104)
 Reference: [../features/alpha-release/technical.md §Design](../features/alpha-release/technical.md#design)
 and [§Consequences verified against current code](../features/alpha-release/technical.md#consequences-verified-against-current-code).
 

@@ -10,16 +10,16 @@ tree.
 |------|-------|----------|
 | Package versions | all `0.0.0` | every `packages/*/package.json` `"version": "0.0.0"` |
 | Publishable packages | 8 | `packages/{ir,core,config,cli,gen-zod,gen-angular,parser-prisma,kurotako}` |
-| Internal dep protocol | `workspace:*` everywhere (27 occurrences), incl. `peerDependencies` | e.g. [`packages/config/package.json`](../../../packages/config/package.json) `peerDependencies["@kurotako/core"] = "workspace:*"` |
+| Internal dep protocol | `workspace:*` everywhere (27 occurrences), incl. `peerDependencies` | e.g. [`packages/config/package.json`](../../../../packages/config/package.json) `peerDependencies["@kurotako/core"] = "workspace:*"` |
 | Package metadata | no `description`, `keywords`, `repository`, `homepage`, `bugs`, `license`, `author` in any package; `files: ["dist"]`; no `README.md` in any package | `packages/*/package.json` |
-| Release workflow | disabled, `workflow_dispatch` only, no `NPM_TOKEN`, header comment "DISABLED until the MVP packages leave 0.0.0" | [`.github/workflows/release.yml`](../../../.github/workflows/release.yml) |
+| Release workflow | disabled, `workflow_dispatch` only, no `NPM_TOKEN`, header comment "DISABLED until the MVP packages leave 0.0.0" | [`.github/workflows/release.yml`](../../../../.github/workflows/release.yml) |
 | Release job order | `bun install` → `bun run build` → `changesets/action` (`version` + `publish`) | `release.yml:24-38` |
-| Changesets config | `baseBranch: "main"`, `linked: []`, `fixed: []`, `updateInternalDependencies: "patch"`, `access: "public"`, `ignore: ["@kurotako/docs"]` | [`.changeset/config.json`](../../../.changeset/config.json) |
+| Changesets config | `baseBranch: "main"`, `linked: []`, `fixed: []`, `updateInternalDependencies: "patch"`, `access: "public"`, `ignore: ["@kurotako/docs"]` | [`.changeset/config.json`](../../../../.changeset/config.json) |
 | Default branch | `develop` (mismatch with `baseBranch`) | `gh repo view` |
 | Pending changesets | 6 real, never consumed: `drift-guard-plan`, `ir-model-schemas`, `meta-package-kurotako`, `monorepo-anchor-dir`, `outputs-array`, `tako-init-kurotako-import` | `.changeset/*.md` |
-| Version injection | build-time `define` `__TAKO_VERSION__` from `package.json` `version`, in `tsup.config.ts` of `cli` and `kurotako`; runtime fallback `'0.0.0-dev'` / `'0.0.0'` | [`packages/cli/src/cli.ts:18-20`](../../../packages/cli/src/cli.ts), [`packages/cli/tsup.config.ts`](../../../packages/cli/tsup.config.ts), [`packages/kurotako/tsup.config.ts`](../../../packages/kurotako/tsup.config.ts) |
-| CI | `ci.yml` on `push develop` + `pull_request`: typecheck, lint, test, build, 4 `--version` smoke checks (Node + Bun, `cli` and `kurotako`); the `kurotako` smoke asserts bin output `==` `package.json` version | [`.github/workflows/ci.yml`](../../../.github/workflows/ci.yml) |
-| Docs site | live at <https://kurotako.marmotz.dev/>, deployed by `docs.yml` on push to `develop` (Pages, custom domain, HTTPS approved); TypeDoc over `ir/core/config/cli`; version dropdown hidden until `versions.json` non-empty | [`.github/workflows/docs.yml`](../../../.github/workflows/docs.yml), [`apps/docs/docusaurus.config.ts:52-119`](../../../apps/docs/docusaurus.config.ts) |
+| Version injection | build-time `define` `__TAKO_VERSION__` from `package.json` `version`, in `tsup.config.ts` of `cli` and `kurotako`; runtime fallback `'0.0.0-dev'` / `'0.0.0'` | [`packages/cli/src/cli.ts:18-20`](../../../../packages/cli/src/cli.ts), [`packages/cli/tsup.config.ts`](../../../../packages/cli/tsup.config.ts), [`packages/kurotako/tsup.config.ts`](../../../../packages/kurotako/tsup.config.ts) |
+| CI | `ci.yml` on `push develop` + `pull_request`: typecheck, lint, test, build, 4 `--version` smoke checks (Node + Bun, `cli` and `kurotako`); the `kurotako` smoke asserts bin output `==` `package.json` version | [`.github/workflows/ci.yml`](../../../../.github/workflows/ci.yml) |
+| Docs site | live at <https://kurotako.marmotz.dev/>, deployed by `docs.yml` on push to `develop` (Pages, custom domain, HTTPS approved); TypeDoc over `ir/core/config/cli`; version dropdown hidden until `versions.json` non-empty | [`.github/workflows/docs.yml`](../../../../.github/workflows/docs.yml), [`apps/docs/docusaurus.config.ts:52-119`](../../../../apps/docs/docusaurus.config.ts) |
 | Repo | public, MIT (`LICENSE`, `Copyright (c) 2026 Marmotz`); no `SECURITY.md`, no `.github/ISSUE_TEMPLATE/`, no PR template | `gh`, `ls .github/` |
 | Stale prose | `README.md` "Status: design phase" / "packages are scaffolded empty"; root `AGENTS.md` "No implementation code exists yet" / "no `package.json`" / repo "holds the backlog issues"; `CONTRIBUTING.md` "TypeScript 7.x in-repo" (repo pins `typescript@5.9.3`); `docs/vision.md:67` "design phase" wording | files |
 
@@ -112,7 +112,7 @@ One-line fix; `main` does not exist. Affects which branch `changeset status` /
     automation to trusted publishing;
   - `npm publish` supports OIDC but does **not** rewrite the `workspace:` protocol (only
     bun/pnpm/yarn do).
-  Resolution: [`scripts/release-publish.sh`](../../../scripts/release-publish.sh) packs
+  Resolution: [`scripts/release-publish.sh`](../../../../scripts/release-publish.sh) packs
   each package with `bun pm pack` (rewrites `workspace:^` → `^<version>`, verified) and
   uploads the tarball with `npm publish` (authenticates via OIDC in CI). `changesets/action`
   is used only for the "Version Packages" PR; the publish is a separate workflow step
@@ -168,7 +168,7 @@ entries (`cli`, `kurotako`) resolve inside the tarball, and that `LICENSE` +
   and adding a tool for it is out of scope for `0.1.0`.
 - **No umbrella tag or repo-wide GitHub Release.** Each package versions independently
   (`linked: []`, `fixed: []`), so a single `v0.1.0` tag would be meaningless once
-  versions diverge. [`scripts/release-publish.sh`](../../../scripts/release-publish.sh)
+  versions diverge. [`scripts/release-publish.sh`](../../../../scripts/release-publish.sh)
   creates one `pkg@version` git tag and one GitHub Release per published package.
 - **Root `README.md`** — drop the "design phase" admonition; add an **Install**
   (`npm i -D kurotako` / `bunx tako init`) and **Quickstart** section against the

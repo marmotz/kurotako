@@ -12,20 +12,20 @@ Infrastructure already in place:
 
 - The GitHub repo `marmotz/kurotako` is **public**, MIT licensed.
 - The documentation site is **live** at <https://kurotako.marmotz.dev/>, deployed
-  automatically by [`docs.yml`](../../../.github/workflows/docs.yml) on push to `develop`
+  automatically by [`docs.yml`](../../../../.github/workflows/docs.yml) on push to `develop`
   (GitHub Pages, custom domain, HTTPS active).
-- [`ci.yml`](../../../.github/workflows/ci.yml) runs on the default branch.
+- [`ci.yml`](../../../../.github/workflows/ci.yml) runs on the default branch.
 
 What still blocks a public release:
 
 - All eight publishable packages sit at `version` `0.0.0`.
-- [`release.yml`](../../../.github/workflows/release.yml) is disabled and no `NPM_TOKEN`
+- [`release.yml`](../../../../.github/workflows/release.yml) is disabled and no `NPM_TOKEN`
   secret is wired; the npm org `kurotako` does not exist yet.
 - Six unconsumed changesets (real, merged features) are queued under
-  [`.changeset/`](../../../.changeset/) and have never been versioned.
+  [`.changeset/`](../../../../.changeset/) and have never been versioned.
 - `.changeset/config.json` has `baseBranch: main`, but the default branch is `develop`.
 - `README.md` still says "Status: design phase" / "packages are scaffolded empty";
-  root [`AGENTS.md`](../../../AGENTS.md) still says "No implementation code exists yet"
+  root [`AGENTS.md`](../../../../AGENTS.md) still says "No implementation code exists yet"
   and "private".
 - Per-package `package.json` metadata (`description`, `keywords`, `repository.directory`,
   `homepage`, `bugs`, per-package `README.md`) is not release-ready.
@@ -61,7 +61,7 @@ documentation versioning.
 
 - The npm org **`kurotako` must be created** and an `NPM_TOKEN` automation token wired
   as a repo secret (manual, user-side prerequisites). `access: public` is already set.
-- [`release.yml`](../../../.github/workflows/release.yml) stays **manual
+- [`release.yml`](../../../../.github/workflows/release.yml) stays **manual
   (`workflow_dispatch`)** for now — every npm publish is a deliberate action. Enabling
   push-triggered publishing is deferred.
 - Before the real run: `changeset publish --dry-run` / `npm pack` inspection of every
