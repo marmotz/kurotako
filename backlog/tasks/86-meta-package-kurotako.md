@@ -68,7 +68,7 @@ published for advanced use.
      empty temp dir → exit 1 (`ConfigNotFoundError` path, same as `@kurotako/cli`).
 9. `bunx changeset` — `minor` for `kurotako` (new package / new public API).
 10. Docs:
-    - [../features/config-system/technical.md](../features/config-system/technical.md) —
+    - [../features/config-system/technical.md](../_archives/features/config-system/technical.md) —
       annotate the `import { defineConfig } from '@kurotako/config'` mention: the
       documented path is `from 'kurotako'`; `@kurotako/config` is the direct-dependency
       escape hatch.

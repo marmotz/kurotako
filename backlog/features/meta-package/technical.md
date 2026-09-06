@@ -6,18 +6,18 @@ Design for the `kurotako` umbrella package. Product decisions come from
 
 ## Starting point
 
-- `@kurotako/cli` ([cli/technical.md](../cli/technical.md)) is implemented: `package.json`
+- `@kurotako/cli` ([cli/technical.md](../../_archives/features/cli/technical.md)) is implemented: `package.json`
   `bin: { "tako": "./dist/bin/tako.js" }`, `src/bin/tako.ts` is a thin
   `#!/usr/bin/env node` + top-level `await runCli(process.argv.slice(2))`, `src/index.ts`
   exports `runCli` and the reporter/error helpers. `tsup.config.ts` builds an array:
   dual ESM+CJS library entry + **ESM-only** `bin/tako` entry, both with
   `define: { __TAKO_VERSION__: <pkg.version> }`.
-- `@kurotako/config` ([config-system/technical.md](../config-system/technical.md)) is
+- `@kurotako/config` ([config-system/technical.md](../../_archives/features/config-system/technical.md)) is
   implemented: `src/index.ts` exports `defineConfig`, `defineParser`, `defineGenerator`,
   the error classes, `loadConfig`, `resolveConfigFile`, `TakoConfigSchema`,
   `CONFIG_TEMPLATE` and `export type * from './types.js'`. It has `@kurotako/core` as a
   **peerDependency**; `@kurotako/cli` provides the concrete `core`.
-- Toolchain (from [monorepo-bootstrap/technical.md](../monorepo-bootstrap/technical.md)):
+- Toolchain (from [monorepo-bootstrap/technical.md](../../_archives/features/monorepo-bootstrap/technical.md)):
   Bun workspaces, `tsc -b` project references, tsup dual build, vitest, Biome,
   changesets (independent versioning), CI bin smoke-test under Node **and** Bun. Node >= 24,
   **no `Bun.*` API**.
@@ -164,13 +164,13 @@ Add `{ "path": "packages/kurotako" }` to the root solution `tsconfig.json` refer
 
 ## Amendments to other features
 
-- **[monorepo-bootstrap #6 package-skeletons](../../tasks/6-package-skeletons.md)** —
+- **[monorepo-bootstrap #6 package-skeletons](../../_archives/tasks/6-package-skeletons.md)** —
   add `packages/kurotako` to the skeleton set (seventh published package, eighth overall
   after `apps/docs`). Root `tsconfig.json` gains its reference.
-- **[monorepo-bootstrap #9 CI](../../tasks/9-ci-workflow.md)** — the bin smoke-test
+- **[monorepo-bootstrap #9 CI](../../_archives/tasks/9-ci-workflow.md)** — the bin smoke-test
   matrix (`node …/tako.js --version` / `bun …/tako.js --version`) runs against
   `packages/kurotako/dist/bin/tako.js` too, asserting the `kurotako` version.
-- **[config-system/technical.md](../config-system/technical.md)** — the sentence
+- **[config-system/technical.md](../../_archives/features/config-system/technical.md)** — the sentence
   "the user's `tako.config.ts` does `import { defineConfig } from '@kurotako/config'`"
   gains a note: the documented path is `import { defineConfig } from 'kurotako'`;
   `@kurotako/config` stays the direct-dependency escape hatch.
@@ -178,7 +178,7 @@ Add `{ "path": "packages/kurotako" }` to the root solution `tsconfig.json` refer
   [docs/vision.md](../../../docs/vision.md) "Decisions already made" — record the
   `kurotako` meta-package (one install, re-exports `defineConfig`, binary stays `tako`).
   Doc-only; can ride [task #60](../../tasks/60-docs-reconciliation-post-mvp.md).
-- **[docs-site content](../docs-site/technical.md)** — `apps/docs`
+- **[docs-site content](../../_archives/features/docs-site/technical.md)** — `apps/docs`
   `getting-started/quick-start.md` and `installation.md` switch step 1 to
   `npm install -D kurotako` (+ Bun/pnpm/Yarn forms) and
   `import { defineConfig } from 'kurotako'`. The parser/generator install steps are

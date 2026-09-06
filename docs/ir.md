@@ -1,7 +1,7 @@
 # Intermediate representation (IR)
 
 Draft. Most points are now settled in the
-[ir-model](../backlog/features/ir-model/overview.md) feature (see its "Decisions made");
+[ir-model](../backlog/_archives/features/ir-model/overview.md) feature (see its "Decisions made");
 the remaining "open" points are to be closed in that feature's `technical.md`.
 
 The IR has **its own shape** — not modelled on nor inspired by any generator's schema
@@ -103,7 +103,7 @@ interface EnumDef {
 }
 ```
 
-## Settled (see [ir-model/overview.md](../backlog/features/ir-model/overview.md))
+## Settled (see [ir-model/overview.md](../backlog/_archives/features/ir-model/overview.md))
 
 - **`ScalarType`**: closed list, `unknown` escape hatch. Semantic string types are
   `string` + `constraints.format`, not scalars.

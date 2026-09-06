@@ -85,7 +85,7 @@ Cross-cutting, to be settled with `/backlog-discuss-project`:
 11. **GitHub repo**: not created yet (the project is not a git repository). Creating the backlog issues is blocked as
     long as the repo does not exist.
 12. **Prisma 8 support** — *decided* (see
-    [parser-prisma/overview.md](../backlog/features/parser-prisma/overview.md)). Prisma 8
+    [parser-prisma/overview.md](../backlog/_archives/features/parser-prisma/overview.md)). Prisma 8
     (final imminent) drops the DSL/DMMF model for an emitted, deterministic
     `contract.json`. A single `@kurotako/parser-prisma` package carries two version modes
     behind the one `prisma` config key: Prisma ≤ 7 via `getDMMF` (the **v1 target**), and

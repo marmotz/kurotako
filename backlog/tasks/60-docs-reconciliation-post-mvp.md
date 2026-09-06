@@ -50,9 +50,9 @@ path.
 
 ### `docs/ir.md`
 
-9. §"Open points" — close 1 (`@db.*` mapping — [parser-prisma](../features/parser-prisma/technical.md)),
+9. §"Open points" — close 1 (`@db.*` mapping — [parser-prisma](../_archives/features/parser-prisma/technical.md)),
    2 (`format` vocabulary — closed `StringFormat` union in
-   [ir-model](../features/ir-model/technical.md)), 3 (cross-ref checks — the `validate.ts`
+   [ir-model](../_archives/features/ir-model/technical.md)), 3 (cross-ref checks — the `validate.ts`
    table).
 
 ## Dependencies

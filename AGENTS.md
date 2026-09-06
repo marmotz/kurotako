@@ -42,7 +42,7 @@ must reference those docs, not duplicate them.
 
 ## Planned toolchain (not yet in place)
 
-Defined in [`backlog/features/monorepo-bootstrap/technical.md`](backlog/features/monorepo-bootstrap/technical.md):
+Defined in [`backlog/_archives/features/monorepo-bootstrap/technical.md`](backlog/_archives/features/monorepo-bootstrap/technical.md):
 Bun workspaces, TypeScript (`tsc -b`, project references), tsup build, vitest,
 Biome lint/format, lefthook hooks, changesets (independent versioning), GitHub Actions CI.
 Node >= 24. Published code must run unmodified on Node and Bun — no `Bun.*` APIs in packages.
