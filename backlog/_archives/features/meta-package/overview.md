@@ -15,7 +15,7 @@ from 'vite'`); `vitest` is one package (`import { defineConfig } from 'vitest/co
 The tool package **is** the config entry point. Splitting the two names leaks an internal
 layering decision (`@kurotako/config` exists as a separate package for testing and
 dependency-direction reasons — see
-[config-system/technical.md](../../_archives/features/config-system/technical.md) §"Why a dedicated package")
+[config-system/technical.md](../config-system/technical.md) §"Why a dedicated package")
 onto every user.
 
 The parser and generator packages are a different matter: those are genuinely opt-in per
@@ -25,7 +25,7 @@ project and stay separate installs. This feature is only about collapsing the
 ## Goal
 
 A single published package **`kurotako`** (unscoped — it is already the project name in
-[docs/vision.md](../../../docs/vision.md), the `@kurotako/*` scope stays for the parts).
+[docs/vision.md](../../../../docs/vision.md), the `@kurotako/*` scope stays for the parts).
 
 ```bash
 npm install -D kurotako          # or bun add -d / pnpm add -D / yarn add -D
@@ -67,8 +67,8 @@ _(none)_
 
 ## Depends on
 
-- [cli](../../_archives/features/cli/overview.md) — the binary being re-exposed.
-- [config-system](../../_archives/features/config-system/overview.md) — the `defineConfig` surface being
+- [cli](../cli/overview.md) — the binary being re-exposed.
+- [config-system](../config-system/overview.md) — the `defineConfig` surface being
   re-exported.
-- [monorepo-bootstrap](../../_archives/features/monorepo-bootstrap/overview.md) — a new package skeleton, the
+- [monorepo-bootstrap](../monorepo-bootstrap/overview.md) — a new package skeleton, the
   bin smoke-test matrix, changesets.

@@ -4,25 +4,20 @@ Each feature goes through `backlog-discuss` then `backlog-technical` before `bac
 GitHub issues live on `marmotz/kurotako` (see [AGENTS.md](AGENTS.md)). Completed features
 are archived in [`_archives/done.md`](_archives/done.md).
 
-## Docs reconciliation (post-MVP)
+## First public release (0.1.0)
 
-Cross-cutting cleanup, owned by no single feature: the feature `technical.md` files locked
-decisions that now contradict `docs/architecture.md`, `docs/vision.md` and `docs/ir.md`.
-Done once the MVP contracts stop moving; not on the critical path.
+[features/alpha-release/overview.md](features/alpha-release/overview.md) — publish
+`kurotako` + `@kurotako/*` to npm as a plain `0.1.0` under `latest`: package metadata,
+npm org + `NPM_TOKEN`, single initial changeset, `workspace:^` migration, refreshed
+README. Docs site and public repo are already done. Technical design:
+[technical.md](features/alpha-release/technical.md).
 
-| Done | Issue                                                | Task                                                                        | Description                                                                                                                                                                    |
-|------|------------------------------------------------------|-----------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [x]  | [#60](https://github.com/marmotz/kurotako/issues/60) | [60-docs-reconciliation-post-mvp](tasks/60-docs-reconciliation-post-mvp.md) | Reconcile `architecture.md` (contracts, hard `zod` dep, output tree, `.ts` config, CLI set), `vision.md` (close the settled open questions), `ir.md` (close the 3 open points) |
-
-## `kurotako` meta-package
-
-[features/meta-package/overview.md](features/meta-package/overview.md) — technical design:
-[technical.md](features/meta-package/technical.md). Single published package `kurotako`
-(unscoped) that depends on `@kurotako/cli` + `@kurotako/config` and re-exports
-`defineConfig`, so a project installs one name and writes
-`import { defineConfig } from 'kurotako'`. The parts stay published for advanced use.
-
-| Done | Issue                                                | Task                                                          | Description                                                                        |
-|------|------------------------------------------------------|--------------------------------------------------------------|-----------------------------------------------------------------------------------|
-| [x]  | [#86](https://github.com/marmotz/kurotako/issues/86) | [86-meta-package-kurotako](tasks/86-meta-package-kurotako.md) | `packages/kurotako` — bin re-exposes `tako` (own `--version`), barrel re-exports `defineConfig`; docs + CI smoke |
-| [x]  | [#94](https://github.com/marmotz/kurotako/issues/94) | [94-tako-init-kurotako-import-surface](tasks/94-tako-init-kurotako-import-surface.md) | `tako init` writes `import { defineConfig } from 'kurotako'`; `reference/*` docs follow (post-merge review follow-up, depends on #90) |
+| Done | Issue | Task | Description |
+|------|-------|------|-------------|
+| [x] | [#98](https://github.com/marmotz/kurotako/issues/98) | [98-repo-hygiene-prose-and-community-files](tasks/98-repo-hygiene-prose-and-community-files.md) | Refresh README / AGENTS.md / CONTRIBUTING.md / vision.md; add SECURITY.md + issue/PR templates |
+| [x] | [#99](https://github.com/marmotz/kurotako/issues/99) | [99-package-metadata-and-readmes](tasks/99-package-metadata-and-readmes.md) | `description` / `keywords` / `repository` / `homepage` / `bugs` in the 8 `package.json`; per-package `README.md` |
+| [x] | [#100](https://github.com/marmotz/kurotako/issues/100) | [100-internal-deps-workspace-caret](tasks/100-internal-deps-workspace-caret.md) | `workspace:*` → `workspace:^` (27 sites, incl. peer deps); `.changeset` `baseBranch` → `develop` |
+| [ ] | [#101](https://github.com/marmotz/kurotako/issues/101) | [101-npm-org-and-token](tasks/101-npm-org-and-token.md) | Create the `kurotako` npm org + automation token → repo secret `NPM_TOKEN` (manual) |
+| [x] | [#102](https://github.com/marmotz/kurotako/issues/102) | [102-release-workflow-enable](tasks/102-release-workflow-enable.md) | Enable `release.yml` (manual), fix build-before-version order, add npm provenance |
+| [x] | [#103](https://github.com/marmotz/kurotako/issues/103) | [103-consolidate-changesets-version-010](tasks/103-consolidate-changesets-version-010.md) | Replace 6 changesets with one; `changeset version` → 0.1.0; per-package + root CHANGELOG |
+| [ ] | [#104](https://github.com/marmotz/kurotako/issues/104) | [104-publish-010-tag-release](tasks/104-publish-010-tag-release.md) | Dry-run, publish 0.1.0 to npm, tag `v0.1.0`, GitHub Release, scratch-project smoke test |

@@ -40,7 +40,7 @@
     },
     "packages/cli": {
       "name": "@kurotako/cli",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "bin": {
         "tako": "./dist/bin/tako.js",
       },
@@ -57,72 +57,72 @@
     },
     "packages/config": {
       "name": "@kurotako/config",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
-        "@kurotako/ir": "workspace:*",
+        "@kurotako/ir": "workspace:^",
         "jiti": "2.7.0",
         "valibot": "1.4.2",
       },
       "devDependencies": {
-        "@kurotako/core": "workspace:*",
+        "@kurotako/core": "workspace:^",
       },
       "peerDependencies": {
-        "@kurotako/core": "workspace:*",
+        "@kurotako/core": "workspace:^",
       },
     },
     "packages/core": {
       "name": "@kurotako/core",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
-        "@kurotako/ir": "workspace:*",
+        "@kurotako/ir": "workspace:^",
         "tsup": "8.5.1",
       },
     },
     "packages/gen-angular": {
       "name": "@kurotako/gen-angular",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
-        "@kurotako/ir": "workspace:*",
+        "@kurotako/ir": "workspace:^",
         "valibot": "1.4.2",
       },
       "devDependencies": {
-        "@kurotako/config": "workspace:*",
-        "@kurotako/core": "workspace:*",
-        "@kurotako/gen-zod": "workspace:*",
+        "@kurotako/config": "workspace:^",
+        "@kurotako/core": "workspace:^",
+        "@kurotako/gen-zod": "workspace:^",
         "typescript": "5.9.3",
       },
       "peerDependencies": {
-        "@kurotako/config": "workspace:*",
-        "@kurotako/core": "workspace:*",
-        "@kurotako/gen-zod": "workspace:*",
+        "@kurotako/config": "workspace:^",
+        "@kurotako/core": "workspace:^",
+        "@kurotako/gen-zod": "workspace:^",
       },
     },
     "packages/gen-zod": {
       "name": "@kurotako/gen-zod",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
-        "@kurotako/ir": "workspace:*",
+        "@kurotako/ir": "workspace:^",
         "valibot": "1.4.2",
       },
       "devDependencies": {
-        "@kurotako/config": "workspace:*",
-        "@kurotako/core": "workspace:*",
+        "@kurotako/config": "workspace:^",
+        "@kurotako/core": "workspace:^",
       },
       "peerDependencies": {
-        "@kurotako/config": "workspace:*",
-        "@kurotako/core": "workspace:*",
+        "@kurotako/config": "workspace:^",
+        "@kurotako/core": "workspace:^",
       },
     },
     "packages/ir": {
       "name": "@kurotako/ir",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "valibot": "1.4.2",
       },
     },
     "packages/kurotako": {
       "name": "kurotako",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "bin": {
         "tako": "./dist/bin/tako.js",
       },
@@ -133,20 +133,20 @@
     },
     "packages/parser-prisma": {
       "name": "@kurotako/parser-prisma",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
-        "@kurotako/ir": "workspace:*",
+        "@kurotako/ir": "workspace:^",
         "valibot": "1.4.2",
       },
       "devDependencies": {
-        "@kurotako/config": "workspace:*",
-        "@kurotako/core": "workspace:*",
+        "@kurotako/config": "workspace:^",
+        "@kurotako/core": "workspace:^",
         "@prisma/dmmf": "6.19.3",
         "@prisma/internals": "6.19.3",
       },
       "peerDependencies": {
-        "@kurotako/config": "workspace:*",
-        "@kurotako/core": "workspace:*",
+        "@kurotako/config": "workspace:^",
+        "@kurotako/core": "workspace:^",
         "@prisma/internals": ">=5 <8",
       },
       "optionalPeers": [

@@ -2,16 +2,16 @@
 
 ## Toolchain
 
-| Tool | Version | Role |
-|---|---|---|
-| Node.js | >= 24 | Runtime (`.node-version` = `24`) |
-| Bun | >= 1.4 (`packageManager` pin) | Installer + script runner only |
-| TypeScript | 7.x in-repo, 5.5 consumer floor | `tsc -b` typecheck |
-| tsup | 8.x | Build (dual ESM + CJS) |
-| vitest | 4.x | Tests |
-| Biome | 2.x | Lint + format |
-| lefthook | 2.x | Git hooks |
-| changesets | 3.x | Independent versioning + publish |
+| Tool       | Version                                          | Role                             |
+|------------|--------------------------------------------------|----------------------------------|
+| Node.js    | >= 24                                            | Runtime (`.nvmrc` = `24`)        |
+| Bun        | 1.4.0 (`packageManager` pin), >= 1.4 (`engines`) | Installer + script runner only   |
+| TypeScript | `5.9.3` in-repo, `5.5` consumer floor            | `tsc -b` typecheck               |
+| tsup       | `8.5.1`                                          | Build (dual ESM + CJS)           |
+| vitest     | `4.1.11`                                         | Tests                            |
+| Biome      | `2.5.11`                                         | Lint + format                    |
+| lefthook   | `2.1.12`                                         | Git hooks                        |
+| changesets | `3.0.1`                                          | Independent versioning + publish |
 
 Published packages must run unmodified on Node 24+ and on Bun — no `Bun.*` APIs in
 `packages/*`.
@@ -43,8 +43,9 @@ Run a changeset for **every user-facing change**:
 bunx changeset
 ```
 
-Versioning is independent per package. Packages stay at `0.0.0` / `0.x` until the MVP
-works end to end; the release workflow is disabled until then.
+Versioning is independent per package. Packages are on `0.x`; the public API may change
+between minor versions. `release.yml` publishes on manual dispatch (see
+[`.changeset/README.md`](.changeset/README.md)).
 
 ## Git hooks
 

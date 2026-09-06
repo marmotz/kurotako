@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import pkg from '../package.json' with { type: 'json' };
 import { runCli } from './cli.js';
 
 let stdout: string;
@@ -33,7 +34,7 @@ afterEach(() => {
 describe('runCli', () => {
   it('--version prints the injected version on stdout, exit 0', async () => {
     await runCli(['--version']);
-    expect(stdout.trim()).toBe('0.0.0');
+    expect(stdout.trim()).toBe(pkg.version);
     expect(process.exitCode ?? 0).toBe(0);
   });
 

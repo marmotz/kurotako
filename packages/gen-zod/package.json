@@ -1,6 +1,23 @@
 {
   "name": "@kurotako/gen-zod",
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "kurotako generator that emits Zod schemas from the intermediate representation.",
+  "keywords": [
+    "kurotako",
+    "codegen",
+    "typescript",
+    "zod",
+    "generator"
+  ],
+  "license": "MIT",
+  "author": "Marmotz",
+  "homepage": "https://kurotako.marmotz.dev/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marmotz/kurotako.git",
+    "directory": "packages/gen-zod"
+  },
+  "bugs": "https://github.com/marmotz/kurotako/issues",
   "type": "module",
   "exports": {
     ".": {
@@ -28,15 +45,15 @@
     "access": "public"
   },
   "dependencies": {
-    "@kurotako/ir": "workspace:*",
+    "@kurotako/ir": "workspace:^",
     "valibot": "1.4.2"
   },
   "peerDependencies": {
-    "@kurotako/config": "workspace:*",
-    "@kurotako/core": "workspace:*"
+    "@kurotako/config": "workspace:^",
+    "@kurotako/core": "workspace:^"
   },
   "devDependencies": {
-    "@kurotako/config": "workspace:*",
-    "@kurotako/core": "workspace:*"
+    "@kurotako/config": "workspace:^",
+    "@kurotako/core": "workspace:^"
   }
 }

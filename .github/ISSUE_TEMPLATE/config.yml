@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://kurotako.marmotz.dev/
+    about: Guides, CLI and config reference, and the API docs.
+  - name: Questions & Discussions
+    url: https://github.com/marmotz/kurotako/discussions
+    about: Ask a question or share an idea before filing an issue.
+  - name: Security vulnerability
+    url: https://github.com/marmotz/kurotako/security/advisories/new
+    about: Report a vulnerability privately. Do not open a public issue.

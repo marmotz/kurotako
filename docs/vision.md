@@ -64,7 +64,7 @@ namespace), config system, output modes.
 
 ## Resolved questions
 
-The cross-cutting questions of the design phase are all settled; each was locked in a backlog feature (see
+The cross-cutting questions raised during the design phase were all settled; each was locked in a backlog feature (see
 `backlog/_archives/features/`) and implemented in the MVP.
 
 1. **Config format** — `tako.config.ts` only (typed, `defineConfig` from `kurotako`). No YAML.

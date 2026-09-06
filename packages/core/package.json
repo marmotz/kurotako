@@ -1,6 +1,23 @@
 {
   "name": "@kurotako/core",
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "kurotako pipeline core: dependency DAG, topological ordering and the parser/generator contracts.",
+  "keywords": [
+    "kurotako",
+    "codegen",
+    "typescript",
+    "pipeline",
+    "dag"
+  ],
+  "license": "MIT",
+  "author": "Marmotz",
+  "homepage": "https://kurotako.marmotz.dev/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marmotz/kurotako.git",
+    "directory": "packages/core"
+  },
+  "bugs": "https://github.com/marmotz/kurotako/issues",
   "type": "module",
   "sideEffects": false,
   "exports": {
@@ -28,7 +45,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@kurotako/ir": "workspace:*",
+    "@kurotako/ir": "workspace:^",
     "tsup": "8.5.1"
   }
 }

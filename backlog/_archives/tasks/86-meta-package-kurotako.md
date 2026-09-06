@@ -68,7 +68,7 @@ published for advanced use.
      empty temp dir → exit 1 (`ConfigNotFoundError` path, same as `@kurotako/cli`).
 9. `bunx changeset` — `minor` for `kurotako` (new package / new public API).
 10. Docs:
-    - [../features/config-system/technical.md](../_archives/features/config-system/technical.md) —
+    - [../features/config-system/technical.md](../features/config-system/technical.md) —
       annotate the `import { defineConfig } from '@kurotako/config'` mention: the
       documented path is `from 'kurotako'`; `@kurotako/config` is the direct-dependency
       escape hatch.
@@ -76,8 +76,8 @@ published for advanced use.
       `npm install -D kurotako` (with the `bun add -d` / pnpm / Yarn forms) and
       `import { defineConfig } from 'kurotako'`. Leave the parser/generator install steps
       and every `reference/*` page unchanged.
-    - [../../docs/architecture.md](../../docs/architecture.md) /
-      [../../docs/vision.md](../../docs/vision.md) "Decisions already made" — record the
+    - [../../docs/architecture.md](../../../docs/architecture.md) /
+      [../../docs/vision.md](../../../docs/vision.md) "Decisions already made" — record the
       `kurotako` meta-package (one install, re-exports `defineConfig`, binary stays
       `tako`). May ride [#60](60-docs-reconciliation-post-mvp.md).
 11. `bun run typecheck`, `bun run test`, `bun run build`, `bun run lint` green.

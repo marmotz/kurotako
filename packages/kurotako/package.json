@@ -1,6 +1,24 @@
 {
   "name": "kurotako",
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "kurotako meta-package: installs the tako CLI and re-exports defineConfig under a single name.",
+  "keywords": [
+    "kurotako",
+    "codegen",
+    "typescript",
+    "cli",
+    "tako",
+    "schema"
+  ],
+  "license": "MIT",
+  "author": "Marmotz",
+  "homepage": "https://kurotako.marmotz.dev/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marmotz/kurotako.git",
+    "directory": "packages/kurotako"
+  },
+  "bugs": "https://github.com/marmotz/kurotako/issues",
   "type": "module",
   "exports": {
     ".": {
@@ -31,7 +49,7 @@
     "tako": "./dist/bin/tako.js"
   },
   "dependencies": {
-    "@kurotako/cli": "workspace:*",
-    "@kurotako/config": "workspace:*"
+    "@kurotako/cli": "workspace:^",
+    "@kurotako/config": "workspace:^"
   }
 }

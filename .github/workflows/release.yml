@@ -1,8 +1,22 @@
 name: Release
 
-# DISABLED until the MVP packages leave 0.0.0. No npm token is wired yet.
-# Trigger manually only; once packages are publishable, add `push` on the default
-# branch and an `NPM_TOKEN` secret.
+# Manual, two-phase release (changesets). Run it twice:
+#   1. Dispatch with unreleased changesets present -> changesets/action opens (or refreshes)
+#      the "Version Packages" PR: it runs `changeset version`, which bumps every
+#      package.json, writes the CHANGELOGs and consumes the changeset files. Nothing is
+#      published. Review and merge that PR.
+#   2. Dispatch again on the merged commit -> no changesets remain, so changesets/action
+#      runs the `publish` command below.
+#
+# Job order: the build MUST run after the version bump so the tsup `define`
+# `__TAKO_VERSION__` (packages/cli, packages/kurotako) stamps the release version into the
+# bins. Phase 1 does not build. Phase 2 builds inside `bun run release`
+# (`bun run build && changeset publish`), i.e. against the already-bumped package.json on
+# the merged commit. `ci.yml` asserts the `kurotako` bin `--version` == package.json
+# version and gates the "Version Packages" PR, catching any mismatch.
+#
+# `NPM_TOKEN` (granular automation token for the `kurotako` npm org) must be set as a repo
+# secret before phase 2. Until then phase 2 fails at the publish step; phase 1 is safe.
 on:
   workflow_dispatch:
 
@@ -12,6 +26,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      id-token: write # npm provenance attestation
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -21,12 +36,16 @@ jobs:
         with:
           node-version: '24'
       - run: bun install --frozen-lockfile
-      - run: bun run build
-      - name: Create release PR or publish
+      - name: Create "Version Packages" PR or publish
         uses: changesets/action@v1
         with:
           version: bunx changeset version
-          publish: bunx changeset publish
+          # `bun run release` = `bun run build && changeset publish`, so the build always
+          # runs post-version. changesets detects `packageManager: bun@…` and shells to
+          # `bun publish`, which rewrites the `workspace:^` ranges to real caret versions.
+          publish: bun run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'

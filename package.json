@@ -19,7 +19,7 @@
     "lint": "biome check .",
     "format": "biome format --write .",
     "prepare": "lefthook install",
-    "release": "changeset publish"
+    "release": "bun run build && changeset publish"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.11",
