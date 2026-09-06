@@ -21,5 +21,5 @@ export {
 export { type LoadResult, loadConfig } from './load.js';
 export { resolveConfigFile } from './resolve.js';
 export { NAMESPACE_RE, normalizeIssues, TakoConfigSchema } from './schema.js';
-export { CONFIG_TEMPLATE } from './template.js';
+export { CONFIG_TEMPLATE, CONFIG_TEMPLATE_MONOREPO } from './template.js';
 export type * from './types.js';

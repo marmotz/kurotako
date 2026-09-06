@@ -1,6 +1,6 @@
 # backend — @kurotako/parser-prisma: `anchor` hook + resolve `@prisma/internals` from the schema dir
 
-**Status**: to do
+**Status**: done
 **Type**: backend
 **Issue**: [#92](https://github.com/marmotz/kurotako/issues/92)
 

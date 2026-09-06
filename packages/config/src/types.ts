@@ -30,6 +30,17 @@ export interface TakoParser<O = void> {
   parse(ctx: ParseContext, options: O): SourceIR | Promise<SourceIR>;
   /** Curried like `parse`; consumed by `tako generate --watch`. */
   watchPaths?(ctx: ParseContext, options: O): string[] | Promise<string[]>;
+  /**
+   * The directory this source is anchored at, for toolchain-dependency
+   * resolution. `load.ts` curries `options` away; core's `run()` calls the
+   * result before `parse()` and passes it as `ParseContext.anchorDir`. Return
+   * `undefined` (or omit) to anchor on `rootDir`. Must not throw for a "not
+   * found" case.
+   */
+  anchor?(
+    rootDir: string,
+    options: O,
+  ): string | undefined | Promise<string | undefined>;
 }
 
 /**

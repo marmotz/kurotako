@@ -38,11 +38,14 @@ them from the npm registry even after `bun link` has registered the local symlin
 leave the linked symlink alone. Once kurotako publishes, swap these back to a real
 version range and drop the `bun link` steps above.
 
-`@prisma/internals` is a direct devDependency here (not just `prisma`): `parser-prisma`
-needs it at runtime to read `schema.prisma` in DMMF (`version: 7`) mode — this refers to
-`parser-prisma`'s DMMF-vs-`contract.json` parsing mode, not the Prisma npm major version,
-though this project happens to pin the actual `prisma`/`@prisma/client` packages at their
-current major (7.x) too.
+`@prisma/internals` is a direct devDependency of **`apps/backend`** (not the workspace
+root, and not just `prisma`): `parser-prisma` needs it at runtime to read `schema.prisma`
+in DMMF (`version: 7`) mode — this refers to `parser-prisma`'s DMMF-vs-`contract.json`
+parsing mode, not the Prisma npm major version, though this project happens to pin the
+actual `prisma`/`@prisma/client` packages at their current major (7.x) too. It sits in
+`apps/backend` rather than the root because `tako` resolves `@prisma/internals` from the
+directory of `options.schema` (`./apps/backend/prisma/schema.prisma`), walking up
+`node_modules` from there — see the docs page "Using tako in a monorepo".
 
 Prisma 7 moved connection config out of `schema.prisma` into `prisma.config.ts` (root of
 this project) and requires an explicit driver adapter at the `PrismaClient` call site —

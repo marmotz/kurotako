@@ -48,6 +48,11 @@ sources: {
 }
 ```
 
+`options.schema` is resolved **relative to this config file's directory**, even when it
+points into a sub-project. `@prisma/internals` is then resolved from the schema's own
+directory, so in a monorepo it can live in that sub-project — see
+[Using tako in a monorepo](monorepo.md).
+
 ## `generators`
 
 An **array** of entries. Order is irrelevant — `core` resolves the

@@ -1,6 +1,6 @@
 # backend — `tako init --monorepo`: flag, auto-detection, `CONFIG_TEMPLATE_MONOREPO`
 
-**Status**: to do
+**Status**: done
 **Type**: backend
 **Issue**: [#90](https://github.com/marmotz/kurotako/issues/90)
 

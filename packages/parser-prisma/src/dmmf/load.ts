@@ -33,7 +33,12 @@ interface InternalsModule {
 async function resolveInternals(
   ctx: ParseContext,
 ): Promise<{ getDMMF: GetDmmf; prismaVersion: string }> {
-  const require = createRequire(join(ctx.cwd, 'noop.js'));
+  // Resolve `@prisma/internals` from the source's anchor directory (where its
+  // schema lives) so it can be a devDependency of the sub-project holding the
+  // schema, not only of the repo root. Node still walks up `node_modules` from
+  // there to `ctx.cwd` and beyond. Absent ⇒ anchor on `ctx.cwd`.
+  const base = ctx.anchorDir ?? ctx.cwd;
+  const require = createRequire(join(base, 'noop.js'));
 
   let entry: string;
   try {

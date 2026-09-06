@@ -345,4 +345,63 @@ describe('run', () => {
       ),
     ).toBe(false);
   });
+
+  describe('Parser.anchor', () => {
+    function capturingParser(anchor?: Parser['anchor']): {
+      parser: Parser;
+      seen: () => string | undefined;
+    } {
+      let anchorDir: string | undefined;
+      return {
+        seen: () => anchorDir,
+        parser: {
+          name: 'parser-pg',
+          anchor,
+          parse: (ctx) => {
+            anchorDir = ctx.anchorDir;
+            return source('pg');
+          },
+        },
+      };
+    }
+
+    it('passes the anchor() result as ctx.anchorDir', async () => {
+      const { parser: p, seen } = capturingParser(() => '/anchored/here');
+      await run(config({ sources: { pg: { parser: p } } }), { write: false });
+      expect(seen()).toBe('/anchored/here');
+    });
+
+    it('falls back to rootDir when the parser has no anchor hook', async () => {
+      const { parser: p, seen } = capturingParser();
+      await run(config({ sources: { pg: { parser: p } } }), { write: false });
+      expect(seen()).toBe(dir);
+    });
+
+    it('falls back to rootDir when anchor() returns undefined', async () => {
+      const { parser: p, seen } = capturingParser(() => undefined);
+      await run(config({ sources: { pg: { parser: p } } }), { write: false });
+      expect(seen()).toBe(dir);
+    });
+
+    it('awaits an async anchor()', async () => {
+      const { parser: p, seen } = capturingParser(async () => '/async/anchor');
+      await run(config({ sources: { pg: { parser: p } } }), { write: false });
+      expect(seen()).toBe('/async/anchor');
+    });
+
+    it('receives rootDir as its argument', async () => {
+      const arg = vi.fn(() => '/x');
+      await run(
+        config({
+          sources: {
+            pg: {
+              parser: { name: 'p', anchor: arg, parse: () => source('pg') },
+            },
+          },
+        }),
+        { write: false },
+      );
+      expect(arg).toHaveBeenCalledWith(dir);
+    });
+  });
 });

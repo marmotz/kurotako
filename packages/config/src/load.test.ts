@@ -83,6 +83,39 @@ describe('loadConfig', () => {
     });
   });
 
+  it('curries the validated options into parser.anchor and passes rootDir through', async () => {
+    writeConfig(`
+      import * as v from 'valibot'
+      const parser = {
+        name: 'p',
+        optionsSchema: v.object({ suffix: v.pipe(v.string(), v.transform(s => s.toUpperCase())) }),
+        parse: () => ({ namespace: 'pg', parser: 'p', entities: {}, enums: {} }),
+        anchor: (rootDir, options) => rootDir + '/' + options.suffix,
+      }
+      export default {
+        sources: { pg: { use: parser, options: { suffix: 'db' } } },
+        generators: [],
+        outputs: [{}],
+      }
+    `);
+    const { config } = await loadConfig({ cwd: root });
+    const anchor = config.sources.pg?.parser.anchor;
+    expect(anchor).toBeTypeOf('function');
+    expect(await anchor?.('/repo')).toBe('/repo/DB');
+  });
+
+  it('leaves parser.anchor undefined when the driver declares no anchor hook', async () => {
+    writeConfig(`
+      export default {
+        sources: { pg: { use: { name: 'p', parse: () => ({ namespace: 'pg', parser: 'p', entities: {}, enums: {} }) } } },
+        generators: [],
+        outputs: [{}],
+      }
+    `);
+    const { config } = await loadConfig({ cwd: root });
+    expect(config.sources.pg?.parser.anchor).toBeUndefined();
+  });
+
   it('normalises a missing options key to {} so an all-default optionsSchema resolves to its defaults', async () => {
     writeConfig(`
       import * as v from 'valibot'

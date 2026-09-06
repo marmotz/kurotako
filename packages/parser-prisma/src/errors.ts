@@ -31,6 +31,8 @@ export class PrismaPeerMissingError extends TakoError {
       'prisma_peer_missing',
       `prisma parser (namespace '${namespace}'): '@prisma/internals' could not be resolved. ` +
         'Add it as a devDependency (`bun add -d @prisma/internals`, matching your Prisma major). ' +
+        'In a monorepo it is resolved from the directory holding the schema, so it may ' +
+        'be installed in the sub-project that owns the schema rather than at the repo root. ' +
         'Note: installing it pulls @prisma/engines, whose postinstall downloads a schema-engine binary.',
       options,
     );

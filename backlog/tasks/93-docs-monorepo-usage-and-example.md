@@ -1,6 +1,6 @@
 # docs — "Using tako in a monorepo" page + move example tooling into the sub-project
 
-**Status**: to do
+**Status**: done
 **Type**: docs
 **Issue**: [#93](https://github.com/marmotz/kurotako/issues/93)
 

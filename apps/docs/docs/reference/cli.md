@@ -12,7 +12,7 @@ runner (`npx tako …`, `bunx tako …`, `pnpm exec tako …`).
 tako                       print help
 tako --version | -v        print the CLI version
 tako --help | -h           usage (works per sub-command too)
-tako init      [--config <path>] [--force]
+tako init      [--config <path>] [--force] [--monorepo | --no-monorepo]
 tako generate  [--config <path>] [--watch] [--dry-run]
 tako validate  [--config <path>]
 tako check     [--config <path>]
@@ -32,6 +32,12 @@ Writes a commented `tako.config.ts`.
   overrides the target path.
 - Refuses to overwrite an existing file. `--force` replaces it.
 - No prompts, no schema auto-detection.
+- `--monorepo` writes the workspace-oriented skeleton (schema in a sub-project,
+  one `outputs[]` entry per sub-project); `--no-monorepo` forces the single-project
+  skeleton. With neither flag, `tako init` auto-detects: it walks up to the nearest
+  `package.json` and picks the monorepo skeleton when that file has a `workspaces`
+  key (array or `{ packages: [...] }`) or a `pnpm-workspace.yaml` sits next to it.
+  See [Using tako in a monorepo](monorepo.md).
 
 ## `tako generate`
 

@@ -50,9 +50,11 @@ export async function run(
       continue;
     }
     const { parser } = source;
+    const anchorDir = (await parser.anchor?.(config.rootDir)) ?? config.rootDir;
     const ctx = {
       namespace,
       cwd: config.rootDir,
+      anchorDir,
       logger: childLogger(logger, { namespace }),
     };
     try {

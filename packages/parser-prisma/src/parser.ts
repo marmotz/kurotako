@@ -9,7 +9,7 @@
  * `buildSourceIR` (map/). The Prisma 8 `contract.json` mode is detected but not
  * implemented in v1.
  */
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { defineParser } from '@kurotako/config';
 import type { ParseContext } from '@kurotako/core';
 import type { SourceIR } from '@kurotako/ir';
@@ -47,5 +47,13 @@ export const prismaParser = defineParser({
     // The resolved schema path — a `.prisma` file, a schema folder, or the
     // deferred contract.json. A folder watch covers every `*.prisma` inside it.
     return [resolve(ctx.cwd, options.schema)];
+  },
+
+  anchor(rootDir, options) {
+    // The directory the schema lives in. `dirname` is correct for a `.prisma`
+    // file and for a `contract.json`; for a schema *folder* it yields the
+    // parent, which is still a valid walk-up base for `node_modules`
+    // resolution. No `stat` — the hook stays cheap.
+    return dirname(resolve(rootDir, options.schema));
   },
 });

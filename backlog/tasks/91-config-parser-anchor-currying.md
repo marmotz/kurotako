@@ -1,6 +1,6 @@
 # backend — @kurotako/config: `TakoParser.anchor`, `defineParser`, currying in `load.ts`
 
-**Status**: to do
+**Status**: done
 **Type**: backend
 **Issue**: [#91](https://github.com/marmotz/kurotako/issues/91)
 

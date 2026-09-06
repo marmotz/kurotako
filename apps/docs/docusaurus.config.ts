@@ -10,13 +10,11 @@ const config: Config = {
     'Synchronize TypeScript schemas from the data model down to frontend forms, through one validation layer.',
   favicon: 'img/favicon.svg',
 
-  // Default deployment: GitHub Pages project site.
-  // When the custom domain is decided (see docs-site/technical.md "Open
-  // points"), flip `url` to the domain, set `baseUrl: '/'`, add
-  // `static/CNAME`, and enable "Enforce HTTPS" in repo settings.
-  url: 'https://marmotz.github.io',
-  baseUrl: '/kurotako/',
-  // baseUrl: '/',
+  // Deployed to the custom domain kurotako.marmotz.dev (served at root).
+  // static/CNAME carries the domain into the Pages artifact; enable
+  // "Enforce HTTPS" in repo settings.
+  url: 'https://kurotako.marmotz.dev',
+  baseUrl: '/',
 
   organizationName: 'marmotz',
   projectName: 'kurotako',
