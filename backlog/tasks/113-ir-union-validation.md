@@ -1,6 +1,6 @@
 # backend — IR validation: recursive field-type walk, alias pass, cycle info channel
 
-**Statut** : à faire
+**Statut** : fait
 **Type** : backend
 **Issue** : [#113](https://github.com/marmotz/kurotako/issues/113)
 

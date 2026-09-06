@@ -32,6 +32,7 @@ interface SourceIR {
   parserVersion?: string
   entities: Record<string, Entity>           // "User" -> ...
   enums: Record<string, EnumDef>             // source-level (default); entities may also carry local enums
+  typeAliases?: Record<string, TypeAlias>    // named field types (unions, refs, …); absent for parsers that don't produce them
 }
 
 interface Entity {
@@ -62,6 +63,18 @@ type FieldType =
   | { kind: 'scalar'; scalar: ScalarType }
   | { kind: 'enum'; ref: string }          // resolved: entity-local enums first, then source-level
   | { kind: 'unknown'; hint?: string }     // escape hatch for unmodelled cases
+  | { kind: 'ref'; ref: string }           // bare name, same source: entity first, then typeAliases
+  | {                                       // recursive; producers flatten nested unions
+      kind: 'union'
+      variants: FieldType[]                 // schema tolerates < 2 (normalised in the cross-ref pass)
+      discriminator?: { propertyName: string; mapping?: Record<string, string> }  // mapping values name `ref` variants
+    }
+
+interface TypeAlias {
+  name: string
+  type: FieldType                           // any FieldType, including a union
+  doc?: string
+}
 
 type ScalarType =
   | 'string' | 'boolean'
@@ -118,6 +131,11 @@ interface EnumDef {
 - **`Decimal` / `bigint` / `Json` / `Bytes`**: named scalars only; runtime representation
   left to each generator.
 - **Enums**: both source-level and entity-local, entity-local resolved first.
+- **Union types & aliases** (see [ir-union-type/technical.md](../backlog/features/ir-union-type/technical.md)):
+  `FieldType` carries `ref` (a same-source name) and `union` (optionally discriminated);
+  `SourceIR.typeAliases` is a named-field-type registry. Recursion via `ref` is allowed —
+  a cycle is reported informationally, never fatally. Degenerate unions (`< 2` variants)
+  are tolerated on read and normalised by generators.
 - **Relations**: logical relation + cardinality + `optional` + owning side + back-relation
   + explicit FK field(s) + `references` + `onDelete`/`onUpdate`. Cross-source targets
   allowed at format level, ignored by v1 drivers.
@@ -126,7 +144,9 @@ interface EnumDef {
 - **Metadata**: doc comments, `@map`/`@@map`, indexes, composite uniques — in the IR from
   v1.
 - **Serialization**: in memory; `--emit-ir` dumps `generated/ir/*.json` on demand.
-- **Versioning**: single `irVersion` string; `@kurotako/ir` versioned independently.
+- **Versioning**: single `irVersion` string (currently `'2'`); `@kurotako/ir` versioned
+  independently. `isCompatible` is strict equality, so an `--emit-ir` dump from an older
+  `irVersion` is rejected with `version_incompatible`.
 
 ## Closed points
 
@@ -143,6 +163,10 @@ interface EnumDef {
 3. **Cross-reference checks** — the Valibot schema covers structure, closed-union
    membership and tagged-union narrowing; a **post-parse cross-reference pass** handles
    enum-ref resolution, relation-target / back-relation resolution, field-name references
-   (`primaryKey`, `indexes`, `uniques`, `fkFields`, `references`) and `min <= max` /
+   (`primaryKey`, `indexes`, `uniques`, `fkFields`, `references`), a recursive field-type
+   walk (`ref` / type-alias resolution, discriminator mapping) and `min <= max` /
    `minLength <= maxLength` / `regex` compilation. Both sources normalise to the stable
    `IrIssue` surface; some checks are `v.rawCheck` pipe actions on the schema.
+   Non-fatal observations — degenerate unions and reference cycles — ride a separate
+   `info?: IrIssue[]` channel on the `ok: true` branch of `IrValidation`, so `assertIR` /
+   `parseIR` stay green while a generator can still log them.

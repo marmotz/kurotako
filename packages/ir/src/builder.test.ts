@@ -169,6 +169,114 @@ describe('createSourceIR — incremental throws', () => {
   });
 });
 
+describe('createSourceIR — union / ref / typeAliases', () => {
+  const base = () => createSourceIR({ namespace: 'pg', parser: 'prisma' });
+
+  it('builds a field union and a type alias', () => {
+    const built = base()
+      .addEntity('Address', (e) => {
+        e.field('id', (f) => f.scalar('uuid').primary());
+      })
+      .addTypeAlias('Contact', (t) =>
+        t.doc('a contact').union((u) => {
+          u.scalar('string');
+          u.ref('Address');
+        }),
+      )
+      .addEntity('User', (e) => {
+        e.field('id', (f) => f.scalar('uuid').primary());
+        e.field('home', (f) => f.ref('Address'));
+        e.field('contact', (f) =>
+          f.union((u) => {
+            u.scalar('string');
+            u.ref('Address');
+          }),
+        );
+      })
+      .build();
+
+    expect(built.typeAliases?.Contact).toEqual({
+      name: 'Contact',
+      doc: 'a contact',
+      type: {
+        kind: 'union',
+        variants: [
+          { kind: 'scalar', scalar: 'string' },
+          { kind: 'ref', ref: 'Address' },
+        ],
+      },
+    });
+    expect(built.entities.User?.fields[1]?.type).toEqual({
+      kind: 'ref',
+      ref: 'Address',
+    });
+  });
+
+  it('omits typeAliases from the literal when none were added', () => {
+    const built = base()
+      .addEntity('User', (e) =>
+        e.field('id', (f) => f.scalar('uuid').primary()),
+      )
+      .build();
+    expect(built).not.toHaveProperty('typeAliases');
+  });
+
+  it('flattens a nested union on build', () => {
+    const built = base()
+      .addEntity('User', (e) => {
+        e.field('id', (f) => f.scalar('uuid').primary());
+        e.field('v', (f) =>
+          f.union((u) => {
+            u.scalar('string');
+            u.union((n) => {
+              n.scalar('int');
+              n.scalar('boolean');
+            });
+          }),
+        );
+      })
+      .build();
+    expect(built.entities.User?.fields[1]?.type).toEqual({
+      kind: 'union',
+      variants: [
+        { kind: 'scalar', scalar: 'string' },
+        { kind: 'scalar', scalar: 'int' },
+        { kind: 'scalar', scalar: 'boolean' },
+      ],
+    });
+  });
+
+  it('rejects a union with fewer than 2 variants', () => {
+    expect(() =>
+      base().addEntity('User', (e) => {
+        e.field('v', (f) => f.union((u) => u.scalar('string')));
+      }),
+    ).toThrow(/at least 2 variants/);
+  });
+
+  it('rejects a discriminator mapping value that is not a ref variant', () => {
+    expect(() =>
+      base().addEntity('User', (e) => {
+        e.field('v', (f) =>
+          f.union((u) => {
+            u.ref('A');
+            u.scalar('string');
+            u.discriminator('kind', { a: 'Missing' });
+          }),
+        );
+      }),
+    ).toThrow(/names no ref variant/);
+  });
+
+  it('rejects a duplicate type alias', () => {
+    expect(() =>
+      base()
+        .addTypeAlias('X', (t) => t.scalar('json'))
+        .addTypeAlias('X', (t) => t.scalar('string')),
+    ).toThrow(/duplicate type alias/);
+  });
+});
+
 describe('createSourceIR — build() gate', () => {
   it('surfaces a downstream assertSourceIR failure with a located path', () => {
     try {

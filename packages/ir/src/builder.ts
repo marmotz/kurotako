@@ -13,6 +13,7 @@ import type {
   EnumDef,
   EnumValue,
   Field,
+  FieldType,
   IndexDef,
   IndexType,
   ReferentialAction,
@@ -20,6 +21,7 @@ import type {
   ScalarType,
   SourceIR,
   StringFormat,
+  TypeAlias,
 } from './types.js';
 import { assertSourceIR, type IrIssue, IrValidationError } from './validate.js';
 
@@ -43,9 +45,29 @@ export interface EnumBuilder {
   dbName(name: string): this;
 }
 
+/** Type-setters shared by `UnionBuilder` and `TypeAliasBuilder`. */
+export interface TypeVariantBuilder {
+  scalar(t: ScalarType): this;
+  enum(ref: string): this;
+  ref(name: string): this;
+  union(build: (u: UnionBuilder) => void): this;
+  unknown(hint?: string): this;
+}
+
+export interface UnionBuilder extends TypeVariantBuilder {
+  /** `mapping` values must name a `ref` variant of this union. */
+  discriminator(propertyName: string, mapping?: Record<string, string>): this;
+}
+
+export interface TypeAliasBuilder extends TypeVariantBuilder {
+  doc(text: string): this;
+}
+
 export interface FieldBuilder {
   scalar(t: ScalarType): this;
   enum(ref: string): this;
+  ref(name: string): this;
+  union(build: (u: UnionBuilder) => void): this;
   unknown(hint?: string): this;
   list(): this;
   optional(): this;
@@ -90,6 +112,7 @@ export interface EntityBuilder {
 export interface SourceIrBuilder {
   addEnum(name: string, def: (e: EnumBuilder) => void): this;
   addEntity(name: string, def: (e: EntityBuilder) => void): this;
+  addTypeAlias(name: string, def: (t: TypeAliasBuilder) => void): this;
   build(): SourceIR;
 }
 
@@ -129,6 +152,147 @@ class EnumBuilderImpl implements EnumBuilder {
   }
 }
 
+function checkedScalar(path: string, t: ScalarType): FieldType {
+  if (!v.is(ScalarTypeSchema, t)) {
+    throw new IrBuildError(path, `unknown scalar type '${t}'`);
+  }
+  return { kind: 'scalar', scalar: t };
+}
+
+class UnionBuilderImpl implements UnionBuilder {
+  #path: string;
+  #variants: FieldType[] = [];
+  #discriminator:
+    | { propertyName: string; mapping?: Record<string, string> }
+    | undefined;
+
+  constructor(path: string) {
+    this.#path = path;
+  }
+
+  scalar(t: ScalarType): this {
+    this.#variants.push(checkedScalar(this.#path, t));
+    return this;
+  }
+
+  enum(ref: string): this {
+    this.#variants.push({ kind: 'enum', ref });
+    return this;
+  }
+
+  ref(name: string): this {
+    this.#variants.push({ kind: 'ref', ref: name });
+    return this;
+  }
+
+  union(build: (u: UnionBuilder) => void): this {
+    const nested = new UnionBuilderImpl(this.#path);
+    build(nested);
+    // Nested unions are flattened into this one on build.
+    for (const variant of nested.#variants) {
+      this.#variants.push(variant);
+    }
+    return this;
+  }
+
+  unknown(hint?: string): this {
+    this.#variants.push(
+      hint === undefined ? { kind: 'unknown' } : { kind: 'unknown', hint },
+    );
+    return this;
+  }
+
+  discriminator(propertyName: string, mapping?: Record<string, string>): this {
+    this.#discriminator =
+      mapping === undefined ? { propertyName } : { propertyName, mapping };
+    return this;
+  }
+
+  build(): Extract<FieldType, { kind: 'union' }> {
+    if (this.#variants.length < 2) {
+      throw new IrBuildError(
+        this.#path,
+        `union() needs at least 2 variants, got ${this.#variants.length}`,
+      );
+    }
+    const mapping = this.#discriminator?.mapping;
+    if (mapping !== undefined) {
+      const refVariants = new Set(
+        this.#variants.flatMap((vv) => (vv.kind === 'ref' ? [vv.ref] : [])),
+      );
+      for (const [key, target] of Object.entries(mapping)) {
+        if (!refVariants.has(target)) {
+          throw new IrBuildError(
+            this.#path,
+            `discriminator mapping '${key}' -> '${target}' names no ref variant`,
+          );
+        }
+      }
+    }
+    const type: Extract<FieldType, { kind: 'union' }> = {
+      kind: 'union',
+      variants: this.#variants,
+    };
+    if (this.#discriminator !== undefined) {
+      type.discriminator = this.#discriminator;
+    }
+    return type;
+  }
+}
+
+class TypeAliasBuilderImpl implements TypeAliasBuilder {
+  #path: string;
+  #name: string;
+  #type: FieldType = { kind: 'unknown' };
+  #doc: string | undefined;
+
+  constructor(path: string, name: string) {
+    this.#path = path;
+    this.#name = name;
+  }
+
+  scalar(t: ScalarType): this {
+    this.#type = checkedScalar(this.#path, t);
+    return this;
+  }
+
+  enum(ref: string): this {
+    this.#type = { kind: 'enum', ref };
+    return this;
+  }
+
+  ref(name: string): this {
+    this.#type = { kind: 'ref', ref: name };
+    return this;
+  }
+
+  union(build: (u: UnionBuilder) => void): this {
+    const nested = new UnionBuilderImpl(this.#path);
+    build(nested);
+    this.#type = nested.build();
+    return this;
+  }
+
+  unknown(hint?: string): this {
+    this.#type =
+      hint === undefined ? { kind: 'unknown' } : { kind: 'unknown', hint };
+    return this;
+  }
+
+  doc(text: string): this {
+    this.#doc = text;
+    return this;
+  }
+
+  build(): TypeAlias {
+    const alias: TypeAlias = { name: this.#name, type: this.#type };
+    if (this.#doc !== undefined) {
+      alias.doc = this.#doc;
+    }
+    return alias;
+  }
+}
+
 class FieldBuilderImpl implements FieldBuilder {
   #path: string;
   #field: Field;
@@ -157,6 +321,18 @@ class FieldBuilderImpl implements FieldBuilder {
 
   enum(ref: string): this {
     this.#field.type = { kind: 'enum', ref };
+    return this;
+  }
+
+  ref(name: string): this {
+    this.#field.type = { kind: 'ref', ref: name };
+    return this;
+  }
+
+  union(build: (u: UnionBuilder) => void): this {
+    const builder = new UnionBuilderImpl(this.#path);
+    build(builder);
+    this.#field.type = builder.build();
     return this;
   }
 
@@ -449,6 +625,7 @@ class SourceIrBuilderImpl implements SourceIrBuilder {
   #entities: EntityBuilderImpl[] = [];
   #entityNames = new Set<string>();
   #enums: Record<string, EnumDef> = {};
+  #typeAliases: Record<string, TypeAlias> = {};
 
   constructor(init: {
     namespace: string;
@@ -481,6 +658,22 @@ class SourceIrBuilderImpl implements SourceIrBuilder {
     return this;
   }
 
+  addTypeAlias(name: string, def: (t: TypeAliasBuilder) => void): this {
+    if (name in this.#typeAliases) {
+      throw new IrBuildError(
+        `${this.#namespace}.typeAliases.${name}`,
+        `duplicate type alias '${name}'`,
+      );
+    }
+    const builder = new TypeAliasBuilderImpl(
+      `${this.#namespace}.typeAliases.${name}`,
+      name,
+    );
+    def(builder);
+    this.#typeAliases[name] = builder.build();
+    return this;
+  }
+
   build(): SourceIR {
     const source: SourceIR = {
       namespace: this.#namespace,
@@ -495,6 +688,9 @@ class SourceIrBuilderImpl implements SourceIrBuilder {
     };
     if (this.#parserVersion !== undefined) {
       source.parserVersion = this.#parserVersion;
+    }
+    if (Object.keys(this.#typeAliases).length > 0) {
+      source.typeAliases = this.#typeAliases;
     }
 
     try {

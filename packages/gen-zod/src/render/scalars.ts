@@ -64,6 +64,10 @@ export function baseExpr(type: FieldType, dialect: ZodDialect): string {
       return enumSchemaName(type.ref);
     case 'unknown':
       return 'z.unknown()';
+    // TODO(#115): dedicated `ref` / `union` rendering (z.union / z.discriminatedUnion / z.lazy).
+    case 'ref':
+    case 'union':
+      return 'z.unknown()';
   }
 }
 

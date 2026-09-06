@@ -34,6 +34,10 @@ function baseType(field: Field, zodEnumTypeName: ZodEnumTypeName): string {
       return zodEnumTypeName(field.type.ref);
     case 'unknown':
       return 'unknown';
+    // TODO(#116): dedicated `ref` / `union` control typing (sub-FormGroup, discriminated switch).
+    case 'ref':
+    case 'union':
+      return 'unknown';
   }
 }
 

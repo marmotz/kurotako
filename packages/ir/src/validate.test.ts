@@ -12,7 +12,7 @@ import {
 /** A fresh, fully valid IR for each test to mutate. */
 function makeIr(): IR {
   return {
-    irVersion: '1',
+    irVersion: '2',
     sources: {
       pg: {
         namespace: 'pg',
@@ -168,7 +168,7 @@ describe('validateIR — one failing fixture per IrIssueCode', () => {
 
   it('version_incompatible', () => {
     const ir = makeIr();
-    ir.irVersion = '2';
+    ir.irVersion = '1';
     expect(codesOf(ir)).toContain('version_incompatible');
   });
 
@@ -274,5 +274,115 @@ describe('cross-source relations', () => {
         true,
       );
     }
+  });
+});
+
+let extraFieldCounter = 0;
+
+/** Push a field of the given type onto `User` and return the mutated IR. */
+function withUserField(ir: IR, type: unknown): IR {
+  extraFieldCounter += 1;
+  entityOf(pgOf(ir), 'User').fields.push({
+    name: `extra${extraFieldCounter}`,
+    type: type as never,
+    list: false,
+    optional: false,
+    nullable: false,
+    constraints: {},
+  });
+  return ir;
+}
+
+function infoCodesOf(value: unknown): IrIssueCode[] {
+  const res = validateIR(value);
+  return res.ok ? (res.info ?? []).map((i) => i.code) : [];
+}
+
+describe('union type — field-type walk', () => {
+  it('resolves a { kind: ref } against entities and type aliases', () => {
+    const ir = makeIr();
+    withUserField(ir, { kind: 'ref', ref: 'Post' });
+    pgOf(ir).typeAliases = {
+      Coords: { name: 'Coords', type: { kind: 'scalar', scalar: 'json' } },
+    };
+    withUserField(ir, { kind: 'ref', ref: 'Coords' });
+    expect(validateIR(ir).ok).toBe(true);
+  });
+
+  it('unresolved_ref', () => {
+    const ir = withUserField(makeIr(), { kind: 'ref', ref: 'Ghost' });
+    expect(codesOf(ir)).toContain('unresolved_ref');
+  });
+
+  it('recurses into nested union variants', () => {
+    const ir = withUserField(makeIr(), {
+      kind: 'union',
+      variants: [
+        { kind: 'scalar', scalar: 'string' },
+        { kind: 'union', variants: [{ kind: 'ref', ref: 'Ghost' }] },
+      ],
+    });
+    expect(codesOf(ir)).toContain('unresolved_ref');
+  });
+
+  it('unresolved_type_alias — discriminator mapping value is not a ref variant', () => {
+    const ir = withUserField(makeIr(), {
+      kind: 'union',
+      discriminator: { propertyName: 'kind', mapping: { a: 'Missing' } },
+      variants: [
+        { kind: 'ref', ref: 'Post' },
+        { kind: 'scalar', scalar: 'string' },
+      ],
+    });
+    expect(codesOf(ir)).toContain('unresolved_type_alias');
+  });
+
+  it('degenerate_union rides the info channel, not a fatal issue', () => {
+    const ir = withUserField(makeIr(), {
+      kind: 'union',
+      variants: [{ kind: 'scalar', scalar: 'string' }],
+    });
+    const res = validateIR(ir);
+    expect(res.ok).toBe(true);
+    expect(infoCodesOf(ir)).toContain('degenerate_union');
+  });
+});
+
+describe('union type — type alias pass', () => {
+  it('type_alias_key_mismatch', () => {
+    const ir = makeIr();
+    pgOf(ir).typeAliases = {
+      Coords: { name: 'Renamed', type: { kind: 'scalar', scalar: 'json' } },
+    };
+    expect(codesOf(ir)).toContain('type_alias_key_mismatch');
+  });
+
+  it('walks the alias type (unresolved_ref inside an alias)', () => {
+    const ir = makeIr();
+    pgOf(ir).typeAliases = {
+      Coords: { name: 'Coords', type: { kind: 'ref', ref: 'Ghost' } },
+    };
+    expect(codesOf(ir)).toContain('unresolved_ref');
+  });
+});
+
+describe('union type — cycle info channel', () => {
+  it('a ref cycle is informational, not fatal', () => {
+    const ir = makeIr();
+    pgOf(ir).typeAliases = {
+      A: { name: 'A', type: { kind: 'ref', ref: 'B' } },
+      B: { name: 'B', type: { kind: 'ref', ref: 'A' } },
+    };
+    const res = validateIR(ir);
+    expect(res.ok).toBe(true);
+    expect(infoCodesOf(ir)).toContain('union_cycle');
+  });
+
+  it('assertIR does not throw when the IR only carries info', () => {
+    const ir = makeIr();
+    pgOf(ir).typeAliases = {
+      A: { name: 'A', type: { kind: 'ref', ref: 'A' } },
+    };
+    expect(() => assertIR(ir)).not.toThrow();
   });
 });

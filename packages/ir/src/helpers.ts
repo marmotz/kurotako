@@ -12,6 +12,7 @@ import type {
   Relation,
   ScalarType,
   SourceIR,
+  TypeAlias,
 } from './types.js';
 
 export function getSource(ir: IR, namespace: string): SourceIR | undefined {
@@ -33,6 +34,79 @@ export function resolveEnum(
   ref: string,
 ): EnumDef | undefined {
   return entity?.enums?.[ref] ?? source.enums[ref];
+}
+
+/**
+ * Resolve a `{ kind: 'ref' }` name against the same source: an entity first,
+ * then a type alias. Same-namespace only — v1 has no namespace qualifier.
+ */
+export function resolveRef(
+  source: SourceIR,
+  ref: string,
+): Entity | TypeAlias | undefined {
+  return source.entities[ref] ?? source.typeAliases?.[ref];
+}
+
+export function resolveTypeAlias(
+  source: SourceIR,
+  name: string,
+): TypeAlias | undefined {
+  return source.typeAliases?.[name];
+}
+
+export function* iterTypeAliases(
+  ir: IR,
+): Iterable<{ namespace: string; alias: TypeAlias }> {
+  for (const [namespace, source] of Object.entries(ir.sources)) {
+    for (const alias of Object.values(source.typeAliases ?? {})) {
+      yield { namespace, alias };
+    }
+  }
+}
+
+/** Stable structural key for a non-union `FieldType`, for deduplication. */
+function fieldTypeKey(type: FieldType): string {
+  switch (type.kind) {
+    case 'scalar':
+      return `scalar:${type.scalar}`;
+    case 'enum':
+      return `enum:${type.ref}`;
+    case 'ref':
+      return `ref:${type.ref}`;
+    case 'unknown':
+      return `unknown:${type.hint ?? ''}`;
+    case 'union':
+      return `union:${flattenUnion(type).map(fieldTypeKey).join(',')}`;
+  }
+}
+
+/**
+ * Flatten nested unions into a single variant list and drop
+ * structurally-identical duplicates, preserving first-seen order. The
+ * discriminator of a nested union is not carried up.
+ */
+export function flattenUnion(
+  type: Extract<FieldType, { kind: 'union' }>,
+): FieldType[] {
+  const out: FieldType[] = [];
+  const seen = new Set<string>();
+  const push = (t: FieldType): void => {
+    if (t.kind === 'union') {
+      for (const variant of t.variants) {
+        push(variant);
+      }
+      return;
+    }
+    const key = fieldTypeKey(t);
+    if (!seen.has(key)) {
+      seen.add(key);
+      out.push(t);
+    }
+  };
+  for (const variant of type.variants) {
+    push(variant);
+  }
+  return out;
 }
 
 /**
@@ -158,10 +232,20 @@ export function scalarTsType(type: FieldType): string {
   switch (type.kind) {
     case 'enum':
       return type.ref;
+    case 'ref':
+      return type.ref;
     case 'unknown':
       return 'unknown';
     case 'scalar':
       return mapScalar(type.scalar);
+    case 'union':
+      return flattenUnion(type)
+        .map((variant) =>
+          variant.kind === 'union'
+            ? `(${scalarTsType(variant)})`
+            : scalarTsType(variant),
+        )
+        .join(' | ');
   }
 }
 

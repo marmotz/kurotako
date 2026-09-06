@@ -12,7 +12,6 @@ import type {
   EnumDefSchema,
   EnumValueSchema,
   FieldSchema,
-  FieldTypeSchema,
   IndexDefSchema,
   IndexTypeSchema,
   IrSchema,
@@ -22,16 +21,37 @@ import type {
   ScalarTypeSchema,
   SourceIrSchema,
   StringFormatSchema,
+  TypeAliasSchema,
 } from './schemas.js';
 
 export type { JsonValue } from './schemas.js';
+
+/**
+ * Hand-written because `FieldTypeSchema` is recursive (`union` variant) and
+ * `v.lazy` needs an explicit type — same pattern as `JsonValue`.
+ * `ref` is a bare name resolved against the same source (`entities` then
+ * `typeAliases`); there is no namespace qualifier in v1.
+ */
+export type FieldType =
+  | { kind: 'scalar'; scalar: ScalarType }
+  | { kind: 'enum'; ref: string }
+  | { kind: 'unknown'; hint?: string }
+  | { kind: 'ref'; ref: string }
+  | {
+      kind: 'union';
+      variants: FieldType[];
+      discriminator?: {
+        propertyName: string;
+        mapping?: Record<string, string>;
+      };
+    };
 
 export type IR = v.InferOutput<typeof IrSchema>;
 export type SourceIR = v.InferOutput<typeof SourceIrSchema>;
 export type Entity = v.InferOutput<typeof EntitySchema>;
 export type Field = v.InferOutput<typeof FieldSchema>;
-export type FieldType = v.InferOutput<typeof FieldTypeSchema>;
 export type ScalarType = v.InferOutput<typeof ScalarTypeSchema>;
+export type TypeAlias = v.InferOutput<typeof TypeAliasSchema>;
 export type StringFormat = v.InferOutput<typeof StringFormatSchema>;
 export type ReferentialAction = v.InferOutput<typeof ReferentialActionSchema>;
 export type IndexType = v.InferOutput<typeof IndexTypeSchema>;
