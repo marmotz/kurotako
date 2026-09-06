@@ -24,7 +24,8 @@ Differentiators:
 
 1. `parser-prisma`: `schema.prisma` → IR.
 2. `gen-zod`: IR → Zod schemas.
-3. `gen-angular`: IR (+ Zod) → types + typed `FormGroup`s + `Validators` aligned on the constraints.
+3. `gen-angular`: IR (+ Zod) → types + typed `FormGroup`s / Signal Forms. Validation is fully **Zod-delegated**
+   (`zodValidator(schema)` on the group), not re-derived as Angular `Validators`.
 4. `cli`: `tako` binary orchestrating the pipeline against a real project.
 
 Supporting pieces: `@kurotako/ir` (shared types), `@kurotako/core` (orchestration, DAG resolution, IR merge by
@@ -37,7 +38,8 @@ namespace), config system, output modes.
 - React / Vue generators.
 - Additional generators (OpenAPI, client SDK, test data factories) — the IR is designed not to rule out this use, but
   nothing is built in v1.
-- CI / Drift Guard, multi-tenant, RLS.
+- Drift Guard (`tako check`): out of v1, but the **first post-v1 fast-follow** — the feature is designed and in the
+  backlog. Multi-tenant, RLS: out.
 - Cross-source relations (a `pg.User` entity referenced from `mongo.*`): the IR allows the qualified identifier, the v1
   drivers ignore it.
 
@@ -60,35 +62,29 @@ namespace), config system, output modes.
 - English throughout the project — code, docs, repo metadata, CLI output (see
   [`AGENTS.md`](../AGENTS.md) "Working conventions").
 
-## Open questions
+## Resolved questions
 
-Cross-cutting, to be settled with `/backlog-discuss-project`:
+The cross-cutting questions of the design phase are all settled; each was locked in a backlog feature (see
+`backlog/_archives/features/`) and implemented in the MVP.
 
-1. **Config format**: `tako.config.ts` (typed, programmable drivers) vs
-   `tako.config.yaml` (simple declarative) vs both. Leaning toward `.ts`.
-2. **IR `ScalarType` set**: exact list and handling of the non-trivial Prisma cases (`Decimal`, `Json`, `Bytes`,
-   `@db.*`, native types).
-3. **`dependsOn` contract**: how a generator exposes its artifacts (file paths, exported symbol names, structured
-   manifest) and how another consumes them.
-4. **v1 relations**: how far to model (back-relations, implicit m2m, `onDelete` /
-   `onUpdate`, explicit foreign key fields vs logical relation).
-5. **Enums**: shared at the source level vs per entity, file naming convention.
-6. **CLI execution mode**: standalone only (the brief leans that way, to stay source-agnostic) or optional
-   `prisma generate` integration. Watch mode? Incremental generation?
-7. **Generated code**: `.ts` consumed as-is vs a build step. Formatting (Prettier?). Is
-   `tako` the exclusive owner of its output directory (allowed to wipe it)?
-8. **Monorepo tooling**: package manager (pnpm?), build (tsup / unbuild?), test runner (vitest?), versioning
-   (changesets?).
-9. **Angular**: target versions, typed forms API (Angular 14+), exact shape of the
-   `Validators` ↔ IR constraint alignment.
-10. **Test strategy**: fixture schemas → snapshot of the generated code.
-11. **GitHub repo**: not created yet (the project is not a git repository). Creating the backlog issues is blocked as
-    long as the repo does not exist.
-12. **Prisma 8 support** — *decided* (see
-    [parser-prisma/overview.md](../backlog/_archives/features/parser-prisma/overview.md)). Prisma 8
-    (final imminent) drops the DSL/DMMF model for an emitted, deterministic
-    `contract.json`. A single `@kurotako/parser-prisma` package carries two version modes
-    behind the one `prisma` config key: Prisma ≤ 7 via `getDMMF` (the **v1 target**), and
-    Prisma 8 by reading `contract.json` directly with no `@prisma/*` dependency (a
-    **fast-follow after v1**). v1 work must not hard-code assumptions that block the
-    Prisma 8 mode.
+1. **Config format** — `tako.config.ts` only (typed, `defineConfig` from `kurotako`). No YAML.
+2. **IR `ScalarType` set** — closed union (`string`, `boolean`, `int`, `bigint`, `float`, `decimal`, `date`,
+   `datetime`, `uuid`, `bytes`, `json`) with an `unknown` escape hatch. `decimal` / `bigint` / `json` / `bytes` are
+   named scalars only; runtime representation is each generator's call. See [ir.md](ir.md).
+3. **`dependsOn` contract** — a structured `GeneratorArtifact` (`{ entities, peerDependencies?, extra? }`); dependents
+   read exported symbol names, never raw file paths. See [architecture.md](architecture.md#artifact-handle-generatorartifact).
+4. **v1 relations** — modelled in full: logical relation + cardinality + `optional` + owning side + back-relation +
+   explicit FK field(s) + `references` + `onDelete` / `onUpdate`. Implicit m2m is expanded to an explicit join entity.
+5. **Enums** — both source-level and entity-local (entity-local resolved first); `gen-zod` emits `<ns>/zod/enums.ts`.
+6. **CLI execution mode** — standalone only. Watch mode: yes (`--watch`, full regeneration). Incremental: no.
+7. **Generated code** — `.ts` consumed as-is (mode A) or built with `tsup` (mode B). Formatting is an optional
+   `afterEmit` hook. `tako` is the exclusive owner of its output directory and wipes it unconditionally on each run.
+8. **Monorepo tooling** — Bun workspaces, `tsc -b` project references, tsup, vitest, Biome, lefthook, changesets
+   (independent versioning), GitHub Actions. Node ≥ 24.
+9. **Angular** — reactive typed forms (≥ 17) and Signal Forms (≥ 20); validation delegated to Zod (`zodValidator`),
+   not re-derived from IR constraints.
+10. **Test strategy** — fixture schemas + structural assertions over the generated tree (vitest, colocated).
+11. **GitHub repo** — created (`marmotz/kurotako`, private); the backlog issues live there.
+12. **Prisma 8 support** — a single `@kurotako/parser-prisma` package carries two version modes behind the one
+    `prisma` config key: Prisma ≤ 7 via `getDMMF` (the **v1 target**), and Prisma 8 reading `contract.json` directly
+    with no `@prisma/*` dependency (a **fast-follow after v1**).

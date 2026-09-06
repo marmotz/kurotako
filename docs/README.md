@@ -7,14 +7,12 @@ way of a validation layer.
 
 - [Vision and positioning](vision.md) — the problem, the differentiator, the MVP scope.
 - [Architecture](architecture.md) — parsers, generators, IR, dependency DAG, output modes.
-- [Intermediate representation (IR)](ir.md) — draft format, open points.
+- [Intermediate representation (IR)](ir.md) — the IR format.
 - [Glossary](glossary.md) — the project's vocabulary.
 
 ## Project status
 
-Design phase. No implementation code. Decisions already made are recorded in
-[vision.md](vision.md#decisions-already-made); still-open questions are listed at the end of
-[vision.md](vision.md#open-questions) and in each [backlog](../backlog/) feature.
-
-Next step: `/backlog-discuss-project` to settle the cross-cutting questions, then
-`/backlog-discuss <slug>` feature by feature.
+MVP implemented (`parser-prisma` + `gen-zod` + `gen-angular` + `cli`, plus the `kurotako`
+meta-package). Decisions are recorded in [vision.md](vision.md#decisions-already-made) and
+[vision.md](vision.md#resolved-questions); the design history lives in
+`backlog/_archives/features/`.

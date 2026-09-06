@@ -12,7 +12,7 @@ Done once the MVP contracts stop moving; not on the critical path.
 
 | Done | Issue                                                | Task                                                                        | Description                                                                                                                                                                    |
 |------|------------------------------------------------------|-----------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|      | [#60](https://github.com/marmotz/kurotako/issues/60) | [60-docs-reconciliation-post-mvp](tasks/60-docs-reconciliation-post-mvp.md) | Reconcile `architecture.md` (contracts, hard `zod` dep, output tree, `.ts` config, CLI set), `vision.md` (close the settled open questions), `ir.md` (close the 3 open points) |
+| [x]  | [#60](https://github.com/marmotz/kurotako/issues/60) | [60-docs-reconciliation-post-mvp](tasks/60-docs-reconciliation-post-mvp.md) | Reconcile `architecture.md` (contracts, hard `zod` dep, output tree, `.ts` config, CLI set), `vision.md` (close the settled open questions), `ir.md` (close the 3 open points) |
 
 ## `kurotako` meta-package
 
