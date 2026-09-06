@@ -12,7 +12,6 @@ const PKG_DIR = join(import.meta.dirname, '..');
 const SCHEMA = `
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://localhost:5432/test"
 }
 
 /// the role set
@@ -230,7 +229,6 @@ describe('prismaParser.parse — multi-file folder', () => {
       join(root, 'prisma', 'schema.prisma'),
       `datasource db {
         provider = "postgresql"
-        url      = "postgresql://localhost:5432/test"
       }
       model User {
         id    Int    @id

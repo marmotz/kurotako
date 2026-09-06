@@ -34,9 +34,10 @@ async function getDmmfFn(): Promise<GetDmmf> {
   return fn;
 }
 
+// Prisma 7 removed `url` from the datasource block (it moves to prisma.config.ts);
+// a bare `provider` block is all `getDMMF` needs and works on Prisma 5-7.
 const DATASOURCE = `datasource db {
   provider = "postgresql"
-  url      = "postgresql://localhost:5432/test"
 }
 
 `;

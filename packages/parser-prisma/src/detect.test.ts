@@ -35,7 +35,7 @@ describe('resolveInput', () => {
     );
     writeFileSync(
       join(root, 'prisma', 'schema.prisma'),
-      'datasource db {\n provider = "postgresql"\n url = "x"\n}\n',
+      'datasource db {\n provider = "postgresql"\n}\n',
     );
     const input = await resolveInput(root, { schema: 'prisma' }, 'pg');
     expect(input.mode).toBe(7);

@@ -61,7 +61,7 @@
   "devDependencies": {
     "@kurotako/config": "workspace:^",
     "@kurotako/core": "workspace:^",
-    "@prisma/dmmf": "6.19.3",
-    "@prisma/internals": "6.19.3"
+    "@prisma/dmmf": "7.10.0",
+    "@prisma/internals": "7.10.0"
   }
 }
