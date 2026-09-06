@@ -1,16 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import {
   createFields,
+  flattenUnion,
   getSource,
   isCreateOptional,
   isCrossSource,
   isDbAssigned,
   iterEntities,
   iterFields,
+  iterTypeAliases,
   primaryKeyFields,
   resolveEntity,
   resolveEnum,
+  resolveRef,
   resolveRelationTarget,
+  resolveTypeAlias,
   scalarTsType,
   updateFields,
 } from './helpers.js';
@@ -34,7 +38,7 @@ const roleEntityLevel: EnumDef = {
 };
 
 const ir: IR = {
-  irVersion: '1',
+  irVersion: '2',
   sources: {
     pg: {
       namespace: 'pg',
@@ -218,5 +222,82 @@ describe('shared-decision helpers', () => {
     }
     expect(scalarTsType({ kind: 'enum', ref: 'Role' })).toBe('Role');
     expect(scalarTsType({ kind: 'unknown' })).toBe('unknown');
+  });
+
+  it('scalarTsType: ref is verbatim, union is joined with " | "', () => {
+    expect(scalarTsType({ kind: 'ref', ref: 'Address' })).toBe('Address');
+    expect(
+      scalarTsType({
+        kind: 'union',
+        variants: [
+          { kind: 'scalar', scalar: 'string' },
+          { kind: 'ref', ref: 'Address' },
+          { kind: 'scalar', scalar: 'int' },
+        ],
+      }),
+    ).toBe('string | Address | number');
+  });
+});
+
+describe('union type helpers', () => {
+  const aliasSource: SourceIR = {
+    namespace: 'pg',
+    parser: 'prisma',
+    entities: {
+      Address: {
+        name: 'Address',
+        fields: [],
+        relations: [],
+        indexes: [],
+        uniques: [],
+      },
+    },
+    enums: {},
+    typeAliases: {
+      Contact: { name: 'Contact', type: { kind: 'scalar', scalar: 'string' } },
+    },
+  };
+
+  it('resolveRef: entity wins over alias, alias otherwise, undefined on miss', () => {
+    expect(resolveRef(aliasSource, 'Address')).toBe(
+      aliasSource.entities.Address,
+    );
+    expect(resolveRef(aliasSource, 'Contact')).toBe(
+      aliasSource.typeAliases?.Contact,
+    );
+    expect(resolveRef(aliasSource, 'Ghost')).toBeUndefined();
+    expect(resolveTypeAlias(aliasSource, 'Address')).toBeUndefined();
+    expect(resolveTypeAlias(aliasSource, 'Contact')).toBe(
+      aliasSource.typeAliases?.Contact,
+    );
+  });
+
+  it('iterTypeAliases yields every alias with its namespace', () => {
+    const ir: IR = { irVersion: '2', sources: { pg: aliasSource } };
+    expect([...iterTypeAliases(ir)].map((a) => a.alias.name)).toEqual([
+      'Contact',
+    ]);
+  });
+
+  it('flattenUnion inlines nested unions and dedupes structurally', () => {
+    expect(
+      flattenUnion({
+        kind: 'union',
+        variants: [
+          { kind: 'scalar', scalar: 'string' },
+          {
+            kind: 'union',
+            variants: [
+              { kind: 'scalar', scalar: 'string' },
+              { kind: 'ref', ref: 'Address' },
+            ],
+          },
+          { kind: 'ref', ref: 'Address' },
+        ],
+      }),
+    ).toEqual([
+      { kind: 'scalar', scalar: 'string' },
+      { kind: 'ref', ref: 'Address' },
+    ]);
   });
 });

@@ -1,6 +1,6 @@
 # backend — IR builder + helpers: `f.ref` / `f.union` / `addTypeAlias`, resolution helpers
 
-**Statut** : à faire
+**Statut** : fait
 **Type** : backend
 **Issue** : [#114](https://github.com/marmotz/kurotako/issues/114)
 

@@ -18,7 +18,7 @@ describe('mergeSources', () => {
       { namespace: 'b', sourceIR: makeSource('b') },
       { namespace: 'a', sourceIR: makeSource('a') },
     ]);
-    expect(ir.irVersion).toBe('1');
+    expect(ir.irVersion).toBe('2');
     expect(Object.keys(ir.sources)).toEqual(['b', 'a']);
   });
 

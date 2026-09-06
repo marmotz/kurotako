@@ -1,6 +1,6 @@
 # backend — IR schema + types: `ref` / `union` field kinds, `TypeAlias`, IR_VERSION 2
 
-**Statut** : à faire
+**Statut** : fait
 **Type** : backend
 **Issue** : [#112](https://github.com/marmotz/kurotako/issues/112)
 

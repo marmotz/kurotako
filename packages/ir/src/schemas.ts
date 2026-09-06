@@ -8,6 +8,7 @@
  * or functions. This is what keeps `--emit-ir` and `parseIR` trivial.
  */
 import * as v from 'valibot';
+import type { FieldType } from './types.js';
 
 /** Recursive JSON value. Hand-written because `v.lazy` needs an explicit type. */
 export type JsonValue =
@@ -79,11 +80,36 @@ export const IndexTypeSchema = v.picklist([
 
 // --- field types -----------------------------------------------------------
 
-export const FieldTypeSchema = v.variant('kind', [
-  v.object({ kind: v.literal('scalar'), scalar: ScalarTypeSchema }),
-  v.object({ kind: v.literal('enum'), ref: v.string() }),
-  v.object({ kind: v.literal('unknown'), hint: v.optional(v.string()) }),
-]);
+/**
+ * Recursive because of the `union` variant — wrapped in `v.lazy` with an explicit
+ * `v.GenericSchema<FieldType>` annotation, exactly like `JsonValueSchema`. The
+ * schema does **not** enforce `variants.length >= 2`: degenerate unions are
+ * tolerated on read and normalised in the cross-reference pass.
+ */
+export const FieldTypeSchema: v.GenericSchema<FieldType> = v.lazy(() =>
+  v.variant('kind', [
+    v.object({ kind: v.literal('scalar'), scalar: ScalarTypeSchema }),
+    v.object({ kind: v.literal('enum'), ref: v.string() }),
+    v.object({ kind: v.literal('unknown'), hint: v.optional(v.string()) }),
+    v.object({ kind: v.literal('ref'), ref: v.string() }),
+    v.object({
+      kind: v.literal('union'),
+      variants: v.array(FieldTypeSchema),
+      discriminator: v.optional(
+        v.object({
+          propertyName: v.string(),
+          mapping: v.optional(v.record(v.string(), v.string())),
+        }),
+      ),
+    }),
+  ]),
+);
+
+export const TypeAliasSchema = v.object({
+  name: v.string(),
+  type: FieldTypeSchema,
+  doc: v.optional(v.string()),
+});
 
 export const ConstraintsSchema = v.object({
   min: v.optional(v.number()),
@@ -184,6 +210,7 @@ export const SourceIrSchema = v.object({
   parserVersion: v.optional(v.string()),
   entities: v.record(v.string(), EntitySchema),
   enums: v.record(v.string(), EnumDefSchema),
+  typeAliases: v.optional(v.record(v.string(), TypeAliasSchema)),
 });
 
 export const IrSchema = v.object({

@@ -12,7 +12,7 @@
  */
 import * as v from 'valibot';
 import { IrSchema, SourceIrSchema } from './schemas.js';
-import type { Constraints, Entity, IR, SourceIR } from './types.js';
+import type { Constraints, Entity, FieldType, IR, SourceIR } from './types.js';
 import { IR_VERSION, isCompatible } from './version.js';
 
 export type IrIssueCode =
@@ -25,6 +25,11 @@ export type IrIssueCode =
   | 'unresolved_field_ref'
   | 'unresolved_relation_target'
   | 'unresolved_back_relation'
+  | 'unresolved_ref'
+  | 'unresolved_type_alias'
+  | 'type_alias_key_mismatch'
+  | 'degenerate_union'
+  | 'union_cycle'
   | 'invalid_constraint'
   | 'invalid_regex'
   | 'shape';
@@ -36,7 +41,7 @@ export interface IrIssue {
 }
 
 export type IrValidation<T> =
-  | { ok: true; value: T }
+  | { ok: true; value: T; info?: IrIssue[] }
   | { ok: false; issues: IrIssue[] };
 
 export class IrValidationError extends Error {
@@ -130,9 +135,171 @@ function checkEnumValues(
 }
 
 /**
+ * Recursive field-type check. `enum` keeps its entity-local → source-level
+ * resolution; `ref` must resolve against `source.entities` then
+ * `source.typeAliases`; `union` recurses into every variant and, when it carries
+ * a `discriminator.mapping`, every value must name a `ref` variant of the union.
+ * A union with fewer than two variants is tolerated on read — it feeds the
+ * non-fatal `info` channel (`degenerate_union`), not `issues`.
+ */
+function walkFieldType(
+  type: FieldType,
+  path: string,
+  entity: Entity | undefined,
+  source: SourceIR,
+  issues: IrIssue[],
+  info: IrIssue[],
+): void {
+  switch (type.kind) {
+    case 'scalar':
+    case 'unknown':
+      return;
+    case 'enum': {
+      const resolved = entity?.enums?.[type.ref] ?? source.enums[type.ref];
+      if (resolved === undefined) {
+        pushIssue(
+          issues,
+          path,
+          'unresolved_enum_ref',
+          `field type references unknown enum '${type.ref}'`,
+        );
+      }
+      return;
+    }
+    case 'ref': {
+      const known =
+        source.entities[type.ref] !== undefined ||
+        source.typeAliases?.[type.ref] !== undefined;
+      if (!known) {
+        pushIssue(
+          issues,
+          path,
+          'unresolved_ref',
+          `ref '${type.ref}' resolves to no entity and no type alias`,
+        );
+      }
+      return;
+    }
+    case 'union': {
+      if (type.variants.length < 2) {
+        pushIssue(
+          info,
+          path,
+          'degenerate_union',
+          `union has ${type.variants.length} variant(s); expected at least 2`,
+        );
+      }
+      type.variants.forEach((variant, i) => {
+        walkFieldType(
+          variant,
+          `${path}.variants.${i}`,
+          entity,
+          source,
+          issues,
+          info,
+        );
+      });
+      const mapping = type.discriminator?.mapping;
+      if (mapping !== undefined) {
+        const refVariants = new Set(
+          type.variants.flatMap((vv) => (vv.kind === 'ref' ? [vv.ref] : [])),
+        );
+        for (const [key, target] of Object.entries(mapping)) {
+          if (!refVariants.has(target)) {
+            pushIssue(
+              issues,
+              `${path}.discriminator.mapping.${key}`,
+              'unresolved_type_alias',
+              `discriminator mapping '${key}' -> '${target}' names no ref variant of the union`,
+            );
+          }
+        }
+      }
+      return;
+    }
+  }
+}
+
+/** Every `ref` name reachable from a field type, following nested unions. */
+function collectRefs(type: FieldType, out: Set<string>): void {
+  if (type.kind === 'ref') {
+    out.add(type.ref);
+  } else if (type.kind === 'union') {
+    for (const variant of type.variants) {
+      collectRefs(variant, out);
+    }
+  }
+}
+
+/**
+ * Informational cycle detection over `ref` edges (entity fields, alias types,
+ * union variants). Recursion is allowed — a cycle never produces a fatal issue,
+ * it only feeds the `info` channel (`union_cycle`) so a generator can log it and
+ * fall back to a lazy reference.
+ */
+function checkRefCycles(
+  namespace: string,
+  source: SourceIR,
+  info: IrIssue[],
+): void {
+  const adjacency = new Map<string, Set<string>>();
+  for (const [key, alias] of Object.entries(source.typeAliases ?? {})) {
+    const refs = new Set<string>();
+    collectRefs(alias.type, refs);
+    adjacency.set(key, refs);
+  }
+  for (const [key, entity] of Object.entries(source.entities)) {
+    const refs = adjacency.get(key) ?? new Set<string>();
+    for (const field of entity.fields) {
+      collectRefs(field.type, refs);
+    }
+    adjacency.set(key, refs);
+  }
+
+  const state = new Map<string, 'gray' | 'black'>();
+  const stack: string[] = [];
+  const reported = new Set<string>();
+
+  const visit = (node: string): void => {
+    state.set(node, 'gray');
+    stack.push(node);
+    for (const next of adjacency.get(node) ?? []) {
+      if (!adjacency.has(next)) {
+        continue;
+      }
+      const seen = state.get(next);
+      if (seen === 'gray') {
+        const cycle = stack.slice(stack.indexOf(next));
+        const signature = [...cycle].sort().join('|');
+        if (!reported.has(signature)) {
+          reported.add(signature);
+          pushIssue(
+            info,
+            namespace,
+            'union_cycle',
+            `reference cycle: ${[...cycle, next].join(' -> ')}`,
+          );
+        }
+      } else if (seen === undefined) {
+        visit(next);
+      }
+    }
+    stack.pop();
+    state.set(node, 'black');
+  };
+
+  for (const node of adjacency.keys()) {
+    if (state.get(node) === undefined) {
+      visit(node);
+    }
+  }
+}
+
+/**
  * Run every cross-reference check on one source. `lookupEntity` and
  * `isNamespacePresent` give access to the cross-namespace view (full in
- * `validateIR`, this-source-only in `validateSourceIR`).
+ * `validateIR`, this-source-only in `validateSourceIR`). Non-fatal observations
+ * (degenerate unions, reference cycles) are collected in `info`.
  */
 function checkSource(
   namespace: string,
@@ -140,6 +307,7 @@ function checkSource(
   lookupEntity: (ns: string, name: string) => Entity | undefined,
   isNamespacePresent: (ns: string) => boolean,
   issues: IrIssue[],
+  info: IrIssue[],
 ): void {
   for (const [key, def] of Object.entries(source.enums)) {
     if (def.name !== key) {
@@ -177,18 +345,7 @@ function checkSource(
       }
       fieldNames.add(field.name);
       checkConstraints(issues, `${fPath}.constraints`, field.constraints);
-      if (field.type.kind === 'enum') {
-        const resolved =
-          entity.enums?.[field.type.ref] ?? source.enums[field.type.ref];
-        if (resolved === undefined) {
-          pushIssue(
-            issues,
-            fPath,
-            'unresolved_enum_ref',
-            `field '${field.name}' references unknown enum '${field.type.ref}'`,
-          );
-        }
-      }
+      walkFieldType(field.type, fPath, entity, source, issues, info);
     }
 
     for (const [localKey, def] of Object.entries(entity.enums ?? {})) {
@@ -298,6 +455,21 @@ function checkSource(
       }
     });
   }
+
+  for (const [key, alias] of Object.entries(source.typeAliases ?? {})) {
+    const aPath = `${namespace}.typeAliases.${key}`;
+    if (alias.name !== key) {
+      pushIssue(
+        issues,
+        aPath,
+        'type_alias_key_mismatch',
+        `type alias key '${key}' does not match name '${alias.name}'`,
+      );
+    }
+    walkFieldType(alias.type, `${aPath}.type`, undefined, source, issues, info);
+  }
+
+  checkRefCycles(namespace, source, info);
 }
 
 export function validateSourceIR(value: unknown): IrValidation<SourceIR> {
@@ -307,12 +479,16 @@ export function validateSourceIR(value: unknown): IrValidation<SourceIR> {
   }
   const source = parsed.output;
   const issues: IrIssue[] = [];
+  const info: IrIssue[] = [];
   const lookup = (ns: string, name: string): Entity | undefined =>
     ns === source.namespace ? source.entities[name] : undefined;
   const isPresent = (ns: string): boolean => ns === source.namespace;
-  checkSource(source.namespace, source, lookup, isPresent, issues);
-  return issues.length > 0
-    ? { ok: false, issues }
+  checkSource(source.namespace, source, lookup, isPresent, issues, info);
+  if (issues.length > 0) {
+    return { ok: false, issues };
+  }
+  return info.length > 0
+    ? { ok: true, value: source, info }
     : { ok: true, value: source };
 }
 
@@ -323,6 +499,7 @@ export function validateIR(value: unknown): IrValidation<IR> {
   }
   const ir = parsed.output;
   const issues: IrIssue[] = [];
+  const info: IrIssue[] = [];
 
   if (!isCompatible(ir.irVersion)) {
     pushIssue(
@@ -346,10 +523,15 @@ export function validateIR(value: unknown): IrValidation<IR> {
         `source key '${key}' does not match namespace '${source.namespace}'`,
       );
     }
-    checkSource(source.namespace, source, lookup, isPresent, issues);
+    checkSource(source.namespace, source, lookup, isPresent, issues, info);
   }
 
-  return issues.length > 0 ? { ok: false, issues } : { ok: true, value: ir };
+  if (issues.length > 0) {
+    return { ok: false, issues };
+  }
+  return info.length > 0
+    ? { ok: true, value: ir, info }
+    : { ok: true, value: ir };
 }
 
 export function assertIR(value: unknown): asserts value is IR {

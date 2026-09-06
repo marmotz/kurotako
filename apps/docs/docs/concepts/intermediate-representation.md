@@ -27,13 +27,17 @@ IR
       │     ├─ primaryKey
       │     ├─ indexes[] / uniques[]
       │     └─ doc
-      └─ enums               # source-scoped enums
+      ├─ enums               # source-scoped enums
+      └─ typeAliases         # named field types (unions, refs) — optional
 ```
 
 A **field type** is one of `scalar` (`string`, `int`, `bigint`, `float`, `decimal`,
 `boolean`, `datetime`, `date`, `json`, `bytes`, …), `enum` (a reference to an enum
-definition), or `unknown` (with an optional hint, when a parser cannot map the source
-type).
+definition), `unknown` (with an optional hint, when a parser cannot map the source type),
+`ref` (a same-source reference to an entity or a named type alias), or `union` (a list of
+variants, optionally discriminated). A source may also carry `typeAliases` — named field
+types, typically unions, reused across fields. `ref` cycles are allowed; the validator
+flags them informationally rather than rejecting them.
 
 **Constraints** carried on a field: `min` / `max`, `minLength` / `maxLength`, `regex`,
 `format` (`email`, `uuid`, `url`, …), `unique`. Generators translate these into their own
