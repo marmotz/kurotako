@@ -10,6 +10,9 @@ import type { IR } from '@kurotako/ir';
 import { iterEntities } from '@kurotako/ir';
 import { collectEnums } from './emit/enums.js';
 import {
+  aliasModule,
+  aliasSchemaName,
+  aliasTypeName,
   barrelModule,
   entityModule,
   enumConst,
@@ -93,6 +96,17 @@ export function buildArtifact(
       module: entityModule(namespace, entity.name),
       symbols: entitySymbols(entity.name),
     };
+  }
+  for (const [namespace, source] of Object.entries(ir.sources)) {
+    for (const alias of Object.values(source.typeAliases ?? {})) {
+      entities[`${namespace}.${alias.name}`] = {
+        module: aliasModule(namespace),
+        symbols: {
+          schema: aliasSchemaName(alias.name),
+          type: aliasTypeName(alias.name),
+        },
+      };
+    }
   }
 
   const perNamespace: ZodArtifactExtra['perNamespace'] = {};

@@ -79,6 +79,24 @@ export function enumFilterName(name: string): string {
   return `Enum${name}Filter`;
 }
 
+/** `${Name}Schema` — the schema `const` for a type alias. */
+export function aliasSchemaName(name: string): string {
+  return `${name}Schema`;
+}
+
+/** Type alias TS name — the alias name verbatim (identifiers never prefixed). */
+export function aliasTypeName(name: string): string {
+  return name;
+}
+
+/**
+ * `${Name}Schema` for a bare `{ kind: 'ref' }` — an entity flat schema and a
+ * type alias schema share this spelling, only their import module differs.
+ */
+export function refSchemaName(name: string): string {
+  return `${name}Schema`;
+}
+
 // --- module specifiers (POSIX, extension-less) -------------------------------
 
 /** `${ns}/zod/${entity}.schema`. */
@@ -94,6 +112,11 @@ export function enumsModule(namespace: string): string {
 /** `${ns}/zod/filters`. */
 export function filtersModule(namespace: string): string {
   return `${namespace}/zod/filters`;
+}
+
+/** `${ns}/zod/aliases`. */
+export function aliasModule(namespace: string): string {
+  return `${namespace}/zod/aliases`;
 }
 
 /** `${ns}/zod` — this generator's own barrel. */

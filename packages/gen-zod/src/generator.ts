@@ -10,6 +10,7 @@ import { defineGenerator } from '@kurotako/config';
 import type { GenerateContext, GenOutput, VirtualFile } from '@kurotako/core';
 import { buildArtifact } from './artifact.js';
 import { dialectFor } from './dialect.js';
+import { emitAliases } from './emit/aliases.js';
 import { emitBarrel } from './emit/barrel.js';
 import { emitEntity } from './emit/entity.js';
 import { emitEnums } from './emit/enums.js';
@@ -27,6 +28,7 @@ export const zodGenerator = defineGenerator({
     for (const [namespace, source] of Object.entries(ctx.ir.sources)) {
       const prefix = `${namespace}/zod`;
       const entities = Object.values(source.entities);
+      const aliases = Object.values(source.typeAliases ?? {});
 
       files.push({
         path: `${prefix}/enums.ts`,
@@ -36,6 +38,12 @@ export const zodGenerator = defineGenerator({
         files.push({
           path: `${prefix}/filters.ts`,
           content: emitFilters(source, dialect),
+        });
+      }
+      if (aliases.length > 0) {
+        files.push({
+          path: `${prefix}/aliases.ts`,
+          content: emitAliases(source, dialect),
         });
       }
       for (const entity of entities) {
