@@ -67,6 +67,28 @@ export function zodModule(
   return zodEntity(zod, namespace, entity).module;
 }
 
+/**
+ * `{ typeName, module }` for a `{ kind: 'ref' }` target — an `Entity` DTO or a
+ * `TypeAlias`, both exposed through the Zod artifact's `entities` matrix under
+ * the `type` role (`gen-zod` adds one `${ns}.${aliasName}` entry per alias).
+ */
+export function zodRefType(
+  zod: GeneratorArtifact,
+  namespace: string,
+  ref: string,
+): { typeName: string; module: string } {
+  const key = entityKey(namespace, ref);
+  const entry = zod.entities[key];
+  if (entry === undefined) {
+    throw new MissingZodSymbolError(key, 'type');
+  }
+  const id = entry.symbols.type;
+  if (id === undefined) {
+    throw new MissingZodSymbolError(key, 'type');
+  }
+  return { typeName: id, module: entry.module };
+}
+
 /** `zod.extra`, cast to the published `ZodArtifactExtra` shape. */
 export function zodExtra(zod: GeneratorArtifact): ZodArtifactExtra {
   return zod.extra as ZodArtifactExtra;

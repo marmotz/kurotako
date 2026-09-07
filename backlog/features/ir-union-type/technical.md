@@ -285,20 +285,44 @@ acceptable, the dump is a debug artifact, not a stored format.
     `entities[k].symbols.type`);
   - `union` → the variant types joined ` | `.
 - **`controlType`** keeps wrapping `list` / `nullable`.
-- **Discriminated union → sub-`FormGroup`** (overview: "sous-groupes par variante si
-  discriminator"): when `field.type.kind === 'union'` and `discriminator` is set, emit a
-  `FormGroup` whose controls are keyed by discriminator value, each a nested
-  `FormGroup<<Variant>FormControls>` built from the resolved `ref` variant's entity/alias.
-  A small runtime switch (in `zod-forms.runtime.ts`) toggles the active sub-group on the
-  discriminator control's `valueChanges`. Without `discriminator`, or on a **recursive
-  branch** (validation `info`), fall back to `FormControl<A | B>` (or
-  `FormControl<unknown>` when a variant is itself recursive) plus a
-  `// union: validated by zodValidator(schema)` comment and a `logger.warn`.
-- **`zeroValue`** ([`controls.ts:70`](../../../packages/gen-angular/src/render/controls.ts)):
-  `ref` / non-discriminated `union` → `'undefined'` (control type includes `| undefined`
-  for a no-default field); discriminated union → the first variant's zero sub-object.
-- **`artifact.ts`** ([`gen-angular/src/artifact.ts:84`](../../../packages/gen-angular/src/artifact.ts)):
-  form symbols for alias-backed groups added the same way as `gen-zod`.
+- **Discriminated union → sub-`FormGroup`** — implemented in
+  [`render/unions.ts`](../../../packages/gen-angular/src/render/unions.ts). Qualifies only
+  when `discriminator.mapping` is set, every mapped target resolves to an `Entity` in the
+  same source, and the field is neither `list` nor `nullable`. The control is a
+  `FormGroup<{ "<disc>": FormControl<'<v1>' | '<v2>'>; "<v1>": FormGroup<<T1><Variant>FormControls>; … }>`
+  — a discriminator `FormControl` plus one nested `FormGroup` per discriminator value,
+  each built eagerly by delegating to the target entity's injected `FormFactory` (same
+  mechanism as `relations: 'deep'`; the target factories are added to
+  `injectedFactories`). The runtime helper `switchDiscriminatedGroup(group, '<disc>')` in
+  `zod-forms.runtime.ts` (a) enables only the sub-group named by the discriminator
+  control's value and disables the rest, keeping them in sync on `valueChanges`, and
+  (b) rewrites the group's `getRawValue()` to `{ …activeSubGroup.getRawValue(), "<disc>": value }`
+  so the **root** `zodValidator(schema)` — which does `schema.safeParse(group.getRawValue())`
+  and walks the whole tree — sees a value `z.discriminatedUnion` can parse (this resolves
+  the `overview.md` open question).
+- **Free-`FormControl` fallback** — every other union: no `discriminator.mapping`, an
+  alias / unresolved target, a `list` / `nullable` union, or a `ref` branch that chains
+  into a cycle. `baseType` → the variant TS types joined ` | ` (via `unionType`),
+  widened to `unknown` when a branch is recursive; `controlExpr` emits
+  `new FormControl<T>((… ?? undefined) as T) /* union: validated by zodValidator(schema) */`
+  and `reactiveEntity` logs a `logger.warn`. `ref` fields take the same
+  `FormControl<RefDto>` path with no warning.
+- **Signal Forms** — `render/signal.ts` keeps a `ref` / `union` field as one flat model
+  entry (`(init?.x ?? undefined) as Dto['x']`), validated by `zodTreeValidate`; no
+  discriminated sub-form on the experimental surface.
+- **`zeroValue`** ([`controls.ts`](../../../packages/gen-angular/src/render/controls.ts)):
+  `ref` / non-discriminated `union` → `'undefined'` (the seed is cast in `controlExpr`);
+  a discriminated union never reaches `zeroValue` — its factory expression is the
+  `switchDiscriminatedGroup` IIFE.
+- **`artifact.ts`** ([`gen-angular/src/artifact.ts`](../../../packages/gen-angular/src/artifact.ts)):
+  no alias entry. Aliases produce no Angular form and `gen-zod`'s
+  `<ns>/zod/aliases.ts` is the single exporter of the alias schema/type symbols;
+  re-declaring `entities['<ns>.<Name>']` here would make `core`'s
+  `warnAmbiguousReExports` ([`writer/barrel.ts`](../../../packages/core/src/writer/barrel.ts))
+  flag a phantom conflict. `ref` fields still resolve an alias target's type through the
+  Zod artifact's own alias entry (`zodRefType`). Consuming the validation `union_cycle`
+  `info` channel instead of the local `refChainHasCycle` walk stays with
+  [#117](https://github.com/marmotz/kurotako/issues/117).
 
 ## 9. `parser-prisma` impact
 

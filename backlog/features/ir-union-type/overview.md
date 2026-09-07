@@ -60,7 +60,19 @@ its own) — and have every v1 generator handle the new shape.
   union rejection.
 - Builder API (`builder.ts`): how `createSourceIR` exposes `addTypeAlias` and
   `f.union(...)` / `f.ref(...)`.
-- `gen-angular` recursive-branch fallback: exact behaviour and warning.
+- ~~`gen-angular` recursive-branch fallback: exact behaviour and warning.~~
+  **Resolved (#116):** a discriminated union whose `discriminator.mapping` targets all
+  resolve to entities in the same source becomes a nested `FormGroup` (discriminator
+  `FormControl` + one `FormGroup<<Variant>FormControls>` per discriminator value, built
+  via the target entities' injected `FormFactory`); a runtime helper
+  `switchDiscriminatedGroup` toggles the active sub-group on the discriminator control's
+  `valueChanges` and rewrites the group's `getRawValue()` to the flat active-variant
+  shape the root `zodValidator` needs. Every other union (no mapping, an alias target, a
+  `list` / `nullable` union, or a ref branch that chains into a cycle) falls back to
+  `FormControl<A | B>` — `FormControl<unknown>` on the recursive branch — with a
+  `// union: validated by zodValidator(schema)` note and a `logger.warn`. Signal Forms
+  keeps the union as one flat model field validated by `zodTreeValidate` (no
+  discriminated sub-form).
 - Anonymous inline objects (a property that is an unnamed object) — still unmodelled;
   likely `parser-openapi` synthesises a named entity. Out of scope here, noted for that
   feature.

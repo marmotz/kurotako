@@ -10,6 +10,12 @@
  * guarding against a `setErrors`-triggered validation loop
  * (`generator-angular/technical.md` §`zodValidator`).
  *
+ * `switchDiscriminatedGroup` (reactive half): wires a discriminated-union
+ * sub-`FormGroup` — enables only the sub-group selected by the discriminator
+ * control (disabling the rest, kept in sync on `valueChanges`) and rewrites the
+ * group's `getRawValue()` to the flat active-variant shape a
+ * `z.discriminatedUnion` schema parses (`ir-union-type/technical.md` §8).
+ *
  * `zodTreeValidate` (Signal Forms half): wraps `@angular/forms/signals`'
  * tree-level validator primitive. This is the *only* file (besides
  * `render/signal.ts`) referencing that experimental surface, so a secondary-API
@@ -100,6 +106,54 @@ function collectControls(control: AbstractControl): AbstractControl[] {
   return out;
 }`;
 
+const SWITCH_DISCRIMINATED_GROUP = `/**
+ * Wire a discriminated-union sub-FormGroup: enable only the sub-group named by
+ * the discriminator control's value (disable the rest), keep it in sync on
+ * valueChanges, and rewrite the group's getRawValue() to the flat
+ * active-variant shape a z.discriminatedUnion schema can parse.
+ */
+export function switchDiscriminatedGroup(
+  group: AbstractControl,
+  discriminator: string,
+): void {
+  const controls = (group as unknown as {
+    controls: Record<string, AbstractControl>;
+  }).controls;
+  const selector = controls[discriminator];
+  if (selector === undefined) {
+    return;
+  }
+  const variantKeys = Object.keys(controls).filter(
+    (key) => key !== discriminator,
+  );
+
+  const apply = (active: unknown): void => {
+    for (const key of variantKeys) {
+      const sub = controls[key];
+      if (sub === undefined) {
+        continue;
+      }
+      if (key === active) {
+        sub.enable({ emitEvent: false });
+      } else {
+        sub.disable({ emitEvent: false });
+      }
+    }
+  };
+
+  apply(selector.value);
+  selector.valueChanges.subscribe(apply);
+
+  (group as { getRawValue: () => unknown }).getRawValue = () => {
+    const active = controls[String(selector.value)];
+    const variant =
+      active === undefined || active === selector
+        ? {}
+        : (active.getRawValue() as Record<string, unknown>);
+    return { ...variant, [discriminator]: selector.value };
+  };
+}`;
+
 const ZOD_TREE_VALIDATE = `export function zodTreeValidate<T>(
   path: SchemaPath<T>,
   schema: ZodType<T>,
@@ -155,7 +209,7 @@ export function emitRuntime(
 
   const blocks: string[] = [];
   if (reactive) {
-    blocks.push(ZOD_VALIDATOR);
+    blocks.push(ZOD_VALIDATOR, SWITCH_DISCRIMINATED_GROUP);
   }
   if (signal) {
     blocks.push(ZOD_TREE_VALIDATE);

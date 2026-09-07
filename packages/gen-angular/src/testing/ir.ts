@@ -69,3 +69,44 @@ export function blogSource(): SourceIR {
     })
     .build();
 }
+
+/**
+ * A `pay` source exercising the union type: two payment-variant entities, an
+ * `Invoice` with a **discriminated** union field (`method`, mapped to the two
+ * variants) and a **non-discriminated** union field (`ref`, string | int), plus
+ * a root-level `Metadata` type alias.
+ */
+export function unionSource(): SourceIR {
+  return createSourceIR({ namespace: 'pay', parser: 'test' })
+    .addTypeAlias('Metadata', (t) =>
+      t.union((u) => u.scalar('string').scalar('int')),
+    )
+    .addEntity('CardPayment', (t) => {
+      t.field('kind', (f) =>
+        f.scalar('string').default({ kind: 'value', value: 'card' }),
+      );
+      t.field('last4', (f) => f.scalar('string'));
+    })
+    .addEntity('BankTransfer', (t) => {
+      t.field('kind', (f) =>
+        f.scalar('string').default({ kind: 'value', value: 'transfer' }),
+      );
+      t.field('iban', (f) => f.scalar('string'));
+    })
+    .addEntity('Invoice', (t) => {
+      t.field('id', (f) =>
+        f.scalar('uuid').primary().default({ kind: 'expr', expr: 'uuid()' }),
+      );
+      t.field('total', (f) => f.scalar('int'));
+      t.field('method', (f) =>
+        f.union((u) =>
+          u.ref('CardPayment').ref('BankTransfer').discriminator('kind', {
+            card: 'CardPayment',
+            transfer: 'BankTransfer',
+          }),
+        ),
+      );
+      t.field('ref', (f) => f.union((u) => u.scalar('string').scalar('int')));
+    })
+    .build();
+}

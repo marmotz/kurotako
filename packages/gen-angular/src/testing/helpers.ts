@@ -13,7 +13,7 @@ import type {
 } from '@kurotako/core';
 import type { ZodArtifactExtra } from '@kurotako/gen-zod';
 import type { Entity, IR, SourceIR } from '@kurotako/ir';
-import { iterEntities } from '@kurotako/ir';
+import { iterEntities, iterTypeAliases } from '@kurotako/ir';
 import { angularGenerator } from '../generator.js';
 import type { AngularGeneratorOptions } from '../options.js';
 
@@ -29,6 +29,8 @@ export function entityOf(source: SourceIR, name: string): Entity {
 
 function zodEntitySymbols(entity: string): Record<string, string> {
   return {
+    schema: `${entity}Schema`,
+    type: `${entity}Dto`,
     createSchema: `${entity}CreateSchema`,
     createType: `${entity}CreateDto`,
     updateSchema: `${entity}UpdateSchema`,
@@ -52,6 +54,12 @@ export function fakeZodArtifact(
     entities[`${namespace}.${entity.name}`] = {
       module: `${namespace}/zod/${entity.name}.schema`,
       symbols: zodEntitySymbols(entity.name),
+    };
+  }
+  for (const { namespace, alias } of iterTypeAliases(ir)) {
+    entities[`${namespace}.${alias.name}`] = {
+      module: `${namespace}/zod/aliases`,
+      symbols: { schema: `${alias.name}Schema`, type: alias.name },
     };
   }
 

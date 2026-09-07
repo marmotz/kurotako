@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildArtifact } from './artifact.js';
 import { fakeZodArtifact } from './testing/helpers.js';
-import { blogSource, irOf } from './testing/ir.js';
+import { blogSource, irOf, unionSource } from './testing/ir.js';
 
 describe('buildArtifact', () => {
   const ir = irOf(blogSource());
@@ -79,6 +79,18 @@ describe('buildArtifact', () => {
       '@angular/core': '>=17',
       '@angular/forms': '>=17',
     });
+  });
+
+  it('type aliases are not re-declared in the angular artifact (gen-zod owns the alias symbols)', () => {
+    const unionIr = irOf(unionSource());
+    const artifact = buildArtifact(unionIr, fakeZodArtifact(unionIr), {
+      forms: ['reactive'],
+      relations: 'flat',
+    });
+    expect(artifact.entities['pay.Metadata']).toBeUndefined();
+    expect(artifact.entities['pay.Invoice']?.module).toBe(
+      'pay/angular/Invoice.form',
+    );
   });
 
   it('perNamespace reports the angular/-prefixed runtime and barrel modules', () => {

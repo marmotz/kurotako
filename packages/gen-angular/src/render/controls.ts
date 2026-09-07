@@ -8,9 +8,21 @@
 import type { Entity, Field, ScalarType, SourceIR } from '@kurotako/ir';
 import { resolveEnum } from '@kurotako/ir';
 import type { Variant } from '../names.js';
+import { type RefTypeName, unionType } from './unions.js';
 
 /** Resolve an enum ref (`FieldType.kind === 'enum'`) to the Zod-emitted union type name. */
 export type ZodEnumTypeName = (ref: string) => string;
+
+/**
+ * Resolvers a field's control type needs beyond its own IR shape: enum refs and
+ * `{ kind: 'ref' }` targets both resolve to a Zod-emitted type name, and the
+ * owning `SourceIR` lets a recursive union branch be detected.
+ */
+export interface TypeResolvers {
+  enumTypeName: ZodEnumTypeName;
+  refTypeName: RefTypeName;
+  source: SourceIR;
+}
 
 const SCALAR_BASE: Record<ScalarType, string> = {
   string: 'string',
@@ -26,27 +38,29 @@ const SCALAR_BASE: Record<ScalarType, string> = {
   json: 'unknown',
 };
 
-function baseType(field: Field, zodEnumTypeName: ZodEnumTypeName): string {
+function baseType(field: Field, resolvers: TypeResolvers): string {
   switch (field.type.kind) {
     case 'scalar':
       return SCALAR_BASE[field.type.scalar];
     case 'enum':
-      return zodEnumTypeName(field.type.ref);
+      return resolvers.enumTypeName(field.type.ref);
     case 'unknown':
       return 'unknown';
-    // TODO(#116): dedicated `ref` / `union` control typing (sub-FormGroup, discriminated switch).
     case 'ref':
+      return resolvers.refTypeName(field.type.ref);
     case 'union':
-      return 'unknown';
+      return unionType(
+        field.type,
+        resolvers.refTypeName,
+        resolvers.enumTypeName,
+        resolvers.source,
+      ).text;
   }
 }
 
 /** The `FormControl<T>` type argument for a field: `list` wraps, then `nullable`. */
-export function controlType(
-  field: Field,
-  zodEnumTypeName: ZodEnumTypeName,
-): string {
-  let t = baseType(field, zodEnumTypeName);
+export function controlType(field: Field, resolvers: TypeResolvers): string {
+  let t = baseType(field, resolvers);
   if (field.list) {
     t = `${t}[]`;
   }
@@ -104,6 +118,10 @@ function zeroValue(field: Field, enumZero?: EnumZero): string {
     const value = enumZero?.(field.type.ref);
     return value === undefined ? 'undefined' : JSON.stringify(value);
   }
+  // `ref` / non-discriminated `union`: no synthesisable zero — the control type
+  // is `RefDto` / `A | B` and the seed is cast (`controlExpr`); `zodValidator`
+  // flags the still-empty control until the consumer fills it
+  // (`ir-union-type/technical.md` §8).
   return 'undefined';
 }
 
@@ -141,6 +159,16 @@ export function controlExpr(
   if (field.nullable) {
     return `new FormControl<${typeArg}>(${sourceExpr})`;
   }
+  // A `ref` / non-discriminated `union` fallback control has no `nonNullable`
+  // seed literal — the seed is `init?.x ?? undefined`, cast to the exact
+  // control type; `zodValidator(schema)` is what actually validates it. The
+  // union case also carries a note (the ticket reserves it for the fallback).
+  if (field.type.kind === 'union') {
+    return `new FormControl<${typeArg}>((${sourceExpr}) as ${typeArg}) /* union: validated by zodValidator(schema) */`;
+  }
+  if (field.type.kind === 'ref') {
+    return `new FormControl<${typeArg}>((${sourceExpr}) as ${typeArg})`;
+  }
   return `new FormControl(${sourceExpr}, { nonNullable: true })`;
 }
 
@@ -150,14 +178,14 @@ export interface ControlEntry {
   fullType: string;
 }
 
-/** One `ControlEntry` for a scalar/enum field: `name: FormControl<T>`. */
+/** One `ControlEntry` for a scalar / enum / free-`FormControl` field. */
 export function fieldControlEntry(
   field: Field,
-  zodEnumTypeName: ZodEnumTypeName,
+  resolvers: TypeResolvers,
 ): ControlEntry {
   return {
     name: field.name,
-    fullType: `FormControl<${controlType(field, zodEnumTypeName)}>`,
+    fullType: `FormControl<${controlType(field, resolvers)}>`,
   };
 }
 
