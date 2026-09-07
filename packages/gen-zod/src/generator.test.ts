@@ -1,7 +1,7 @@
 import { createSourceIR } from '@kurotako/ir';
 import { describe, expect, it, vi } from 'vitest';
 import { fileEndingWith, runGenerator } from './testing/helpers.js';
-import { blogSource, irOf } from './testing/ir.js';
+import { blogSource, geoSource, irOf } from './testing/ir.js';
 
 const noopLogger = { debug() {}, info() {}, warn() {}, error() {} };
 
@@ -56,6 +56,34 @@ describe('zodGenerator.generate', () => {
     expect(fullDeep).not.toContain('customer:');
     expect(fullDeep).not.toContain('z.lazy');
     expect(debug).toHaveBeenCalled();
+  });
+
+  it('emits aliases.ts and re-exports it from the barrel when the source has type aliases', () => {
+    const out = runGenerator(irOf(geoSource()), { zodVersion: 4 });
+    expect(out.files.map((f) => f.path)).toContain('geo/zod/aliases.ts');
+    const barrel = fileEndingWith(out.files, 'geo/zod/index.ts');
+    expect(barrel).toContain("export * from './aliases';");
+  });
+
+  it('no aliases.ts / barrel line when the source has no type aliases', () => {
+    const out = runGenerator(irOf(blogSource()), { zodVersion: 4 });
+    expect(out.files.map((f) => f.path)).not.toContain('blog/zod/aliases.ts');
+    expect(fileEndingWith(out.files, 'blog/zod/index.ts')).not.toContain(
+      './aliases',
+    );
+  });
+
+  it('a ref-typed entity field imports the alias schema and renders z.lazy', () => {
+    const group = fileEndingWith(
+      runGenerator(irOf(geoSource()), { zodVersion: 4 }).files,
+      'Group.schema.ts',
+    );
+    expect(group).toContain(
+      "import { ShapeSchema, type Shape } from './aliases';",
+    );
+    expect(group).toContain('child: z.lazy(() => ShapeSchema)');
+    expect(group).toContain('export const GroupSchema: z.ZodType<GroupDto> =');
+    expect(group).toContain('child: Shape;');
   });
 
   it('is deterministic: same IR + options -> deep-equal GenOutput', () => {

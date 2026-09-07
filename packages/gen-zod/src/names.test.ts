@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  aliasModule,
+  aliasSchemaName,
+  aliasTypeName,
   barrelModule,
   entityModule,
   enumConst,
@@ -9,6 +12,7 @@ import {
   enumTypeName,
   type Family,
   filtersModule,
+  refSchemaName,
   schemaName,
   typeName,
   type Variant,
@@ -48,6 +52,15 @@ describe('enum + module helpers', () => {
     expect(entityModule('blog', 'User')).toBe('blog/zod/User.schema');
     expect(enumsModule('blog')).toBe('blog/zod/enums');
     expect(filtersModule('blog')).toBe('blog/zod/filters');
+    expect(aliasModule('blog')).toBe('blog/zod/aliases');
     expect(barrelModule('blog')).toBe('blog/zod');
+  });
+});
+
+describe('type alias helpers', () => {
+  it('alias identifiers', () => {
+    expect(aliasSchemaName('Shape')).toBe('ShapeSchema');
+    expect(aliasTypeName('Shape')).toBe('Shape');
+    expect(refSchemaName('Shape')).toBe('ShapeSchema');
   });
 });

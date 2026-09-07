@@ -66,3 +66,33 @@ export function blogSource(): SourceIR {
     })
     .build();
 }
+
+/**
+ * A `geo` source exercising the union-type surface: a plain scalar union alias
+ * (`Scalar`), a discriminated-union alias over two entities (`Shape`), and a
+ * `ref` cycle `Shape -> Group -> child: Shape` — recursion that resolves
+ * through an entity object, the realistic shape of a recursive union.
+ */
+export function geoSource(): SourceIR {
+  return createSourceIR({ namespace: 'geo', parser: 'test' })
+    .addTypeAlias('Scalar', (t) =>
+      t
+        .doc('a string or an int')
+        .union((u) => u.scalar('string').scalar('int')),
+    )
+    .addTypeAlias('Shape', (t) =>
+      t.union((u) => u.ref('Circle').ref('Group').discriminator('kind')),
+    )
+    .addEntity('Circle', (e) => {
+      e.field('id', (f) => f.scalar('int').primary());
+      e.field('kind', (f) => f.scalar('string'));
+      e.field('radius', (f) => f.scalar('int'));
+    })
+    .addEntity('Group', (e) => {
+      e.field('id', (f) => f.scalar('int').primary());
+      e.field('kind', (f) => f.scalar('string'));
+      // Recursive `ref` back to the `Shape` alias.
+      e.field('child', (f) => f.ref('Shape'));
+    })
+    .build();
+}

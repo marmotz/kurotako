@@ -56,6 +56,7 @@
   },
   "devDependencies": {
     "@kurotako/config": "workspace:^",
-    "@kurotako/core": "workspace:^"
+    "@kurotako/core": "workspace:^",
+    "typescript": "5.9.3"
   }
 }

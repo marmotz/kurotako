@@ -107,6 +107,7 @@
       "devDependencies": {
         "@kurotako/config": "workspace:^",
         "@kurotako/core": "workspace:^",
+        "typescript": "5.9.3",
       },
       "peerDependencies": {
         "@kurotako/config": "workspace:^",

@@ -19,13 +19,15 @@
  */
 
 import type { Logger } from '@kurotako/core';
-import type { Entity, IR, SourceIR } from '@kurotako/ir';
+import type { Entity, Field, IR, SourceIR } from '@kurotako/ir';
 import type { ZodDialect } from '../dialect.js';
 import {
-  enumSchemaName,
+  aliasSchemaName,
+  aliasTypeName,
   FAMILIES,
   FAMILY_TOKEN,
   type FamilyName,
+  refSchemaName,
   schemaName,
   typeName,
   VARIANT_TOKEN,
@@ -39,6 +41,7 @@ import {
   relationExpr,
   relationTypeExpr,
 } from '../render/relations.js';
+import { collectTypeDeps, typeExpr } from '../render/scalars.js';
 import { filterClass, variantFields } from '../render/variants.js';
 
 type Entry = [name: string, expr: string];
@@ -77,6 +80,8 @@ export function emitEntity(
   const ns = source.namespace;
   const usedEnumSchemas = new Set<string>();
   const usedFilters = new Set<string>();
+  /** Type-alias names referenced by a field type — imported from `./aliases`. */
+  const usedAliases = new Set<string>();
   const usedSiblings = new Map<string, Set<string>>();
 
   const trackSibling = (target: string, symbol: string): void => {
@@ -86,6 +91,37 @@ export function emitEntity(
     const set = usedSiblings.get(target) ?? new Set<string>();
     set.add(symbol);
     usedSiblings.set(target, set);
+  };
+
+  /** Record enum / alias / sibling-entity schema imports for a field type. */
+  const recordTypeDeps = (field: Field): void => {
+    const deps = collectTypeDeps(field.type);
+    for (const e of deps.enums) {
+      usedEnumSchemas.add(e);
+    }
+    for (const ref of deps.refs) {
+      if (source.entities[ref] !== undefined) {
+        trackSibling(ref, refSchemaName(ref));
+        trackSibling(ref, typeName(ref));
+      } else {
+        usedAliases.add(ref);
+      }
+    }
+  };
+
+  /** Hand-written TS type for a field — mirrors `fieldExpr`'s wrappers. */
+  const fieldTsType = (field: Field): string => {
+    let t = typeExpr(field.type, source);
+    if (field.type.kind === 'union') {
+      t = `(${t})`;
+    }
+    if (field.list) {
+      t = `${t}[]`;
+    }
+    if (field.nullable) {
+      t = `${t} | null`;
+    }
+    return t;
   };
 
   /** Every non-flat relation on `entity`, with its runtime expr + TS type. */
@@ -149,7 +185,12 @@ export function emitEntity(
     }
   }
 
-  const imports = buildImports(usedEnumSchemas, usedFilters, usedSiblings);
+  const imports = buildImports(
+    usedEnumSchemas,
+    usedFilters,
+    usedAliases,
+    usedSiblings,
+  );
   return `${[imports, '', ...blocks].join('\n').trimEnd()}\n`;
 
   function renderRecordBlock(
@@ -158,10 +199,13 @@ export function emitEntity(
     name: string,
     dto: string,
   ): string[] {
+    const selections = variantFields(entity, variant);
     const ownEntries: Entry[] = [];
-    for (const sel of variantFields(entity, variant)) {
-      if (sel.field.type.kind === 'enum') {
-        usedEnumSchemas.add(enumSchemaName(sel.field.type.ref));
+    let ownHasRef = false;
+    for (const sel of selections) {
+      recordTypeDeps(sel.field);
+      if (collectTypeDeps(sel.field.type).refs.size > 0) {
+        ownHasRef = true;
       }
       ownEntries.push([
         sel.field.name,
@@ -181,9 +225,25 @@ export function emitEntity(
     if (relEntries.length === 0) {
       const obj = objectExpr(ownEntries);
       const body = variant === 'update' ? `${obj}.partial()` : obj;
+      if (!ownHasRef) {
+        return [
+          `export const ${name} = ${body};`,
+          `export type ${dto} = z.infer<typeof ${name}>;`,
+          '',
+        ];
+      }
+      // A `ref` field renders as a `z.lazy` chain — `z.infer` on it is `TS7022`
+      // once the reference is recursive. Annotate the const and hand-write the
+      // DTO from the field types.
+      const rows = selections
+        .map((sel) => {
+          const opt = variant === 'update' || sel.optional;
+          return `  ${sel.field.name}${opt ? '?' : ''}: ${fieldTsType(sel.field)};`;
+        })
+        .join('\n');
       return [
-        `export const ${name} = ${body};`,
-        `export type ${dto} = z.infer<typeof ${name}>;`,
+        `export const ${name}: z.ZodType<${dto}> = ${body};`,
+        `export type ${dto} = {\n${rows}\n};`,
         '',
       ];
     }
@@ -315,6 +375,7 @@ export function emitEntity(
 function buildImports(
   enums: Set<string>,
   filters: Set<string>,
+  aliases: Set<string>,
   siblings: Map<string, Set<string>>,
 ): string {
   const lines: { spec: string; stmt: string }[] = [
@@ -326,6 +387,16 @@ function buildImports(
     lines.push({
       spec: './enums',
       stmt: `import { ${names} } from './enums';`,
+    });
+  }
+  if (aliases.size > 0) {
+    const names = [...aliases]
+      .sort((a, b) => a.localeCompare(b))
+      .flatMap((n) => [aliasSchemaName(n), `type ${aliasTypeName(n)}`])
+      .join(', ');
+    lines.push({
+      spec: './aliases',
+      stmt: `import { ${names} } from './aliases';`,
     });
   }
   if (filters.size > 0) {

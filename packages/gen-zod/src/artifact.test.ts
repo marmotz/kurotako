@@ -1,7 +1,7 @@
 import type { EntitySymbols } from '@kurotako/core';
 import { describe, expect, it } from 'vitest';
 import { buildArtifact, type ZodArtifactExtra } from './artifact.js';
-import { blogSource, irOf } from './testing/ir.js';
+import { blogSource, geoSource, irOf } from './testing/ir.js';
 
 function symbolsOf(
   artifact: ReturnType<typeof buildArtifact>,
@@ -51,6 +51,16 @@ describe('buildArtifact', () => {
     }
     expect(s.schema).toBe('UserSchema');
     expect(s.createDeepSchema).toBe('UserCreateDeepSchema');
+  });
+
+  it('type aliases get an entity entry with schema/type symbols and the aliases module', () => {
+    const geo = buildArtifact(irOf(geoSource()), { zodVersion: 4 });
+    const shape = geo.entities['geo.Shape'];
+    if (shape === undefined) {
+      throw new Error('no artifact entity for geo.Shape');
+    }
+    expect(shape.module).toBe('geo/zod/aliases');
+    expect(shape.symbols).toEqual({ schema: 'ShapeSchema', type: 'Shape' });
   });
 
   it('peerDependencies.zod tracks zodVersion', () => {
