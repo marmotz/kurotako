@@ -18,11 +18,17 @@ describe('emitRuntime — text assembly', () => {
     expect(text).not.toContain('@angular/forms/signals');
   });
 
+  it('forms: [reactive] -> also emits switchDiscriminatedGroup', () => {
+    const text = emitRuntime(source, opts(['reactive']));
+    expect(text).toContain('export function switchDiscriminatedGroup(');
+  });
+
   it('forms: [signal] -> zodTreeValidate only, no @angular/forms import', () => {
     const text = emitRuntime(source, opts(['signal']));
     expect(text).toContain('export function zodTreeValidate');
     expect(text).not.toContain('zodValidator(schema');
     expect(text).not.toContain("from '@angular/forms';");
+    expect(text).not.toContain('switchDiscriminatedGroup');
   });
 
   it('forms: [reactive, signal] -> both helpers', () => {
@@ -214,5 +220,114 @@ describe('zodValidator algorithm', () => {
     const validator = zodValidator(() => ({ success: true }));
     validator(group);
     expect(email.errors).toEqual({ required: true });
+  });
+});
+
+// --- behavioral mirror of the emitted `switchDiscriminatedGroup` -------------
+
+interface FakeSelector {
+  value: string;
+  listeners: ((v: string) => void)[];
+  valueChanges: { subscribe(next: (v: string) => void): void };
+}
+
+function fakeSelector(value: string): FakeSelector {
+  const self: FakeSelector = {
+    value,
+    listeners: [],
+    valueChanges: { subscribe: (next) => self.listeners.push(next) },
+  };
+  return self;
+}
+
+interface FakeSub {
+  enabled: boolean;
+  raw: Record<string, unknown>;
+  enable(): void;
+  disable(): void;
+  getRawValue(): unknown;
+}
+
+function fakeSub(raw: Record<string, unknown>): FakeSub {
+  const self: FakeSub = {
+    enabled: true,
+    raw,
+    enable() {
+      self.enabled = true;
+    },
+    disable() {
+      self.enabled = false;
+    },
+    getRawValue: () => self.raw,
+  };
+  return self;
+}
+
+function switchDiscriminatedGroup(
+  group: { controls: Record<string, FakeSelector | FakeSub> } & {
+    getRawValue: () => unknown;
+  },
+  discriminator: string,
+): void {
+  const controls = group.controls;
+  const selector = controls[discriminator] as FakeSelector;
+  const variantKeys = Object.keys(controls).filter((k) => k !== discriminator);
+  const apply = (active: unknown): void => {
+    for (const key of variantKeys) {
+      const sub = controls[key] as FakeSub;
+      if (key === active) {
+        sub.enable();
+      } else {
+        sub.disable();
+      }
+    }
+  };
+  apply(selector.value);
+  selector.valueChanges.subscribe(apply);
+  group.getRawValue = () => {
+    const active = controls[String(selector.value)] as FakeSub | undefined;
+    const variant =
+      active === undefined ? {} : (active.getRawValue() as object);
+    return { ...variant, [discriminator]: selector.value };
+  };
+}
+
+describe('switchDiscriminatedGroup algorithm', () => {
+  function build() {
+    const kind = fakeSelector('card');
+    const card = fakeSub({ kind: 'card', last4: '4242' });
+    const transfer = fakeSub({ kind: 'transfer', iban: 'DE00' });
+    const group = {
+      controls: { kind, card, transfer } as Record<
+        string,
+        FakeSelector | FakeSub
+      >,
+      getRawValue: () => ({}),
+    };
+    return { kind, card, transfer, group };
+  }
+
+  it('enables only the initially-selected sub-group', () => {
+    const { card, transfer, group } = build();
+    switchDiscriminatedGroup(group, 'kind');
+    expect(card.enabled).toBe(true);
+    expect(transfer.enabled).toBe(false);
+  });
+
+  it('follows the discriminator on valueChanges', () => {
+    const { kind, card, transfer, group } = build();
+    switchDiscriminatedGroup(group, 'kind');
+    kind.value = 'transfer';
+    for (const l of kind.listeners) {
+      l('transfer');
+    }
+    expect(card.enabled).toBe(false);
+    expect(transfer.enabled).toBe(true);
+  });
+
+  it('rewrites getRawValue to the flat active-variant shape', () => {
+    const { group } = build();
+    switchDiscriminatedGroup(group, 'kind');
+    expect(group.getRawValue()).toEqual({ kind: 'card', last4: '4242' });
   });
 });

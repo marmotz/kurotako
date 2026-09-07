@@ -25,7 +25,7 @@ import {
   type Variant,
 } from '../names.js';
 import type { AngularGeneratorOptions } from '../options.js';
-import { zodEnum, zodModule, zodSymbol } from '../zod-artifact.js';
+import { zodEnum, zodModule, zodRefType, zodSymbol } from '../zod-artifact.js';
 import {
   type ControlEntry,
   controlExpr,
@@ -35,10 +35,80 @@ import {
   enumZeroFromSource,
   fieldControlEntry,
   initExpr,
+  type TypeResolvers,
 } from './controls.js';
 import type { ImportsRecorder } from './imports.js';
 import { deepRelations } from './relations.js';
+import {
+  type DiscriminatedUnion,
+  discriminatedUnion,
+  unionType,
+} from './unions.js';
 import { variantFields } from './variants.js';
+
+/**
+ * `ControlEntry` for a discriminated union field: a `FormGroup` holding the
+ * discriminator `FormControl` plus one nested `FormGroup<<Variant>FormControls>`
+ * per discriminator value.
+ */
+function discriminatedControlEntry(
+  union: DiscriminatedUnion,
+  fieldName: string,
+  variant: Variant,
+  family: '' | 'Deep',
+): ControlEntry {
+  const lit = union.variants.map((v) => JSON.stringify(v.value)).join(' | ');
+  const subs = union.variants
+    .map(
+      (v) =>
+        `${JSON.stringify(v.value)}: FormGroup<${controlsTypeName(v.entity, variant, family)}>`,
+    )
+    .join('; ');
+  return {
+    name: fieldName,
+    fullType: `FormGroup<{ ${JSON.stringify(union.discriminator)}: FormControl<${lit}>; ${subs} }>`,
+  };
+}
+
+/**
+ * The IIFE that builds a discriminated union field's `FormGroup` in a factory
+ * method: eager nested sub-groups via the injected target `FormFactory`, then
+ * `switchDiscriminatedGroup` to wire the active-variant toggle + `getRawValue`
+ * rewrite.
+ */
+function discriminatedFactoryExpr(
+  union: DiscriminatedUnion,
+  fieldName: string,
+  variant: Variant,
+  deep: boolean,
+  zod: GeneratorArtifact,
+  namespace: string,
+  injectedFactories: Map<string, string>,
+): string {
+  const lit = union.variants.map((v) => JSON.stringify(v.value)).join(' | ');
+  const first = JSON.stringify(union.variants[0]?.value ?? '');
+  const method = factoryMethod(variant);
+  const subLines = union.variants
+    .map((v) => {
+      const param =
+        injectedFactories.get(v.entity) ?? `${lowerFirst(v.entity)}FormFactory`;
+      if (variant === 'Create') {
+        return `    ${JSON.stringify(v.value)}: this.${param}.${method}(),`;
+      }
+      const role = deep ? ('updateDeepType' as const) : ('updateType' as const);
+      const dto = zodSymbol(zod, namespace, v.entity, role);
+      return `    ${JSON.stringify(v.value)}: this.${param}.${method}(value.${fieldName} as unknown as ${dto}),`;
+    })
+    .join('\n');
+  return `(() => {
+  const g = new FormGroup({
+    ${JSON.stringify(union.discriminator)}: new FormControl<${lit}>(${first}, { nonNullable: true }),
+${subLines}
+  });
+  switchDiscriminatedGroup(g, ${JSON.stringify(union.discriminator)});
+  return g;
+})()`;
+}
 
 function lowerFirst(s: string): string {
   return s.length === 0 ? s : s.charAt(0).toLowerCase() + s.slice(1);
@@ -67,6 +137,7 @@ export function reactiveEntity(
 
   const blocks: string[] = [];
   const injectedFactories = new Map<string, string>(); // target entity -> ctor param name
+  const warnedUnionFields = new Set<string>(); // warn once per field, not per variant
 
   for (const variant of ['Create', 'Update'] as Variant[]) {
     const family = deep ? 'Deep' : '';
@@ -95,8 +166,69 @@ export function reactiveEntity(
     const interfaceName = controlsTypeName(entity.name, variant, family);
     const formType = formTypeName(entity.name, variant, family);
 
+    const resolvers: TypeResolvers = {
+      enumTypeName: zodEnumTypeName,
+      refTypeName: (ref) => {
+        const r = zodRefType(zod, namespace, ref);
+        imports.type(r.module, r.typeName);
+        return r.typeName;
+      },
+      source,
+    };
+
     const fieldEntries: ControlEntry[] = variantFields(entity, variant).map(
-      (field) => fieldControlEntry(field, zodEnumTypeName),
+      (field) => {
+        const union =
+          field.type.kind === 'union'
+            ? discriminatedUnion(field, source)
+            : undefined;
+        if (union !== undefined) {
+          imports.value(
+            `${namespace}/angular/zod-forms.runtime`,
+            'switchDiscriminatedGroup',
+          );
+          for (const v of union.variants) {
+            const targetModule = `${namespace}/angular/${v.entity}.form`;
+            imports.type(
+              targetModule,
+              controlsTypeName(v.entity, variant, family),
+            );
+            if (!injectedFactories.has(v.entity)) {
+              injectedFactories.set(
+                v.entity,
+                `${lowerFirst(v.entity)}FormFactory`,
+              );
+              imports.value(targetModule, factoryName(v.entity));
+            }
+            if (variant === 'Update') {
+              const role = deep
+                ? ('updateDeepType' as const)
+                : ('updateType' as const);
+              imports.type(
+                zodModule(zod, namespace, v.entity),
+                zodSymbol(zod, namespace, v.entity, role),
+              );
+            }
+          }
+          return discriminatedControlEntry(union, field.name, variant, family);
+        }
+        if (field.type.kind === 'union' && !warnedUnionFields.has(field.name)) {
+          warnedUnionFields.add(field.name);
+          const recursive = unionType(
+            field.type,
+            resolvers.refTypeName,
+            resolvers.enumTypeName,
+            source,
+          ).recursive;
+          const cause = recursive
+            ? 'a recursive ref branch (chains into a cycle)'
+            : 'no discriminator mapping, an alias target, or a list/nullable union';
+          logger?.warn(
+            `gen-angular: union field '${entity.name}.${field.name}' has no usable discriminated sub-form (${cause}); emitting a free FormControl${recursive ? '<unknown>' : ''} validated by zodValidator`,
+          );
+        }
+        return fieldControlEntry(field, resolvers);
+      },
     );
 
     const relations = deep
@@ -157,6 +289,7 @@ export function reactiveEntity(
     renderFactoryClass(
       entity,
       namespace,
+      source,
       options,
       zod,
       injectedFactories,
@@ -170,6 +303,7 @@ export function reactiveEntity(
 function renderFactoryClass(
   entity: Entity,
   namespace: string,
+  source: SourceIR,
   options: AngularGeneratorOptions,
   zod: GeneratorArtifact,
   injectedFactories: Map<string, string>,
@@ -192,6 +326,7 @@ function renderFactoryClass(
       renderFactoryMethod(
         entity,
         namespace,
+        source,
         variant,
         options,
         zod,
@@ -242,6 +377,7 @@ function renderFactoryClass(
 function renderFactoryMethod(
   entity: Entity,
   namespace: string,
+  source: SourceIR,
   variant: Variant,
   options: AngularGeneratorOptions,
   zod: GeneratorArtifact,
@@ -273,17 +409,36 @@ function renderFactoryMethod(
   const formType = formTypeName(entity.name, variant, family);
   const methodName = factoryMethod(variant);
 
-  const zodEnumTypeName = (ref: string): string => ref;
+  const resolvers: TypeResolvers = {
+    enumTypeName: (ref) => ref,
+    refTypeName: (ref) => zodRefType(zod, namespace, ref).typeName,
+    source,
+  };
   const fields = variantFields(entity, variant);
   const lines = fields.map((field) => {
-    const typeArg = controlType(field, zodEnumTypeName);
+    const union =
+      field.type.kind === 'union'
+        ? discriminatedUnion(field, source)
+        : undefined;
+    if (union !== undefined) {
+      return `    ${field.name}: ${discriminatedFactoryExpr(
+        union,
+        field.name,
+        variant,
+        deep,
+        zod,
+        namespace,
+        injectedFactories,
+      )},`;
+    }
+    const typeArg = controlType(field, resolvers);
     // The Update Zod DTO is a whole-object `.partial()` (gen-zod), so every
     // field — including one that is otherwise required — is `T | undefined`
     // there too; both variants therefore need the same `?? <zero>` fallback.
     const accessor =
       variant === 'Create' ? `init?.${field.name}` : `value.${field.name}`;
-    const source = `${accessor} ?? ${initExpr(field, enumZero)}`;
-    return `    ${field.name}: ${controlExpr(field, typeArg, source)},`;
+    const seed = `${accessor} ?? ${initExpr(field, enumZero)}`;
+    return `    ${field.name}: ${controlExpr(field, typeArg, seed)},`;
   });
 
   const relations = deep

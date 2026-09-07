@@ -73,6 +73,40 @@ function fixtureIr(): IR {
   return { irVersion: IR_VERSION, sources: { pg: source } };
 }
 
+/** A `pg` source with a discriminated + a non-discriminated union field. */
+function unionIr(): IR {
+  const source = createSourceIR({ namespace: 'pg', parser: 'test' })
+    .addEntity('CardPayment', (t) => {
+      t.field('kind', (f) =>
+        f.scalar('string').default({ kind: 'value', value: 'card' }),
+      );
+      t.field('last4', (f) => f.scalar('string'));
+    })
+    .addEntity('BankTransfer', (t) => {
+      t.field('kind', (f) =>
+        f.scalar('string').default({ kind: 'value', value: 'transfer' }),
+      );
+      t.field('iban', (f) => f.scalar('string'));
+    })
+    .addEntity('Invoice', (t) => {
+      t.field('id', (f) =>
+        f.scalar('uuid').primary().default({ kind: 'expr', expr: 'uuid()' }),
+      );
+      t.field('total', (f) => f.scalar('int'));
+      t.field('method', (f) =>
+        f.union((u) =>
+          u.ref('CardPayment').ref('BankTransfer').discriminator('kind', {
+            card: 'CardPayment',
+            transfer: 'BankTransfer',
+          }),
+        ),
+      );
+      t.field('note', (f) => f.union((u) => u.scalar('string').scalar('int')));
+    })
+    .build();
+  return { irVersion: IR_VERSION, sources: { pg: source } };
+}
+
 async function writeFile(filePath: string, content: string): Promise<void> {
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   await fs.writeFile(filePath, content, 'utf8');
@@ -183,8 +217,10 @@ function formatDiagnostics(diagnostics: readonly ts.Diagnostic[]): string {
   });
 }
 
-async function generate(options: AngularGeneratorOptions) {
-  const ir = fixtureIr();
+async function generate(
+  options: AngularGeneratorOptions,
+  ir: IR = fixtureIr(),
+) {
   const zodOut = await zodGenerator.generate(
     { ir, dependencies: {}, logger: noopLogger },
     { zodVersion: 4 },
@@ -217,6 +253,24 @@ describe('generated output compiles against real @angular/forms/signals shapes',
 
   it('relations: deep, forms: [signal] only', async () => {
     const files = await generate({ forms: ['signal'], relations: 'deep' });
+    const diagnostics = await typecheck(files);
+    expect(formatDiagnostics(diagnostics)).toBe('');
+  });
+
+  it('union type: discriminated sub-FormGroup + free-control fallback, forms: [reactive, signal]', async () => {
+    const files = await generate(
+      { forms: ['reactive', 'signal'], relations: 'flat' },
+      unionIr(),
+    );
+    const diagnostics = await typecheck(files);
+    expect(formatDiagnostics(diagnostics)).toBe('');
+  });
+
+  it('union type: discriminated sub-FormGroup, relations: deep', async () => {
+    const files = await generate(
+      { forms: ['reactive'], relations: 'deep' },
+      unionIr(),
+    );
     const diagnostics = await typecheck(files);
     expect(formatDiagnostics(diagnostics)).toBe('');
   });

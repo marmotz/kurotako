@@ -29,10 +29,14 @@ export interface WritableSignal<T> extends Signal<T> {
 
 export const ANGULAR_FORMS_DTS = `
 export declare class AbstractControl<T = unknown> {
+  value: T;
   errors: Record<string, unknown> | null;
   setErrors(errors: Record<string, unknown> | null, opts?: { emitEvent?: boolean }): void;
   getRawValue(): unknown;
   get(path: string): AbstractControl | null;
+  enable(opts?: { emitEvent?: boolean }): void;
+  disable(opts?: { emitEvent?: boolean }): void;
+  readonly valueChanges: { subscribe(next: (value: unknown) => void): { unsubscribe(): void } };
   controls?: unknown;
 }
 export declare type ValidatorFn = (control: AbstractControl) => Record<string, unknown> | null;
@@ -173,9 +177,14 @@ export declare const z: {
   union<T extends ZodType<unknown>[]>(
     types: T,
   ): ZodType<T[number] extends ZodType<infer V> ? V : never>;
+  discriminatedUnion<T extends ZodType<unknown>[]>(
+    discriminator: string,
+    types: T,
+  ): ZodType<T[number] extends ZodType<infer V> ? V : never>;
   lazy<T>(fn: () => ZodType<T>): ZodType<T>;
 };
 export declare namespace z {
   export type infer<T> = T extends ZodType<infer U> ? U : never;
+  export { ZodType };
 }
 `;

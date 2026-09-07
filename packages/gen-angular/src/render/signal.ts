@@ -70,10 +70,17 @@ export function signalEntity(
     imports.value(`${namespace}/angular/zod-forms.runtime`, 'zodTreeValidate');
 
     const fields = variantFields(entity, variant);
-    const fieldLines = fields.map(
-      (field) =>
-        `    ${field.name}: init?.${field.name} ?? ${initExpr(field, enumZero)},`,
-    );
+    const fieldLines = fields.map((field) => {
+      // `ref` / `union` field types have no synthesisable model zero (the
+      // Signal Forms model is a plain object, not a control tree, so there is
+      // no discriminated sub-form here — the union rides as one field,
+      // validated by `zodTreeValidate`). Seed from `init`, cast to the exact
+      // DTO field type; a still-missing value is what the validator flags.
+      if (field.type.kind === 'ref' || field.type.kind === 'union') {
+        return `    ${field.name}: (init?.${field.name} ?? undefined) as ${typeId}[${JSON.stringify(field.name)}],`;
+      }
+      return `    ${field.name}: init?.${field.name} ?? ${initExpr(field, enumZero)},`;
+    });
 
     const relations = deep
       ? deepRelations(entity, variant, namespace, logger)

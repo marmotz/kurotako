@@ -8,6 +8,7 @@ import {
   enumZeroFromSource,
   fieldControlEntry,
   initExpr,
+  type TypeResolvers,
 } from './controls.js';
 
 function scalarField(
@@ -25,9 +26,23 @@ function scalarField(
   };
 }
 
-const noEnum = () => {
-  throw new Error('no enum expected');
-};
+const emptySource = createSourceIR({ namespace: 'pg', parser: 'test' }).build();
+
+/** A `TypeResolvers` whose enum/ref resolution is caller-supplied. */
+function resolvers(overrides: Partial<TypeResolvers> = {}): TypeResolvers {
+  return {
+    enumTypeName: () => {
+      throw new Error('no enum expected');
+    },
+    refTypeName: () => {
+      throw new Error('no ref expected');
+    },
+    source: emptySource,
+    ...overrides,
+  };
+}
+
+const noEnum = resolvers();
 
 describe('controlType', () => {
   const cases: [ScalarType, string][] = [
@@ -52,12 +67,39 @@ describe('controlType', () => {
     const field = scalarField('string', {
       type: { kind: 'enum', ref: 'Role' },
     });
-    expect(controlType(field, (ref) => `${ref}Enum`)).toBe('RoleEnum');
+    expect(
+      controlType(field, resolvers({ enumTypeName: (ref) => `${ref}Enum` })),
+    ).toBe('RoleEnum');
   });
 
   it('unknown field -> unknown', () => {
     const field = scalarField('string', { type: { kind: 'unknown' } });
     expect(controlType(field, noEnum)).toBe('unknown');
+  });
+
+  it('ref field -> the resolved Zod DTO / alias type name', () => {
+    const field = scalarField('string', {
+      type: { kind: 'ref', ref: 'Address' },
+    });
+    expect(
+      controlType(field, resolvers({ refTypeName: (r) => `${r}Dto` })),
+    ).toBe('AddressDto');
+  });
+
+  it('non-discriminated union field -> the variant types joined with " | "', () => {
+    const field = scalarField('string', {
+      type: {
+        kind: 'union',
+        variants: [
+          { kind: 'scalar', scalar: 'string' },
+          { kind: 'scalar', scalar: 'int' },
+          { kind: 'ref', ref: 'Address' },
+        ],
+      },
+    });
+    expect(
+      controlType(field, resolvers({ refTypeName: (r) => `${r}Dto` })),
+    ).toBe('string | number | AddressDto');
   });
 
   it('list wraps before nullable', () => {
@@ -120,6 +162,25 @@ describe('initExpr', () => {
     });
     expect(initExpr(field)).toBe('undefined');
   });
+
+  it('a ref field zeroes to undefined (no synthesisable zero)', () => {
+    expect(
+      initExpr(scalarField('string', { type: { kind: 'ref', ref: 'A' } })),
+    ).toBe('undefined');
+  });
+
+  it('a union field zeroes to undefined', () => {
+    const field = scalarField('string', {
+      type: {
+        kind: 'union',
+        variants: [
+          { kind: 'scalar', scalar: 'string' },
+          { kind: 'scalar', scalar: 'int' },
+        ],
+      },
+    });
+    expect(initExpr(field)).toBe('undefined');
+  });
 });
 
 describe('controlExpr', () => {
@@ -134,6 +195,21 @@ describe('controlExpr', () => {
     const field = scalarField('string', { nullable: true });
     expect(controlExpr(field, 'string | null', 'value.x')).toBe(
       'new FormControl<string | null>(value.x)',
+    );
+  });
+
+  it('ref / union fallback field: explicit type argument, seed cast, validated-by-zod comment', () => {
+    const field = scalarField('string', {
+      type: {
+        kind: 'union',
+        variants: [
+          { kind: 'scalar', scalar: 'string' },
+          { kind: 'scalar', scalar: 'int' },
+        ],
+      },
+    });
+    expect(controlExpr(field, 'string | number', 'init?.x ?? undefined')).toBe(
+      'new FormControl<string | number>((init?.x ?? undefined) as string | number) /* union: validated by zodValidator(schema) */',
     );
   });
 });

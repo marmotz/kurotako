@@ -5,7 +5,7 @@ import {
   fileEndingWith,
   runGenerator,
 } from './testing/helpers.js';
-import { blogSource, irOf } from './testing/ir.js';
+import { blogSource, irOf, unionSource } from './testing/ir.js';
 
 describe('angularGenerator.generate', () => {
   it('emits the runtime file, one file per entity and index.ts, all angular/-prefixed', () => {
@@ -186,6 +186,81 @@ describe('angularGenerator.generate', () => {
       relations: 'deep',
     });
     expect(a).toEqual(b);
+  });
+
+  describe('union type', () => {
+    it('discriminated union field -> nested FormGroup keyed by discriminator value + runtime switch', () => {
+      const ir = irOf(unionSource());
+      const out = runGenerator(ir, fakeZodArtifact(ir), {
+        forms: ['reactive'],
+        relations: 'flat',
+      });
+      const invoice = fileEndingWith(out.files, 'Invoice.form.ts');
+      expect(invoice).toContain(
+        'method: FormGroup<{ "kind": FormControl<"card" | "transfer">; "card": FormGroup<CardPaymentCreateFormControls>; "transfer": FormGroup<BankTransferCreateFormControls> }>',
+      );
+      expect(invoice).toContain('switchDiscriminatedGroup(g, "kind")');
+      expect(invoice).toContain(
+        "import { switchDiscriminatedGroup, zodValidator } from 'pay/angular/zod-forms.runtime';",
+      );
+      // sub-groups built via the injected target factories
+      expect(invoice).toContain(
+        'private readonly cardPaymentFormFactory: CardPaymentFormFactory',
+      );
+      expect(invoice).toContain(
+        'this.cardPaymentFormFactory.createCreateForm()',
+      );
+    });
+
+    it('non-discriminated union field -> free FormControl<A | B> + logger.warn', () => {
+      const ir = irOf(unionSource());
+      const warnings: string[] = [];
+      const out = runGenerator(
+        ir,
+        fakeZodArtifact(ir),
+        { forms: ['reactive'], relations: 'flat' },
+        { debug() {}, info() {}, warn: (m) => warnings.push(m), error() {} },
+      );
+      const invoice = fileEndingWith(out.files, 'Invoice.form.ts');
+      expect(invoice).toContain('ref: FormControl<string | number>');
+      expect(invoice).toContain(
+        '/* union: validated by zodValidator(schema) */',
+      );
+      expect(
+        warnings.some((w) => w.includes("union field 'Invoice.ref'")),
+      ).toBe(true);
+    });
+
+    it('a recursive alias union branch -> FormControl<unknown> + warn', () => {
+      const source = createSourceIR({ namespace: 'pg', parser: 'test' })
+        .addTypeAlias('Node', (t) =>
+          t.union((u) => u.scalar('string').ref('Node')),
+        )
+        .addEntity('Doc', (t) => {
+          t.field('id', (f) =>
+            f
+              .scalar('uuid')
+              .primary()
+              .default({ kind: 'expr', expr: 'uuid()' }),
+          );
+          t.field('body', (f) =>
+            f.union((u) => u.scalar('string').ref('Node')),
+          );
+        })
+        .build();
+      const ir = irOf(source);
+      const warnings: string[] = [];
+      const out = runGenerator(
+        ir,
+        fakeZodArtifact(ir),
+        { forms: ['reactive'], relations: 'flat' },
+        { debug() {}, info() {}, warn: (m) => warnings.push(m), error() {} },
+      );
+      const doc = fileEndingWith(out.files, 'Doc.form.ts');
+      expect(doc).toContain('body: FormControl<unknown>');
+      expect(warnings.filter((w) => w.includes("'Doc.body'"))).toHaveLength(1);
+      expect(warnings.some((w) => w.includes('recursive'))).toBe(true);
+    });
   });
 
   it('preserves IR entity + field order', () => {

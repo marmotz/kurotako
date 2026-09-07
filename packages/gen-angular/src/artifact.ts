@@ -87,6 +87,11 @@ export function buildArtifact(
       symbols: entitySymbols(entity.name, options),
     };
   }
+  // Type aliases produce no Angular form of their own and no `angular`-owned
+  // export — `gen-zod`'s artifact already owns the alias schema/type symbols
+  // and its `<ns>/zod/aliases.ts` is the single exporter. Re-declaring them
+  // here would make the root-barrel ambiguity check flag a phantom conflict.
+  // No generator depends on `angular` in v1, so nothing needs the re-exposure.
 
   const perNamespace: AngularArtifactExtra['perNamespace'] = {};
   for (const namespace of Object.keys(ir.sources)) {
