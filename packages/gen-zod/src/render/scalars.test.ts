@@ -51,8 +51,9 @@ describe('baseExpr — enum and unknown', () => {
 describe('baseExpr — ref and union', () => {
   const d = dialectFor(4);
 
-  it('ref -> z.lazy(() => <Name>Schema)', () => {
-    expect(baseExpr({ kind: 'ref', ref: 'Node' }, d)).toBe(
+  it('ref -> bare <Name>Schema, z.lazy only when the ref is cyclic', () => {
+    expect(baseExpr({ kind: 'ref', ref: 'Node' }, d)).toBe('NodeSchema');
+    expect(baseExpr({ kind: 'ref', ref: 'Node' }, d, new Set(['Node']))).toBe(
       'z.lazy(() => NodeSchema)',
     );
   });
@@ -68,7 +69,7 @@ describe('baseExpr — ref and union', () => {
     expect(baseExpr(type, d)).toBe('z.union([z.string(), z.int()])');
   });
 
-  it('discriminated union -> z.discriminatedUnion(prop, [...])', () => {
+  it('discriminated union -> z.discriminatedUnion(prop, [...]), lazy per cyclic ref', () => {
     const type: FieldType = {
       kind: 'union',
       variants: [
@@ -78,7 +79,10 @@ describe('baseExpr — ref and union', () => {
       discriminator: { propertyName: 'kind' },
     };
     expect(baseExpr(type, d)).toBe(
-      'z.discriminatedUnion("kind", [z.lazy(() => CatSchema), z.lazy(() => DogSchema)])',
+      'z.discriminatedUnion("kind", [CatSchema, DogSchema])',
+    );
+    expect(baseExpr(type, d, new Set(['Dog']))).toBe(
+      'z.discriminatedUnion("kind", [CatSchema, z.lazy(() => DogSchema)])',
     );
   });
 

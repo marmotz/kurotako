@@ -1,15 +1,19 @@
 /**
  * All type aliases of a source -> `<ns>/zod/aliases.ts` source text.
  *
- * Per alias: `export type <Name> = <ts type>;` then
- * `export const <Name>Schema: z.ZodType<<Name>> = <expr>;`. The type is emitted
- * first and the `const` is always annotated so a self- or mutually-recursive
- * alias (`z.lazy` chain) type-checks — `z.infer` on a recursive `z.lazy` is
- * `TS7022`. Aliases are sorted by name; cross-references between aliases live in
- * the same module, so only enum schemas and referenced entity schemas are
- * imported.
+ * Aliases are emitted in **topological order** (a bare reference is always
+ * declared before it is used); a dependency that is itself in a reference cycle
+ * imposes no ordering constraint, since it is reached through `z.lazy`.
+ *
+ * Per non-recursive alias:
+ *   `export const <Name>Schema = <expr>;`
+ *   `export type <Name> = z.infer<typeof <Name>Schema>;`
+ *
+ * Per alias that takes part in a reference cycle (`cyclicRefs`): the type is
+ * hand-written and the `const` is annotated `z.ZodType<<Name>>`, because
+ * `z.infer` on a self-/mutually-recursive `z.lazy` chain is `TS7022`.
  */
-import type { SourceIR } from '@kurotako/ir';
+import type { SourceIR, TypeAlias } from '@kurotako/ir';
 import type { ZodDialect } from '../dialect.js';
 import {
   aliasSchemaName,
@@ -19,12 +23,57 @@ import {
 } from '../names.js';
 import { baseExpr, collectTypeDeps, typeExpr } from '../render/scalars.js';
 
-export function emitAliases(source: SourceIR, dialect: ZodDialect): string {
-  const aliases = Object.values(source.typeAliases ?? {}).sort((a, b) =>
-    a.name.localeCompare(b.name),
-  );
+/**
+ * Order aliases so every bare (non-cyclic) alias-to-alias reference is declared
+ * first. A cyclic dependency is skipped as an edge — it is `z.lazy`-wrapped, so
+ * its declaration position does not matter.
+ */
+function orderAliases(
+  aliases: TypeAlias[],
+  cyclicRefs: ReadonlySet<string>,
+): TypeAlias[] {
+  const byName = new Map(aliases.map((a) => [a.name, a]));
+  const sorted = [...aliases].sort((a, b) => a.name.localeCompare(b.name));
+  const out: TypeAlias[] = [];
+  const done = new Set<string>();
 
-  const aliasNames = new Set(aliases.map((a) => a.name));
+  const visit = (alias: TypeAlias, stack: Set<string>): void => {
+    if (done.has(alias.name) || stack.has(alias.name)) {
+      return;
+    }
+    stack.add(alias.name);
+    const deps = [...collectTypeDeps(alias.type).refs].sort((a, b) =>
+      a.localeCompare(b),
+    );
+    for (const dep of deps) {
+      if (cyclicRefs.has(dep)) {
+        continue;
+      }
+      const target = byName.get(dep);
+      if (target !== undefined) {
+        visit(target, stack);
+      }
+    }
+    stack.delete(alias.name);
+    done.add(alias.name);
+    out.push(alias);
+  };
+
+  for (const alias of sorted) {
+    visit(alias, new Set());
+  }
+  return out;
+}
+
+export function emitAliases(
+  source: SourceIR,
+  dialect: ZodDialect,
+  cyclicRefs: ReadonlySet<string> = new Set(),
+): string {
+  const declared = Object.values(source.typeAliases ?? {});
+  const aliases = orderAliases(declared, cyclicRefs);
+
+  const aliasNames = new Set(declared.map((a) => a.name));
   const enums = new Set<string>();
   const entityRefs = new Set<string>();
   for (const alias of aliases) {
@@ -60,17 +109,24 @@ export function emitAliases(source: SourceIR, dialect: ZodDialect): string {
   const blocks: string[] = [];
   for (const alias of aliases) {
     const aliasTs = aliasTypeName(alias.name);
+    const schemaId = aliasSchemaName(alias.name);
+    const expr = baseExpr(alias.type, dialect, cyclicRefs);
     if (alias.doc !== undefined) {
       blocks.push(`/** ${alias.doc} */`);
     }
-    blocks.push(
-      `export type ${aliasTs} = ${typeExpr(alias.type, source)};`,
-      `export const ${aliasSchemaName(alias.name)}: z.ZodType<${aliasTs}> = ${baseExpr(
-        alias.type,
-        dialect,
-      )};`,
-      '',
-    );
+    if (cyclicRefs.has(alias.name)) {
+      blocks.push(
+        `export type ${aliasTs} = ${typeExpr(alias.type, source)};`,
+        `export const ${schemaId}: z.ZodType<${aliasTs}> = ${expr};`,
+        '',
+      );
+    } else {
+      blocks.push(
+        `export const ${schemaId} = ${expr};`,
+        `export type ${aliasTs} = z.infer<typeof ${schemaId}>;`,
+        '',
+      );
+    }
   }
 
   const importBlock = imports

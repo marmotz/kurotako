@@ -64,6 +64,80 @@ export function* iterTypeAliases(
   }
 }
 
+/** Every `{ kind: 'ref' }` name reachable from a field type (through unions). */
+export function collectRefNames(
+  type: FieldType,
+  into: Set<string> = new Set(),
+): Set<string> {
+  if (type.kind === 'ref') {
+    into.add(type.ref);
+  } else if (type.kind === 'union') {
+    for (const variant of type.variants) {
+      collectRefNames(variant, into);
+    }
+  }
+  return into;
+}
+
+/**
+ * Names of entities / type aliases that take part in at least one `ref` cycle
+ * within `source` — following field-type `ref`, alias `type` `ref` and union
+ * variant `ref` edges. Mirrors the informational `union_cycle` pass in
+ * `validate.ts`; a generator consumes this (through `GenerateContext.cycles`)
+ * to decide which references must be `z.lazy`-wrapped / widened rather than
+ * emitted as a bare forward reference.
+ */
+export function refCycleMembers(source: SourceIR): Set<string> {
+  const adjacency = new Map<string, Set<string>>();
+  const edgesFor = (key: string): Set<string> => {
+    let set = adjacency.get(key);
+    if (set === undefined) {
+      set = new Set<string>();
+      adjacency.set(key, set);
+    }
+    return set;
+  };
+  for (const [key, alias] of Object.entries(source.typeAliases ?? {})) {
+    collectRefNames(alias.type, edgesFor(key));
+  }
+  for (const [key, entity] of Object.entries(source.entities)) {
+    const set = edgesFor(key);
+    for (const field of entity.fields) {
+      collectRefNames(field.type, set);
+    }
+  }
+
+  const canReachSelf = (start: string): boolean => {
+    const seen = new Set<string>();
+    const stack = [...(adjacency.get(start) ?? [])];
+    while (stack.length > 0) {
+      const node = stack.pop();
+      if (node === undefined) {
+        break;
+      }
+      if (node === start) {
+        return true;
+      }
+      if (seen.has(node) || !adjacency.has(node)) {
+        continue;
+      }
+      seen.add(node);
+      for (const next of adjacency.get(node) ?? []) {
+        stack.push(next);
+      }
+    }
+    return false;
+  };
+
+  const members = new Set<string>();
+  for (const node of adjacency.keys()) {
+    if (canReachSelf(node)) {
+      members.add(node);
+    }
+  }
+  return members;
+}
+
 /** Stable structural key for a non-union `FieldType`, for deduplication. */
 function fieldTypeKey(type: FieldType): string {
   switch (type.kind) {

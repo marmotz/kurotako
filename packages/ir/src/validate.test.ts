@@ -148,6 +148,63 @@ describe('validateIR — baseline', () => {
     expect(parseIR(JSON.stringify(ir))).toEqual(ir);
   });
 
+  it('parseIR round-trips ref / union / discriminator / typeAliases as plain JSON', () => {
+    const ir: IR = {
+      irVersion: '2',
+      sources: {
+        geo: {
+          namespace: 'geo',
+          parser: 'test',
+          entities: {
+            Group: {
+              name: 'Group',
+              fields: [
+                {
+                  name: 'id',
+                  type: { kind: 'scalar', scalar: 'uuid' },
+                  list: false,
+                  optional: false,
+                  nullable: false,
+                  constraints: {},
+                },
+                {
+                  name: 'child',
+                  type: { kind: 'ref', ref: 'Shape' },
+                  list: false,
+                  optional: false,
+                  nullable: false,
+                  constraints: {},
+                },
+              ],
+              relations: [],
+              primaryKey: ['id'],
+              indexes: [],
+              uniques: [],
+            },
+          },
+          enums: {},
+          typeAliases: {
+            Shape: {
+              name: 'Shape',
+              type: {
+                kind: 'union',
+                variants: [
+                  { kind: 'ref', ref: 'Group' },
+                  { kind: 'scalar', scalar: 'int' },
+                ],
+                discriminator: {
+                  propertyName: 'kind',
+                  mapping: { group: 'Group' },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    expect(parseIR(JSON.stringify(ir))).toEqual(ir);
+  });
+
   it('assertIR throws IrValidationError carrying issues', () => {
     try {
       assertIR({ irVersion: '1', sources: 'nope' });

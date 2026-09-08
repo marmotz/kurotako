@@ -29,6 +29,13 @@ export const zodGenerator = defineGenerator({
       const prefix = `${namespace}/zod`;
       const entities = Object.values(source.entities);
       const aliases = Object.values(source.typeAliases ?? {});
+      const cyclicRefs = new Set<string>();
+      for (const key of ctx.cycles) {
+        const dot = key.indexOf('.');
+        if (dot > 0 && key.slice(0, dot) === namespace) {
+          cyclicRefs.add(key.slice(dot + 1));
+        }
+      }
 
       files.push({
         path: `${prefix}/enums.ts`,
@@ -43,13 +50,20 @@ export const zodGenerator = defineGenerator({
       if (aliases.length > 0) {
         files.push({
           path: `${prefix}/aliases.ts`,
-          content: emitAliases(source, dialect),
+          content: emitAliases(source, dialect, cyclicRefs),
         });
       }
       for (const entity of entities) {
         files.push({
           path: `${prefix}/${entity.name}.schema.ts`,
-          content: emitEntity(ctx.ir, source, entity, dialect, ctx.logger),
+          content: emitEntity(
+            ctx.ir,
+            source,
+            entity,
+            dialect,
+            ctx.logger,
+            cyclicRefs,
+          ),
         });
       }
       files.push({

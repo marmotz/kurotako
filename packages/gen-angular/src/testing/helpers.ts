@@ -13,7 +13,7 @@ import type {
 } from '@kurotako/core';
 import type { ZodArtifactExtra } from '@kurotako/gen-zod';
 import type { Entity, IR, SourceIR } from '@kurotako/ir';
-import { iterEntities, iterTypeAliases } from '@kurotako/ir';
+import { iterEntities, iterTypeAliases, refCycleMembers } from '@kurotako/ir';
 import { angularGenerator } from '../generator.js';
 import type { AngularGeneratorOptions } from '../options.js';
 
@@ -101,8 +101,14 @@ export function runGenerator(
   options: AngularGeneratorOptions,
   logger: GenerateContext['logger'] = noopLogger,
 ): GenOutput {
+  const cycles = new Set<string>();
+  for (const [ns, source] of Object.entries(ir.sources)) {
+    for (const member of refCycleMembers(source)) {
+      cycles.add(`${ns}.${member}`);
+    }
+  }
   const out = angularGenerator.generate(
-    { ir, dependencies: { zod }, logger },
+    { ir, dependencies: { zod }, cycles, logger },
     options,
   );
   if (out instanceof Promise) {

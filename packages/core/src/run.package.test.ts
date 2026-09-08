@@ -92,6 +92,30 @@ describe('run (mode B)', () => {
     ).toBe(false);
   });
 
+  it('a source carrying a typeAliases entry builds and installs (mode B)', async () => {
+    const withAlias = createSourceIR({ namespace: 'pg', parser: 'fake' })
+      .addTypeAlias('Metadata', (t) =>
+        t.union((u) => u.scalar('string').scalar('int')),
+      )
+      .addEntity('User', (e) => {
+        e.field('id', (f) => f.scalar('uuid').primary());
+      })
+      .build();
+    const cfg = config();
+    cfg.sources = { pg: { parser: { name: 'fake', parse: () => withAlias } } };
+    await run(cfg);
+    const pkgJson = path.join(dir, 'packages', 'kurotako-pg', 'package.json');
+    expect(JSON.parse(await fs.readFile(pkgJson, 'utf8')).name).toBe(
+      '@kurotako/pg',
+    );
+    const barrel = path.join(dir, 'packages', 'kurotako-pg', 'src', 'index.ts');
+    expect(await fs.readFile(barrel, 'utf8')).toContain(
+      "export * from './zod';",
+    );
+    expect(build).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(runInstall)).toHaveBeenCalledTimes(1);
+  });
+
   it('write: false spawns nothing', async () => {
     await run(config(), { write: false });
     expect(build).not.toHaveBeenCalled();

@@ -19,9 +19,10 @@ export function fieldExpr(
   field: Field,
   opts: FieldExprOptions,
   dialect: ZodDialect,
+  cyclicRefs?: ReadonlySet<string>,
 ): string {
   let expr = applyConstraints(
-    baseExpr(field.type, dialect),
+    baseExpr(field.type, dialect, cyclicRefs),
     field.constraints,
     baseClass(field.type),
     dialect,

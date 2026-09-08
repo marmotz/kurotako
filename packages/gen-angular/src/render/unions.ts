@@ -22,7 +22,7 @@
  *   `logger.warn`.
  */
 import type { Field, FieldType, SourceIR } from '@kurotako/ir';
-import { flattenUnion, resolveRef } from '@kurotako/ir';
+import { flattenUnion } from '@kurotako/ir';
 
 /** Resolve a `{ kind: 'ref' }` name to the Zod-emitted DTO / alias type name. */
 export type RefTypeName = (ref: string) => string;
@@ -85,32 +85,6 @@ function refNames(type: FieldType, into: Set<string> = new Set()): Set<string> {
   return into;
 }
 
-/**
- * Does resolving `ref` chain back onto a type alias already on the walk stack?
- * Entity targets terminate the walk (their fields are not followed) — matching
- * `gen-zod`, which does no cross-entity cycle analysis either.
- */
-function refChainHasCycle(
-  source: SourceIR,
-  ref: string,
-  seen: Set<string>,
-): boolean {
-  if (seen.has(ref)) {
-    return true;
-  }
-  const target = resolveRef(source, ref);
-  if (target === undefined || 'fields' in target) {
-    return false;
-  }
-  const next = new Set(seen).add(ref);
-  for (const inner of refNames(target.type)) {
-    if (refChainHasCycle(source, inner, next)) {
-      return true;
-    }
-  }
-  return false;
-}
-
 const SCALAR_BASE: Record<string, string> = {
   string: 'string',
   uuid: 'string',
@@ -130,6 +104,7 @@ function variantType(
   type: FieldType,
   refTypeName: RefTypeName,
   enumTypeName: RefTypeName,
+  cyclicRefs: ReadonlySet<string>,
 ): string {
   switch (type.kind) {
     case 'scalar':
@@ -141,7 +116,7 @@ function variantType(
     case 'unknown':
       return 'unknown';
     case 'union':
-      return unionType(type, refTypeName, enumTypeName).text;
+      return unionType(type, refTypeName, enumTypeName, cyclicRefs).text;
   }
 }
 
@@ -154,28 +129,27 @@ export interface UnionTypeResult {
 
 /**
  * The free-`FormControl` type argument for a `{ kind: 'union' }` field: variant
- * types joined with ` | `. A recursive ref branch widens the whole control to
+ * types joined with ` | `. A ref branch that names a member of `cyclicRefs` (a
+ * `ref` cycle, from `GenerateContext.cycles`) widens the whole control to
  * `unknown` (Angular reactive forms have no lazy control type).
  */
 export function unionType(
   type: Extract<FieldType, { kind: 'union' }>,
   refTypeName: RefTypeName,
   enumTypeName: RefTypeName,
-  source?: SourceIR,
+  cyclicRefs: ReadonlySet<string> = new Set(),
 ): UnionTypeResult {
   const variants = flattenUnion(type);
   if (variants.length === 0) {
     return { text: 'unknown', recursive: false };
   }
-  const recursive =
-    source !== undefined &&
-    [...refNames(type)].some((ref) => refChainHasCycle(source, ref, new Set()));
+  const recursive = [...refNames(type)].some((ref) => cyclicRefs.has(ref));
   if (recursive) {
     return { text: 'unknown', recursive: true };
   }
   const text = variants
     .map((variant) => {
-      const inner = variantType(variant, refTypeName, enumTypeName);
+      const inner = variantType(variant, refTypeName, enumTypeName, cyclicRefs);
       return variant.kind === 'union' ? `(${inner})` : inner;
     })
     .join(' | ');

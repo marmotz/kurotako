@@ -70,6 +70,27 @@ describe('mergeSources', () => {
     ).toThrow(IrValidationError);
   });
 
+  it('logs the post-merge validation info channel (union_cycle) at warn', () => {
+    const src = createSourceIR({ namespace: 'geo', parser: 'prisma' })
+      .addTypeAlias('Shape', (t) =>
+        t.union((u) => u.ref('Group').scalar('int')),
+      )
+      .addEntity('Group', (e) => {
+        e.field('id', (f) => f.scalar('uuid').primary());
+        e.field('child', (f) => f.ref('Shape'));
+      })
+      .build();
+    const warnings: string[] = [];
+    const logger = {
+      debug() {},
+      info() {},
+      warn: (msg: string) => warnings.push(msg),
+      error() {},
+    };
+    mergeSources([{ namespace: 'geo', sourceIR: src }], logger);
+    expect(warnings.some((w) => w.includes('union_cycle'))).toBe(true);
+  });
+
   it('preserves input order in ir.sources (determinism)', () => {
     const ir = mergeSources([
       { namespace: 'zeta', sourceIR: makeSource('zeta') },

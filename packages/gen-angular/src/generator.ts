@@ -32,6 +32,13 @@ export const angularGenerator = defineGenerator({
     for (const [namespace, source] of Object.entries(ctx.ir.sources)) {
       const prefix = `${namespace}/angular`;
       const entities = Object.values(source.entities);
+      const cyclicRefs = new Set<string>();
+      for (const key of ctx.cycles) {
+        const dot = key.indexOf('.');
+        if (dot > 0 && key.slice(0, dot) === namespace) {
+          cyclicRefs.add(key.slice(dot + 1));
+        }
+      }
 
       if (entities.length > 0 && options.forms.length > 0) {
         files.push({
@@ -48,6 +55,7 @@ export const angularGenerator = defineGenerator({
             source,
             options,
             zod,
+            cyclicRefs,
             ctx.logger,
           ),
         });

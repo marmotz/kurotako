@@ -125,6 +125,14 @@ export interface GenerateContext {
   ir: IR;
   /** Only declared deps (`dependsOn ∪ optionalDependsOn`) that actually ran. */
   dependencies: Record<string, GeneratorArtifact>;
+  /**
+   * `${namespace}.${name}` for every entity / type alias that takes part in a
+   * `ref` cycle in the merged IR (from `@kurotako/ir`'s `refCycleMembers`, the
+   * same graph the validation `union_cycle` info channel reports). A generator
+   * consumes this to decide which references must be lazily wrapped / widened
+   * rather than emitted as a bare forward reference.
+   */
+  cycles: Set<string>;
   logger: Logger;
 }
 

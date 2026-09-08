@@ -2,7 +2,12 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ParseContext } from '@kurotako/core';
 import { noopLogger } from '@kurotako/core';
-import { type SourceIR, validateSourceIR } from '@kurotako/ir';
+import {
+  IR_VERSION,
+  type SourceIR,
+  validateIR,
+  validateSourceIR,
+} from '@kurotako/ir';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { PrismaInputError } from './errors.js';
 import { prismaParser } from './parser.js';
@@ -107,6 +112,17 @@ describe('prismaParser.parse — single file', () => {
     expect(ir.parser).toBe('prisma');
     expect(ir.parserVersion).toMatch(/^prisma@\d+\./);
     expect(validateSourceIR(ir).ok).toBe(true);
+  });
+
+  it('regression: a Prisma-built SourceIR still validates under IR_VERSION 2', async () => {
+    const ir = await parse();
+    expect(ir.typeAliases).toBeUndefined();
+    const wrapped = validateIR({
+      irVersion: IR_VERSION,
+      sources: { [ir.namespace]: ir },
+    });
+    expect(IR_VERSION).toBe('2');
+    expect(wrapped.ok).toBe(true);
   });
 
   it('lifts enums to source level with @map on values', async () => {

@@ -404,4 +404,77 @@ describe('run', () => {
       expect(arg).toHaveBeenCalledWith(dir);
     });
   });
+
+  it('exposes ref-cycle members to the generator context, namespace-qualified', async () => {
+    const cyclic = createSourceIR({ namespace: 'pg', parser: 'fake' })
+      .addTypeAlias('Shape', (t) =>
+        t.union((u) => u.ref('Group').scalar('int')),
+      )
+      .addEntity('Group', (e) => {
+        e.field('id', (f) => f.scalar('uuid').primary());
+        e.field('child', (f) => f.ref('Shape'));
+      })
+      .build();
+    let seen: Set<string> | undefined;
+    const gen: Generator = {
+      name: 'zod',
+      generate: (ctx) => {
+        seen = ctx.cycles;
+        return {
+          files: [{ path: 'pg/zod/index.ts', content: '// zod\n' }],
+          artifact: { entities: {} },
+        };
+      },
+    };
+    await run(
+      config({
+        sources: { pg: { parser: { name: 'p', parse: () => cyclic } } },
+        generators: { zod: { generator: gen } },
+      }),
+      { write: false },
+    );
+    expect(seen).toEqual(new Set(['pg.Shape', 'pg.Group']));
+  });
+
+  it('runs a source carrying a typeAliases entry end to end (mode A)', async () => {
+    const withAlias = createSourceIR({ namespace: 'pg', parser: 'fake' })
+      .addTypeAlias('Metadata', (t) =>
+        t.union((u) => u.scalar('string').scalar('int')),
+      )
+      .addEntity('User', (e) => {
+        e.field('id', (f) => f.scalar('uuid').primary());
+      })
+      .build();
+    const zod: Generator = {
+      name: 'zod',
+      generate: () => ({
+        files: [
+          {
+            path: 'pg/zod/aliases.ts',
+            content: 'export type Metadata = string | number;\n',
+          },
+          { path: 'pg/zod/index.ts', content: "export * from './aliases';\n" },
+        ],
+        artifact: {
+          entities: {
+            'pg.Metadata': {
+              module: 'pg/zod/aliases',
+              symbols: { schema: 'MetadataSchema', type: 'Metadata' },
+            },
+          },
+        },
+      }),
+    };
+    const warn = vi.fn();
+    const result = await run(
+      config({
+        sources: { pg: { parser: { name: 'p', parse: () => withAlias } } },
+        generators: { zod: { generator: zod } },
+      }),
+      { write: false, logger: { debug() {}, info() {}, warn, error() {} } },
+    );
+    expect(result.files.map((f) => f.path)).toContain('pg/index.ts');
+    expect(result.ir.sources.pg?.typeAliases?.Metadata).toBeDefined();
+    expect(warn).not.toHaveBeenCalled();
+  });
 });

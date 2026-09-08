@@ -15,13 +15,14 @@ export type ZodEnumTypeName = (ref: string) => string;
 
 /**
  * Resolvers a field's control type needs beyond its own IR shape: enum refs and
- * `{ kind: 'ref' }` targets both resolve to a Zod-emitted type name, and the
- * owning `SourceIR` lets a recursive union branch be detected.
+ * `{ kind: 'ref' }` targets both resolve to a Zod-emitted type name, and
+ * `cyclicRefs` (`${name}` members of a `ref` cycle, from
+ * `GenerateContext.cycles`) lets a recursive union branch be widened.
  */
 export interface TypeResolvers {
   enumTypeName: ZodEnumTypeName;
   refTypeName: RefTypeName;
-  source: SourceIR;
+  cyclicRefs: ReadonlySet<string>;
 }
 
 const SCALAR_BASE: Record<ScalarType, string> = {
@@ -53,7 +54,7 @@ function baseType(field: Field, resolvers: TypeResolvers): string {
         field.type,
         resolvers.refTypeName,
         resolvers.enumTypeName,
-        resolvers.source,
+        resolvers.cyclicRefs,
       ).text;
   }
 }

@@ -11,6 +11,7 @@
  * the output-modes feature; they are not part of the core-pipeline tasks.
  */
 
+import { refCycleMembers } from '@kurotako/ir';
 import type { GeneratorTree } from './collect.js';
 import { mergeTrees } from './collect.js';
 import { DriverError, HookError } from './errors.js';
@@ -70,7 +71,13 @@ export async function run(
 
   // 2. Merge.
   checkSignal();
-  const ir = mergeSources(entries);
+  const ir = mergeSources(entries, logger);
+  const cycles = new Set<string>();
+  for (const [namespace, source] of Object.entries(ir.sources)) {
+    for (const member of refCycleMembers(source)) {
+      cycles.add(`${namespace}.${member}`);
+    }
+  }
 
   // 3. Order.
   checkSignal();
@@ -104,6 +111,7 @@ export async function run(
       const out = await generator.generate({
         ir: view,
         dependencies,
+        cycles,
         logger: childLogger(logger, { generator: name }),
       });
       artifacts[name] = out.artifact;

@@ -4,9 +4,10 @@
 
 Union-type control support. A `{ kind: 'ref' }` field now types its control as
 the Zod-emitted DTO / alias name (`FormControl<AddressDto>`); a non-discriminated
-`union` types as the variant types joined (`FormControl<string | number>`), a
-recursive branch widening the control to `unknown`. Both fallback controls carry
-a `// union: validated by zodValidator(schema)` note and a `logger.warn`.
+`union` types as the variant types joined (`FormControl<string | number>`), a branch whose ref is
+in `GenerateContext.cycles` widening the control to `unknown`. Both fallback
+controls carry a `// union: validated by zodValidator(schema)` note and a
+`logger.warn`.
 
 A **discriminated** union field (`discriminator.mapping` set, every target an
 entity in the same source) becomes a nested `FormGroup` holding a discriminator

@@ -4,6 +4,7 @@
  */
 import type { GenerateContext, GenOutput, VirtualFile } from '@kurotako/core';
 import type { Entity, IR, SourceIR } from '@kurotako/ir';
+import { refCycleMembers } from '@kurotako/ir';
 import { zodGenerator } from '../generator.js';
 import type { ZodGeneratorOptions } from '../options.js';
 
@@ -22,7 +23,16 @@ export function runGenerator(
   options: ZodGeneratorOptions,
   logger: GenerateContext['logger'] = noopLogger,
 ): GenOutput {
-  const out = zodGenerator.generate({ ir, dependencies: {}, logger }, options);
+  const cycles = new Set<string>();
+  for (const [ns, source] of Object.entries(ir.sources)) {
+    for (const member of refCycleMembers(source)) {
+      cycles.add(`${ns}.${member}`);
+    }
+  }
+  const out = zodGenerator.generate(
+    { ir, dependencies: {}, cycles, logger },
+    options,
+  );
   if (out instanceof Promise) {
     throw new Error('zodGenerator.generate must be synchronous');
   }
