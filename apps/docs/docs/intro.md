@@ -10,6 +10,13 @@ sidebar_position: 1
 data model, through a validation layer, down to frontend types and forms. Its CLI is
 `tako`; every package is published under the `@kurotako/*` scope.
 
+## The name
+
+**kurotako** (Japanese 黒蛸, from _kuro_ 黒 "black" and _tako_ 蛸 "octopus") means "black
+octopus". The image mirrors the architecture: a central body — `@kurotako/core` — with
+semi-autonomous arms, the parsers and generators, each doing its own work while staying
+attached to the same trunk. The CLI keeps the short half of the word: `tako`.
+
 ## The problem
 
 In a stack like NestJS + Prisma + Angular, the data schema is defined once (in Prisma),
