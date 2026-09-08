@@ -1,5 +1,4 @@
 import type { Field } from '@kurotako/ir';
-import { createSourceIR } from '@kurotako/ir';
 import { describe, expect, it } from 'vitest';
 import { unionSource } from '../testing/ir.js';
 import { discriminatedUnion, unionType } from './unions.js';
@@ -73,8 +72,6 @@ describe('discriminatedUnion', () => {
 });
 
 describe('unionType', () => {
-  const source = unionSource();
-
   it('joins variant types with " | "', () => {
     const result = unionType(
       {
@@ -86,17 +83,12 @@ describe('unionType', () => {
       },
       (r) => `${r}Dto`,
       (r) => r,
-      source,
+      new Set(),
     );
     expect(result).toEqual({ text: 'string | number', recursive: false });
   });
 
-  it('widens a recursive ref branch to unknown', () => {
-    const recursive = createSourceIR({ namespace: 'pg', parser: 'test' })
-      .addTypeAlias('Tree', (t) =>
-        t.union((u) => u.scalar('string').ref('Tree')),
-      )
-      .build();
+  it('widens a ref branch named in cyclicRefs to unknown', () => {
     const result = unionType(
       {
         kind: 'union',
@@ -107,7 +99,7 @@ describe('unionType', () => {
       },
       (r) => r,
       (r) => r,
-      recursive,
+      new Set(['Tree']),
     );
     expect(result).toEqual({ text: 'unknown', recursive: true });
   });

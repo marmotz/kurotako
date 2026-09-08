@@ -320,8 +320,10 @@ acceptable, the dump is a debug artifact, not a stored format.
   re-declaring `entities['<ns>.<Name>']` here would make `core`'s
   `warnAmbiguousReExports` ([`writer/barrel.ts`](../../../packages/core/src/writer/barrel.ts))
   flag a phantom conflict. `ref` fields still resolve an alias target's type through the
-  Zod artifact's own alias entry (`zodRefType`). Consuming the validation `union_cycle`
-  `info` channel instead of the local `refChainHasCycle` walk stays with
+  Zod artifact's own alias entry (`zodRefType`). Cycle detection now consumes
+  `GenerateContext.cycles` (fed by `@kurotako/ir`'s `refCycleMembers`, the same
+  graph as the validation `union_cycle` `info` channel) instead of a local
+  `refChainHasCycle` walk — done in
   [#117](https://github.com/marmotz/kurotako/issues/117).
 
 ## 9. `parser-prisma` impact

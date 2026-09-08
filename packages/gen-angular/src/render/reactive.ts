@@ -121,6 +121,7 @@ export function reactiveEntity(
   options: AngularGeneratorOptions,
   zod: GeneratorArtifact,
   imports: ImportsRecorder,
+  cyclicRefs: ReadonlySet<string>,
   logger?: Logger,
 ): string {
   const deep = options.relations === 'deep';
@@ -173,7 +174,7 @@ export function reactiveEntity(
         imports.type(r.module, r.typeName);
         return r.typeName;
       },
-      source,
+      cyclicRefs,
     };
 
     const fieldEntries: ControlEntry[] = variantFields(entity, variant).map(
@@ -218,7 +219,7 @@ export function reactiveEntity(
             field.type,
             resolvers.refTypeName,
             resolvers.enumTypeName,
-            source,
+            cyclicRefs,
           ).recursive;
           const cause = recursive
             ? 'a recursive ref branch (chains into a cycle)'
@@ -294,6 +295,7 @@ export function reactiveEntity(
       zod,
       injectedFactories,
       enumZero,
+      cyclicRefs,
     ),
   );
 
@@ -308,6 +310,7 @@ function renderFactoryClass(
   zod: GeneratorArtifact,
   injectedFactories: Map<string, string>,
   enumZero: EnumZero,
+  cyclicRefs: ReadonlySet<string>,
 ): string {
   const deep = options.relations === 'deep';
   const className = factoryName(entity.name);
@@ -332,6 +335,7 @@ function renderFactoryClass(
         zod,
         injectedFactories,
         enumZero,
+        cyclicRefs,
       ),
     );
   }
@@ -383,6 +387,7 @@ function renderFactoryMethod(
   zod: GeneratorArtifact,
   injectedFactories: Map<string, string>,
   enumZero: EnumZero,
+  cyclicRefs: ReadonlySet<string>,
 ): string {
   const deep = options.relations === 'deep';
   const family = deep ? 'Deep' : '';
@@ -412,7 +417,7 @@ function renderFactoryMethod(
   const resolvers: TypeResolvers = {
     enumTypeName: (ref) => ref,
     refTypeName: (ref) => zodRefType(zod, namespace, ref).typeName,
-    source,
+    cyclicRefs,
   };
   const fields = variantFields(entity, variant);
   const lines = fields.map((field) => {

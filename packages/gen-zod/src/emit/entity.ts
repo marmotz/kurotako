@@ -76,6 +76,7 @@ export function emitEntity(
   entity: Entity,
   dialect: ZodDialect,
   logger?: Logger,
+  cyclicRefs: ReadonlySet<string> = new Set(),
 ): string {
   const ns = source.namespace;
   const usedEnumSchemas = new Set<string>();
@@ -213,6 +214,7 @@ export function emitEntity(
           sel.field,
           { optional: variant === 'update' ? false : sel.optional, variant },
           dialect,
+          cyclicRefs,
         ),
       ]);
     }

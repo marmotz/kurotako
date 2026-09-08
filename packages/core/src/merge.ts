@@ -6,17 +6,13 @@
  */
 
 import type { IR, SourceIR } from '@kurotako/ir';
-import {
-  assertIR,
-  IR_VERSION,
-  IrValidationError as IrModelValidationError,
-  validateSourceIR,
-} from '@kurotako/ir';
+import { IR_VERSION, validateIR, validateSourceIR } from '@kurotako/ir';
 import {
   DuplicateNamespaceError,
   IrValidationError,
   NamespaceMismatchError,
 } from './errors.js';
+import type { Logger } from './types.js';
 
 export interface MergeEntry {
   namespace: string;
@@ -27,9 +23,10 @@ export interface MergeEntry {
  * Build `{ irVersion, sources }` from `entries`, inserting each `SourceIR` under
  * its namespace in input order. Rejects a namespace mismatch, a per-source
  * validation failure, a duplicate namespace, and a post-merge cross-source
- * coherence failure.
+ * coherence failure. Non-fatal observations from the post-merge validation
+ * `info` channel (`union_cycle`, `degenerate_union`) are logged at `warn`.
  */
-export function mergeSources(entries: MergeEntry[]): IR {
+export function mergeSources(entries: MergeEntry[], logger?: Logger): IR {
   const sources: Record<string, SourceIR> = {};
 
   for (const { namespace, sourceIR } of entries) {
@@ -50,14 +47,15 @@ export function mergeSources(entries: MergeEntry[]): IR {
 
   const ir: IR = { irVersion: IR_VERSION, sources };
 
-  try {
-    assertIR(ir);
-  } catch (error) {
-    if (error instanceof IrModelValidationError) {
-      throw new IrValidationError(error.issues);
-    }
-    throw error;
+  const result = validateIR(ir);
+  if (!result.ok) {
+    throw new IrValidationError(result.issues);
+  }
+  for (const note of result.info ?? []) {
+    logger?.warn(
+      `IR ${note.code} at ${note.path === '' ? '<root>' : note.path}: ${note.message}`,
+    );
   }
 
-  return ir;
+  return result.value;
 }

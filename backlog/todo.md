@@ -17,7 +17,7 @@ _technical design in [technical.md](features/generator-typescript/technical.md)_
 
 ## IR union type ·  [overview](features/ir-union-type/overview.md)
 
-_technical design — [technical.md](features/ir-union-type/technical.md)_ — 5/6 tasks done
+_technical design — [technical.md](features/ir-union-type/technical.md)_ — 6/6 tasks done
 
 | Done | Issue                                                  | Title                                                                                   | Blocked by |
 |------|--------------------------------------------------------|-----------------------------------------------------------------------------------------|------------|
@@ -26,7 +26,7 @@ _technical design — [technical.md](features/ir-union-type/technical.md)_ — 5
 | [x]  | [#114](https://github.com/marmotz/kurotako/issues/114) | IR union type: builder + helpers (f.ref / f.union / addTypeAlias, resolution helpers)   | #112, #113 |
 | [x]  | [#115](https://github.com/marmotz/kurotako/issues/115) | gen-zod: union / ref rendering, aliases.ts emit, artifact symbols                       | #114       |
 | [x]  | [#116](https://github.com/marmotz/kurotako/issues/116) | gen-angular: union control typing, discriminated sub-FormGroup, fallback                | #115       |
-| [ ]  | [#117](https://github.com/marmotz/kurotako/issues/117) | IR union type: integration (core info logging, parser-prisma regression, release notes) | #115, #116 |
+| [x]  | [#117](https://github.com/marmotz/kurotako/issues/117) | IR union type: integration (core info logging, parser-prisma regression, release notes) | #115, #116 |
 
 ## Prisma 8 support in `@kurotako/parser-prisma`  ·  [overview](features/prisma-8-support/overview.md)
 

@@ -18,6 +18,7 @@ export function emitEntity(
   source: SourceIR,
   options: AngularGeneratorOptions,
   zod: GeneratorArtifact,
+  cyclicRefs: ReadonlySet<string>,
   logger?: Logger,
 ): string {
   const imports = new ImportsRecorder();
@@ -25,7 +26,16 @@ export function emitEntity(
 
   if (options.forms.includes('reactive')) {
     blocks.push(
-      reactiveEntity(entity, namespace, source, options, zod, imports, logger),
+      reactiveEntity(
+        entity,
+        namespace,
+        source,
+        options,
+        zod,
+        imports,
+        cyclicRefs,
+        logger,
+      ),
     );
   }
   if (options.forms.includes('signal')) {

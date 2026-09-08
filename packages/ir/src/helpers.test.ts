@@ -10,6 +10,7 @@ import {
   iterFields,
   iterTypeAliases,
   primaryKeyFields,
+  refCycleMembers,
   resolveEntity,
   resolveEnum,
   resolveRef,
@@ -299,5 +300,52 @@ describe('union type helpers', () => {
       { kind: 'scalar', scalar: 'string' },
       { kind: 'ref', ref: 'Address' },
     ]);
+  });
+
+  it('refCycleMembers reports every entity / alias on a ref cycle, and nothing else', () => {
+    const source: SourceIR = {
+      namespace: 'geo',
+      parser: 'test',
+      entities: {
+        Circle: {
+          name: 'Circle',
+          fields: [],
+          relations: [],
+          indexes: [],
+          uniques: [],
+        },
+        Group: {
+          name: 'Group',
+          fields: [
+            {
+              name: 'child',
+              type: { kind: 'ref', ref: 'Shape' },
+              list: false,
+              optional: false,
+              nullable: false,
+              constraints: {},
+            },
+          ],
+          relations: [],
+          indexes: [],
+          uniques: [],
+        },
+      },
+      enums: {},
+      typeAliases: {
+        Scalar: { name: 'Scalar', type: { kind: 'scalar', scalar: 'int' } },
+        Shape: {
+          name: 'Shape',
+          type: {
+            kind: 'union',
+            variants: [
+              { kind: 'ref', ref: 'Circle' },
+              { kind: 'ref', ref: 'Group' },
+            ],
+          },
+        },
+      },
+    };
+    expect(refCycleMembers(source)).toEqual(new Set(['Shape', 'Group']));
   });
 });

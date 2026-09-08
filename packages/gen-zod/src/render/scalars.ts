@@ -61,19 +61,25 @@ function scalarExpr(scalar: ScalarType, dialect: ZodDialect): string {
   }
 }
 
+const NO_CYCLES: ReadonlySet<string> = new Set();
+
 /**
  * Base Zod expression for a field type.
  *
  * - `enum` -> `<Enum>Schema`
- * - `ref` -> `z.lazy(() => <Name>Schema)` — always lazy: a `ref` can point at a
- *   type alias declared later in `aliases.ts`, or form a reference cycle
- *   (entity <-> alias, alias <-> alias); `z.lazy` is a no-op cost otherwise and
- *   keeps the emitter free of ordering / cycle analysis.
+ * - `ref` -> a bare `<Name>Schema` forward reference, or `z.lazy(() =>
+ *   <Name>Schema)` when the ref name is in `cyclicRefs` (it takes part in a
+ *   reference cycle, from `GenerateContext.cycles`). The caller emits aliases in
+ *   topological order so a bare reference is always declared before use.
  * - `union` -> `z.union([...])`, or `z.discriminatedUnion('<prop>', [...])` when
  *   a discriminator is set. Variants are flattened (`flattenUnion`); a degenerate
  *   union unfolds to its single variant (0 variants -> `z.unknown()`).
  */
-export function baseExpr(type: FieldType, dialect: ZodDialect): string {
+export function baseExpr(
+  type: FieldType,
+  dialect: ZodDialect,
+  cyclicRefs: ReadonlySet<string> = NO_CYCLES,
+): string {
   switch (type.kind) {
     case 'scalar':
       return scalarExpr(type.scalar, dialect);
@@ -82,16 +88,20 @@ export function baseExpr(type: FieldType, dialect: ZodDialect): string {
     case 'unknown':
       return 'z.unknown()';
     case 'ref':
-      return `z.lazy(() => ${refSchemaName(type.ref)})`;
+      return cyclicRefs.has(type.ref)
+        ? `z.lazy(() => ${refSchemaName(type.ref)})`
+        : refSchemaName(type.ref);
     case 'union': {
       const variants = flattenUnion(type);
       if (variants.length === 0) {
         return 'z.unknown()';
       }
       if (variants.length === 1 && variants[0] !== undefined) {
-        return baseExpr(variants[0], dialect);
+        return baseExpr(variants[0], dialect, cyclicRefs);
       }
-      const exprs = variants.map((v) => baseExpr(v, dialect)).join(', ');
+      const exprs = variants
+        .map((v) => baseExpr(v, dialect, cyclicRefs))
+        .join(', ');
       if (type.discriminator !== undefined) {
         return `z.discriminatedUnion(${JSON.stringify(
           type.discriminator.propertyName,

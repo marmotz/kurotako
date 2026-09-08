@@ -17,7 +17,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { zodGenerator } from '@kurotako/gen-zod';
 import type { IR } from '@kurotako/ir';
-import { createSourceIR, IR_VERSION } from '@kurotako/ir';
+import { createSourceIR, IR_VERSION, refCycleMembers } from '@kurotako/ir';
 import * as ts from 'typescript';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { angularGenerator } from '../generator.js';
@@ -221,12 +221,18 @@ async function generate(
   options: AngularGeneratorOptions,
   ir: IR = fixtureIr(),
 ) {
+  const cycles = new Set<string>();
+  for (const [ns, source] of Object.entries(ir.sources)) {
+    for (const member of refCycleMembers(source)) {
+      cycles.add(`${ns}.${member}`);
+    }
+  }
   const zodOut = await zodGenerator.generate(
-    { ir, dependencies: {}, logger: noopLogger },
+    { ir, dependencies: {}, cycles, logger: noopLogger },
     { zodVersion: 4 },
   );
   const angularOut = await angularGenerator.generate(
-    { ir, dependencies: { zod: zodOut.artifact }, logger: noopLogger },
+    { ir, dependencies: { zod: zodOut.artifact }, cycles, logger: noopLogger },
     options,
   );
   return [...zodOut.files, ...angularOut.files];

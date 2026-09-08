@@ -26,8 +26,6 @@ function scalarField(
   };
 }
 
-const emptySource = createSourceIR({ namespace: 'pg', parser: 'test' }).build();
-
 /** A `TypeResolvers` whose enum/ref resolution is caller-supplied. */
 function resolvers(overrides: Partial<TypeResolvers> = {}): TypeResolvers {
   return {
@@ -37,7 +35,7 @@ function resolvers(overrides: Partial<TypeResolvers> = {}): TypeResolvers {
     refTypeName: () => {
       throw new Error('no ref expected');
     },
-    source: emptySource,
+    cyclicRefs: new Set(),
     ...overrides,
   };
 }
