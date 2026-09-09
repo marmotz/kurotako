@@ -4,9 +4,10 @@ End-to-end example: NestJS 11 + Angular 22 + Prisma 7 (DMMF mode), consuming kur
 **mode B** (`package`) output — one shared `@example/tasks` workspace package consumed
 by both apps.
 
-Both generators run against `relations: 'deep'`: the generated `Task` form nests a
+The Angular generator runs with `relations: 'deep'`: the generated `Task` form nests a
 `FormGroup`/field for `project` (required) and one for `assignee` (optional), instead of
-the flat `projectId`/`assigneeId` scalars the `outputdir` example exercises.
+the flat `projectId`/`assigneeId` scalars the `outputdir` example exercises. The
+TypeScript generator emits both flat and deep DTO families under `typescript/`.
 
 This project is a fully standalone Bun workspace, independent of the kurotako repo's
 own root workspace (`workspaces: ["apps/*", "packages/*"]` here only — `packages/*` is
@@ -26,15 +27,16 @@ cd packages/config          && bun link && cd -
 cd packages/parser-prisma   && bun link && cd -
 cd packages/gen-zod         && bun link && cd -
 cd packages/gen-angular     && bun link && cd -
+cd packages/gen-typescript  && bun link && cd -
 ```
 
 ```bash
 # from this project's root, once per clone:
-bun link @kurotako/cli @kurotako/config @kurotako/parser-prisma @kurotako/gen-zod @kurotako/gen-angular
+bun link @kurotako/cli @kurotako/config @kurotako/parser-prisma @kurotako/gen-zod @kurotako/gen-angular @kurotako/gen-typescript
 bun install
 ```
 
-`package.json` pins the five kurotako packages with the `link:@kurotako/<name>`
+`package.json` pins the six kurotako packages with the `link:@kurotako/<name>`
 specifier — see the `outputdir` example's README for why a plain `0.0.0` semver range
 does not survive `bun install` once linked.
 
@@ -74,9 +76,9 @@ is entirely regenerable (gitignored) — every file under it, including `package
 written by `tako generate`.
 
 Import subpaths from `@example/tasks` must target the concrete file, not a directory
-barrel that only exists as `index.ts` — e.g. `@example/tasks/zod/index`, not
-`@example/tasks/zod` (the package's `"./*"` export map is a flat wildcard, so it does not
-resolve a bare `zod` to `zod/index`).
+barrel that only exists as `index.ts` — e.g. `@example/tasks/typescript/index`, not
+`@example/tasks/typescript` (the package's `"./*"` export map is a flat wildcard, so it
+does not resolve a bare `typescript` to `typescript/index`).
 
 **Known limitation:** `@example/tasks/angular/*` (`Task.form.ts`, `Project.form.ts`,
 `User.form.ts`) declares `@Injectable` reactive factory classes (`TaskFormFactory` and

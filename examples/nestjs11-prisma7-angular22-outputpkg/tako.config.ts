@@ -1,5 +1,6 @@
 import { defineConfig } from '@kurotako/config';
 import { angularGenerator } from '@kurotako/gen-angular';
+import { typescriptGenerator } from '@kurotako/gen-typescript';
 import { zodGenerator } from '@kurotako/gen-zod';
 import { prismaParser } from '@kurotako/parser-prisma';
 
@@ -11,6 +12,7 @@ export default defineConfig({
     },
   },
   generators: [
+    { use: typescriptGenerator },
     { use: zodGenerator, options: { zodVersion: 4 } },
     {
       use: angularGenerator,

@@ -6,6 +6,7 @@
  */
 export const CONFIG_TEMPLATE = `import { defineConfig } from 'kurotako'
 // import { prismaParser } from '@kurotako/parser-prisma'
+// import { typescriptGenerator } from '@kurotako/gen-typescript'
 // import { zodGenerator } from '@kurotako/gen-zod'
 
 export default defineConfig({
@@ -13,6 +14,7 @@ export default defineConfig({
     // pg: { use: prismaParser, options: { schema: './prisma/schema.prisma' } },
   },
   generators: [
+    // { use: typescriptGenerator },
     // { use: zodGenerator },
   ],
   outputs: [{ dir: './generated/kurotako' }],
@@ -21,6 +23,7 @@ export default defineConfig({
 
 export const CONFIG_TEMPLATE_MONOREPO = `import { defineConfig } from 'kurotako'
 // import { prismaParser } from '@kurotako/parser-prisma'
+// import { typescriptGenerator } from '@kurotako/gen-typescript'
 // import { zodGenerator } from '@kurotako/gen-zod'
 
 // Monorepo layout: this file sits at the workspace root, but the schema lives in
@@ -36,6 +39,7 @@ export default defineConfig({
     // pg: { use: prismaParser, options: { schema: './libs/db/prisma/schema.prisma' } },
   },
   generators: [
+    // { use: typescriptGenerator },
     // { use: zodGenerator },
   ],
   // One destination per sub-project, narrowed with the \`generators\` filter.

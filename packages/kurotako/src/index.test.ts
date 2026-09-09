@@ -7,9 +7,10 @@ describe('kurotako barrel', () => {
     expect(kurotako.defineConfig(config)).toBe(config);
   });
 
-  it('re-exports defineParser and defineGenerator', () => {
+  it('re-exports defineParser, defineGenerator and typescriptGenerator', () => {
     expect(typeof kurotako.defineParser).toBe('function');
     expect(typeof kurotako.defineGenerator).toBe('function');
+    expect(kurotako.typescriptGenerator.name).toBe('typescript');
   });
 
   it('does not re-export loader internals', () => {

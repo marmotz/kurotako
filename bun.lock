@@ -51,6 +51,7 @@
         "citty": "0.2.2",
       },
       "devDependencies": {
+        "@kurotako/gen-typescript": "workspace:^",
         "@kurotako/gen-zod": "workspace:^",
         "@kurotako/parser-prisma": "workspace:^",
       },
@@ -76,6 +77,7 @@
       "dependencies": {
         "@kurotako/ir": "workspace:^",
         "tsup": "8.5.1",
+        "typescript": "5.9.3",
       },
     },
     "packages/gen-angular": {
@@ -95,6 +97,22 @@
         "@kurotako/config": "workspace:^",
         "@kurotako/core": "workspace:^",
         "@kurotako/gen-zod": "workspace:^",
+      },
+    },
+    "packages/gen-typescript": {
+      "name": "@kurotako/gen-typescript",
+      "version": "0.1.0",
+      "dependencies": {
+        "@kurotako/ir": "workspace:^",
+      },
+      "devDependencies": {
+        "@kurotako/config": "workspace:^",
+        "@kurotako/core": "workspace:^",
+        "typescript": "5.9.3",
+      },
+      "peerDependencies": {
+        "@kurotako/config": "workspace:^",
+        "@kurotako/core": "workspace:^",
       },
     },
     "packages/gen-zod": {
@@ -130,6 +148,7 @@
       "dependencies": {
         "@kurotako/cli": "workspace:^",
         "@kurotako/config": "workspace:^",
+        "@kurotako/gen-typescript": "workspace:^",
       },
     },
     "packages/parser-prisma": {
@@ -739,6 +758,8 @@
     "@kurotako/docs": ["@kurotako/docs@workspace:apps/docs"],
 
     "@kurotako/gen-angular": ["@kurotako/gen-angular@workspace:packages/gen-angular"],
+
+    "@kurotako/gen-typescript": ["@kurotako/gen-typescript@workspace:packages/gen-typescript"],
 
     "@kurotako/gen-zod": ["@kurotako/gen-zod@workspace:packages/gen-zod"],
 

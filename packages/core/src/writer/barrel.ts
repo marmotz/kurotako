@@ -6,6 +6,8 @@
  *
  * Design: `backlog/features/output-modes/technical.md` §New orchestration step.
  */
+import path from 'node:path';
+import * as ts from 'typescript';
 import type { GeneratorArtifact, Logger, VirtualFile } from '../types.js';
 import { contributingGenerators } from './tree.js';
 
@@ -15,13 +17,15 @@ import { contributingGenerators } from './tree.js';
  * generator that contributed a file under `<ns>/<generatorName>/`. A
  * single-generator namespace still gets a barrel.
  *
- * When `artifactsByGenerator` is supplied, `logger?.warn(...)` fires if the same
- * exported identifier appears in two contributing artifacts for one namespace
- * (an ambiguous star re-export TypeScript/ESM silently drops). Never throws.
+ * When generator barrels expose the same identifier, an explicit re-export
+ * resolves the otherwise ambiguous star exports. The lexically first generator
+ * owns the root name; every generator remains available from its own subpath.
+ * Export names are read from the emitted TypeScript module graph, rather than
+ * artifacts, because artifacts only describe dependency-facing entity symbols.
  */
 export function synthesizeRootBarrels(
   files: VirtualFile[],
-  artifactsByGenerator?: Record<string, GeneratorArtifact>,
+  _artifactsByGenerator?: Record<string, GeneratorArtifact>,
   logger?: Logger,
 ): VirtualFile[] {
   const contributors = contributingGenerators(files);
@@ -29,63 +33,91 @@ export function synthesizeRootBarrels(
 
   for (const namespace of [...contributors.keys()].sort()) {
     const generators = contributors.get(namespace) ?? [];
-    if (artifactsByGenerator && logger) {
-      warnAmbiguousReExports(
-        namespace,
-        generators,
-        artifactsByGenerator,
-        logger,
+    const collisions = exportedNameCollisions(namespace, generators, files);
+    const content = [
+      ...generators.map((name) => `export * from './${name}';`),
+      ...[...collisions.entries()].map(
+        ([identifier, owners]) =>
+          `export { ${identifier} } from './${owners[0]}';`,
+      ),
+      '',
+    ].join('\n');
+
+    for (const [identifier, owners] of collisions) {
+      logger?.warn(
+        `namespace '${namespace}': identifier '${identifier}' is re-exported by generators [${owners.join(
+          ', ',
+        )}]; '${namespace}/index.ts' explicitly re-exports it from '${owners[0]}'. Import a generator subpath to select another declaration.`,
+        { namespace, identifier, generators: owners },
       );
     }
-    const content = generators
-      .map((name) => `export * from './${name}';\n`)
-      .join('');
     barrels.push({ path: `${namespace}/index.ts`, content });
   }
 
   return barrels;
 }
 
-function warnAmbiguousReExports(
+/** Return exported identifiers owned by more than one generator barrel. */
+function exportedNameCollisions(
   namespace: string,
   generators: string[],
-  artifactsByGenerator: Record<string, GeneratorArtifact>,
-  logger: Logger,
-): void {
+  files: VirtualFile[],
+): Map<string, string[]> {
+  const sourceFiles = new Map(
+    files
+      .filter((file) => file.path.startsWith(`${namespace}/`))
+      .map((file) => [toVirtualPath(file.path), file.content]),
+  );
+  const rootNames = generators
+    .map((generator) => toVirtualPath(`${namespace}/${generator}/index.ts`))
+    .filter((fileName) => sourceFiles.has(fileName));
+  if (rootNames.length < 2) {
+    return new Map();
+  }
+
+  const options: ts.CompilerOptions = {
+    module: ts.ModuleKind.NodeNext,
+    moduleResolution: ts.ModuleResolutionKind.NodeNext,
+    noLib: true,
+  };
+  const host = ts.createCompilerHost(options, true);
+  host.fileExists = (fileName) => sourceFiles.has(fileName);
+  host.readFile = (fileName) => sourceFiles.get(fileName);
+  host.getSourceFile = (fileName, languageVersion) => {
+    const text = sourceFiles.get(fileName);
+    return text === undefined
+      ? undefined
+      : ts.createSourceFile(fileName, text, languageVersion, true);
+  };
+  host.directoryExists = (directoryName) =>
+    [...sourceFiles.keys()].some((fileName) =>
+      fileName.startsWith(`${directoryName}/`),
+    );
+
+  const program = ts.createProgram({ rootNames, options, host });
+  const checker = program.getTypeChecker();
   const owners = new Map<string, string[]>();
-
-  for (const name of generators) {
-    const artifact = artifactsByGenerator[name];
-    if (!artifact) {
-      continue;
-    }
-    const identifiers = new Set<string>();
-    for (const [key, entity] of Object.entries(artifact.entities)) {
-      const dot = key.indexOf('.');
-      const entityNamespace = dot === -1 ? key : key.slice(0, dot);
-      if (entityNamespace !== namespace) {
-        continue;
-      }
-      for (const identifier of Object.values(entity.symbols)) {
-        identifiers.add(identifier);
-      }
-    }
-    for (const identifier of identifiers) {
-      const list = owners.get(identifier) ?? [];
-      list.push(name);
-      owners.set(identifier, list);
+  for (const generator of generators) {
+    const source = program.getSourceFile(
+      toVirtualPath(`${namespace}/${generator}/index.ts`),
+    );
+    if (!source) continue;
+    const module = checker.getSymbolAtLocation(source);
+    if (!module) continue;
+    for (const exported of checker.getExportsOfModule(module)) {
+      const list = owners.get(exported.name) ?? [];
+      list.push(generator);
+      owners.set(exported.name, list);
     }
   }
 
-  for (const [identifier, list] of owners) {
-    if (list.length > 1) {
-      const sorted = [...list].sort();
-      logger.warn(
-        `namespace '${namespace}': identifier '${identifier}' is re-exported by generators [${sorted.join(
-          ', ',
-        )}]; the ambiguous star re-export from '${namespace}/index.ts' will be dropped. Import it from a generator subpath instead.`,
-        { namespace, identifier, generators: sorted },
-      );
-    }
-  }
+  return new Map(
+    [...owners]
+      .filter(([, owners]) => owners.length > 1)
+      .sort(([a], [b]) => a.localeCompare(b)),
+  );
+}
+
+function toVirtualPath(fileName: string): string {
+  return path.posix.join('/', fileName);
 }

@@ -2,7 +2,8 @@
  * `kurotako` — the umbrella package. Install this one name to get the `tako`
  * binary and the `defineConfig` helper your `tako.config.ts` imports.
  *
- * Re-exports the config authoring surface of `@kurotako/config`. The CLI's
+ * Re-exports the config authoring surface of `@kurotako/config` and the shipped
+ * `typescriptGenerator`. The CLI's
  * programmatic API (`runCli`, reporters) stays in `@kurotako/cli`; loader
  * internals (`loadConfig`, `TakoConfigSchema`, error classes, `CONFIG_TEMPLATE`)
  * stay in `@kurotako/config` for consumers that depend on it directly.
@@ -12,3 +13,4 @@
 
 export type * from '@kurotako/config';
 export { defineConfig, defineGenerator, defineParser } from '@kurotako/config';
+export { typescriptGenerator } from '@kurotako/gen-typescript';

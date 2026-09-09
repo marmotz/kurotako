@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { GeneratorArtifact, Logger, VirtualFile } from '../types.js';
+import type { Logger, VirtualFile } from '../types.js';
 import { synthesizeRootBarrels } from './barrel.js';
 
 function file(path: string): VirtualFile {
@@ -37,49 +37,59 @@ describe('synthesizeRootBarrels', () => {
     ).toEqual([]);
   });
 
-  it('warns when two artifacts export the same identifier for one namespace', () => {
+  it('resolves colliding declarations from the first generator at the root', () => {
     const log = logger();
-    const zod: GeneratorArtifact = {
-      entities: {
-        'pg.User': { module: 'pg/zod/user.schema', symbols: { type: 'User' } },
-      },
-    };
-    const angular: GeneratorArtifact = {
-      entities: {
-        'pg.User': {
-          module: 'pg/angular/user.form',
-          symbols: { form: 'User' },
-        },
-      },
-    };
     const barrels = synthesizeRootBarrels(
-      [file('pg/zod/user.schema.ts'), file('pg/angular/user.form.ts')],
-      { zod, angular },
+      [
+        {
+          path: 'pg/typescript/index.ts',
+          content: "export type * from './User';\n",
+        },
+        {
+          path: 'pg/typescript/User.ts',
+          content: 'export interface User {}\n',
+        },
+        { path: 'pg/zod/index.ts', content: "export * from './User';\n" },
+        { path: 'pg/zod/User.ts', content: 'export const User = {}\n' },
+      ],
+      undefined,
       log,
     );
-    expect(log.warn).toHaveBeenCalledTimes(1);
-    expect(vi.mocked(log.warn).mock.calls[0]?.[0]).toContain(
-      "identifier 'User'",
+    expect(barrels).toEqual([
+      {
+        path: 'pg/index.ts',
+        content:
+          "export * from './typescript';\nexport * from './zod';\nexport { User } from './typescript';\n",
+      },
+    ]);
+    expect(log.warn).toHaveBeenCalledWith(
+      expect.stringContaining("identifier 'User'"),
+      {
+        namespace: 'pg',
+        identifier: 'User',
+        generators: ['typescript', 'zod'],
+      },
     );
-    expect(barrels).toHaveLength(1);
   });
 
-  it('does not warn when identifiers are role-distinct', () => {
-    const log = logger();
-    synthesizeRootBarrels(
-      [file('pg/zod/user.schema.ts'), file('pg/angular/user.form.ts')],
+  it('detects collisions outside artifact entity symbols, including filters', () => {
+    const barrels = synthesizeRootBarrels([
       {
-        zod: {
-          entities: { 'pg.User': { module: 'm', symbols: { type: 'User' } } },
-        },
-        angular: {
-          entities: {
-            'pg.User': { module: 'm', symbols: { form: 'UserFormFactory' } },
-          },
-        },
+        path: 'pg/typescript/index.ts',
+        content: "export type * from './filters';\n",
       },
-      log,
+      {
+        path: 'pg/typescript/filters.ts',
+        content: 'export interface StringFilter {}\n',
+      },
+      { path: 'pg/zod/index.ts', content: "export * from './filters';\n" },
+      {
+        path: 'pg/zod/filters.ts',
+        content: 'export const StringFilter = {}\n',
+      },
+    ]);
+    expect(barrels[0]?.content).toContain(
+      "export { StringFilter } from './typescript';",
     );
-    expect(log.warn).not.toHaveBeenCalled();
   });
 });

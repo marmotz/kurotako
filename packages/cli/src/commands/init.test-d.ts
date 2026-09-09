@@ -2,10 +2,12 @@
  * Compile-only fixture. `tsc -b` type-checks this file; vitest ignores it (no
  * `.test.ts` suffix). It pins that the body `tako init` writes into
  * `CONFIG_TEMPLATE` — once its example lines are uncommented — type-checks
- * against the real `prismaParser` / `zodGenerator` drivers, and that a strict
+ * against the real `prismaParser` / `typescriptGenerator` / `zodGenerator`
+ * drivers, and that a strict
  * Prisma option schema rejects an unknown key at the config entry.
  */
 import { defineConfig, type SourceEntry } from '@kurotako/config';
+import { typescriptGenerator } from '@kurotako/gen-typescript';
 import { zodGenerator } from '@kurotako/gen-zod';
 import { prismaParser } from '@kurotako/parser-prisma';
 import { initCommand } from './init.js';
@@ -24,7 +26,7 @@ export const config = defineConfig({
   sources: {
     pg: { use: prismaParser, options: { schema: './prisma/schema.prisma' } },
   },
-  generators: [{ use: zodGenerator }],
+  generators: [{ use: typescriptGenerator }, { use: zodGenerator }],
   outputs: [{ dir: './generated/kurotako' }],
 });
 
