@@ -4,16 +4,16 @@
 
 ## TypeScript generator (`@kurotako/gen-typescript`)  ·  [overview](features/generator-typescript/overview.md)
 
-_technical design in [technical.md](features/generator-typescript/technical.md)_ — 0/6 tasks done
+_technical design in [technical.md](features/generator-typescript/technical.md)_ — 6/6 tasks done
 
 | Done | Issue                                                  | Title                                                    | Blocked by |
 |------|--------------------------------------------------------|----------------------------------------------------------|------------|
-| [ ]  | [#118](https://github.com/marmotz/kurotako/issues/118) | gen-typescript: package scaffold, names and errors       | —          |
-| [ ]  | [#119](https://github.com/marmotz/kurotako/issues/119) | gen-typescript: scalar type, JSDoc, member assembly      | #118       |
-| [ ]  | [#120](https://github.com/marmotz/kurotako/issues/120) | gen-typescript: variant field sets and relation families | #119       |
-| [ ]  | [#121](https://github.com/marmotz/kurotako/issues/121) | gen-typescript: emit enums.ts and filters.ts             | #118       |
-| [ ]  | [#122](https://github.com/marmotz/kurotako/issues/122) | gen-typescript: emit <Entity>.type.ts and the barrel     | #120, #121 |
-| [ ]  | [#123](https://github.com/marmotz/kurotako/issues/123) | gen-typescript: artifact, generate() wiring, release     | #122       |
+| [x]  | [#118](https://github.com/marmotz/kurotako/issues/118) | gen-typescript: package scaffold, names and errors       | —          |
+| [x]  | [#119](https://github.com/marmotz/kurotako/issues/119) | gen-typescript: scalar type, JSDoc, member assembly      | #118       |
+| [x]  | [#120](https://github.com/marmotz/kurotako/issues/120) | gen-typescript: variant field sets and relation families | #119       |
+| [x]  | [#121](https://github.com/marmotz/kurotako/issues/121) | gen-typescript: emit enums.ts and filters.ts             | #118       |
+| [x]  | [#122](https://github.com/marmotz/kurotako/issues/122) | gen-typescript: emit <Entity>.type.ts and the barrel     | #120, #121 |
+| [x]  | [#123](https://github.com/marmotz/kurotako/issues/123) | gen-typescript: artifact, generate() wiring, release     | #122       |
 
 ## IR union type ·  [overview](features/ir-union-type/overview.md)
 

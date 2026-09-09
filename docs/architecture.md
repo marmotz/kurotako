@@ -138,7 +138,9 @@ generated/kurotako/
 ```
 
 Each generator owns a `<namespace>/<generatorName>/` sub-tree; `tako` synthesizes the
-`<namespace>/index.ts` root barrel. Import by relative path or tsconfig alias
+`<namespace>/index.ts` root barrel. It re-exports every generator; if their public names
+collide, the lexically first generator owns that root export deterministically. Import a
+generator subpath to select the other declaration. Import by relative path or tsconfig alias
 `@kurotako/*` → `./generated/kurotako/*` (`@kurotako/pg` hits the root barrel,
 `@kurotako/pg/zod` one generator, `@kurotako/pg/zod/user.schema` one file). `tako generate`
 is enough, nothing to publish or install; every file carries a

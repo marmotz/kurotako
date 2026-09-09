@@ -13,6 +13,9 @@
       "path": "../core"
     },
     {
+      "path": "../gen-typescript"
+    },
+    {
       "path": "../gen-zod"
     },
     {

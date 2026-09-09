@@ -7,13 +7,13 @@
   "include": ["src"],
   "references": [
     {
-      "path": "../cli"
+      "path": "../ir"
+    },
+    {
+      "path": "../core"
     },
     {
       "path": "../config"
-    },
-    {
-      "path": "../gen-typescript"
     }
   ]
 }

@@ -52,6 +52,7 @@
   },
   "dependencies": {
     "@kurotako/cli": "workspace:^",
-    "@kurotako/config": "workspace:^"
+    "@kurotako/config": "workspace:^",
+    "@kurotako/gen-typescript": "workspace:^"
   }
 }

@@ -26,10 +26,10 @@ npm install -D kurotako
 
 One package gives you the `tako` binary and the `defineConfig` helper your
 `tako.config.ts` imports. Add a parser and the generators you need on top, for example a
-Prisma schema in, Zod schemas and Angular forms out:
+Prisma schema in, TypeScript types, Zod schemas and Angular forms out:
 
 ```bash
-npm install -D @kurotako/parser-prisma @kurotako/gen-zod @kurotako/gen-angular
+npm install -D @kurotako/parser-prisma @kurotako/gen-typescript @kurotako/gen-zod @kurotako/gen-angular
 ```
 
 ## Quickstart
@@ -42,6 +42,7 @@ npx tako generate      # runs the pipeline into ./generated/kurotako
 ```ts title="tako.config.ts"
 import { defineConfig } from 'kurotako';
 import { prismaParser } from '@kurotako/parser-prisma';
+import { typescriptGenerator } from '@kurotako/gen-typescript';
 import { zodGenerator } from '@kurotako/gen-zod';
 import { angularGenerator } from '@kurotako/gen-angular';
 
@@ -50,7 +51,11 @@ export default defineConfig({
     // the config key is the namespace
     db: { use: prismaParser, options: { schema: './prisma/schema.prisma' } },
   },
-  generators: [{ use: zodGenerator }, { use: angularGenerator }],
+  generators: [
+    { use: typescriptGenerator },
+    { use: zodGenerator },
+    { use: angularGenerator },
+  ],
   outputs: [{ dir: './generated/kurotako' }],
 });
 ```
