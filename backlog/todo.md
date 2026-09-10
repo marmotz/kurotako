@@ -30,12 +30,12 @@ _technical design — [technical.md](features/ir-union-type/technical.md)_ — 6
 
 ## Prisma 8 support in `@kurotako/parser-prisma`  ·  [overview](features/prisma-8-support/overview.md)
 
-_conception technique — [technical.md](features/prisma-8-support/technical.md)_ — 1/5 tasks done
+_conception technique — [technical.md](features/prisma-8-support/technical.md)_ — 5/5 tasks done
 
 | Done | Issue                                                  | Title                                                                    | Blocked by |
 |------|--------------------------------------------------------|--------------------------------------------------------------------------|------------|
 | [x]  | [#107](https://github.com/marmotz/kurotako/issues/107) | spike — capture the real Prisma 8 contract.json structure                | —          |
-| [ ]  | [#108](https://github.com/marmotz/kurotako/issues/108) | Prisma 8 contract module scaffold: Valibot schema, version guard, errors | #107       |
-| [ ]  | [#109](https://github.com/marmotz/kurotako/issues/109) | Prisma 8 codec -> IR ScalarType / format mapping (PostgreSQL)            | #107, #108 |
-| [ ]  | [#110](https://github.com/marmotz/kurotako/issues/110) | Prisma 8 contract.json -> PrismaModel reader                             | #108, #109 |
-| [ ]  | [#111](https://github.com/marmotz/kurotako/issues/111) | Prisma 8: rename/prefix options + mode-8 parser wiring                   | #108, #110 |
+| [x]  | [#108](https://github.com/marmotz/kurotako/issues/108) | Prisma 8 contract module scaffold: Valibot schema, version guard, errors | #107       |
+| [x]  | [#109](https://github.com/marmotz/kurotako/issues/109) | Prisma 8 codec -> IR ScalarType / format mapping (PostgreSQL)            | #107, #108 |
+| [x]  | [#110](https://github.com/marmotz/kurotako/issues/110) | Prisma 8 contract.json -> PrismaModel reader                             | #108, #109 |
+| [x]  | [#111](https://github.com/marmotz/kurotako/issues/111) | Prisma 8: rename/prefix options + mode-8 parser wiring                   | #108, #110 |

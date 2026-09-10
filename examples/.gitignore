@@ -1,6 +1,7 @@
 # examples/ — regenerable tako output, not committed
 */bun.lock
 */apps/*/generated
+*/apps/*/prisma/generated
 */packages/example-*
 */packages/.gitattributes
 

@@ -1,4 +1,10 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { join } from 'node:path';
 import type { ParseContext } from '@kurotako/core';
 import { noopLogger } from '@kurotako/core';
@@ -8,8 +14,8 @@ import {
   validateIR,
   validateSourceIR,
 } from '@kurotako/ir';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { PrismaInputError } from './errors.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { PrismaAmbiguousRelationError, PrismaContractError } from './errors.js';
 import { prismaParser } from './parser.js';
 
 const PKG_DIR = join(import.meta.dirname, '..');
@@ -236,6 +242,30 @@ describe('prismaParser.parse — single file', () => {
     const b = await parse();
     expect(JSON.stringify(a)).toBe(JSON.stringify(b));
   });
+
+  it('applies mode-7 rename and warns when namespacePrefix is ignored', async () => {
+    const warn = vi.fn();
+    const ir = await prismaParser.parse(
+      {
+        namespace: 'pg',
+        cwd: root,
+        logger: { debug() {}, info() {}, warn, error() {} },
+      },
+      {
+        schema: 'schema.prisma',
+        rename: { User: 'Account' },
+        namespacePrefix: { public: 'Public' },
+      },
+    );
+    expect(ir.entities.Account).toBeDefined();
+    expect(
+      ir.entities.Post?.relations.find((relation) => relation.name === 'author')
+        ?.target.entity,
+    ).toBe('Account');
+    expect(warn).toHaveBeenCalledWith(
+      'prisma parser: namespacePrefix is ignored in Prisma 7 mode',
+    );
+  });
 });
 
 describe('prismaParser.parse — multi-file folder', () => {
@@ -266,12 +296,62 @@ describe('prismaParser.parse — multi-file folder', () => {
   });
 });
 
+describe('prismaParser.parse — Prisma 8 contract', () => {
+  it('produces a SourceIR from the captured contract fixture', async () => {
+    const fixture = JSON.parse(
+      readFileSync(
+        join(import.meta.dirname, 'contract', '__fixtures__', 'contract.json'),
+        'utf8',
+      ),
+    ) as {
+      domain: { namespaces: { billing: { models: Record<string, unknown> } } };
+    };
+    // The full fixture intentionally captures Prisma RC's ambiguous homonym
+    // bug; remove that one model to exercise the otherwise complete reader.
+    delete fixture.domain.namespaces.billing.models.User;
+    writeFileSync(join(root, 'contract.json'), JSON.stringify(fixture));
+
+    const ir = await prismaParser.parse(ctx(root), {
+      schema: 'contract.json',
+      version: 8,
+    });
+    expect(ir.parserVersion).toBe('prisma-contract@1');
+    expect(ir.entities.User?.primaryKey).toEqual(['id']);
+    expect(ir.enums.UserRole?.values).toEqual([
+      { name: 'USER' },
+      { name: 'ADMIN' },
+    ]);
+    expect(validateSourceIR(ir).ok).toBe(true);
+  });
+
+  it('rejects the ambiguous cross-namespace relation in the full fixture', async () => {
+    writeFileSync(
+      join(root, 'contract.json'),
+      readFileSync(
+        join(import.meta.dirname, 'contract', '__fixtures__', 'contract.json'),
+        'utf8',
+      ),
+    );
+    await expect(
+      prismaParser.parse(ctx(root), { schema: 'contract.json', version: 8 }),
+    ).rejects.toBeInstanceOf(PrismaAmbiguousRelationError);
+  });
+});
+
 describe('prismaParser.parse — errors', () => {
-  it('rejects the Prisma 8 contract mode', async () => {
-    writeFileSync(join(root, 'contract.json'), '{}');
+  it('rejects an invalid Prisma 8 contract', async () => {
+    writeFileSync(
+      join(root, 'contract.json'),
+      JSON.stringify({
+        schemaVersion: '1',
+        target: 'postgres',
+        targetFamily: 'sql',
+        domain: {},
+      }),
+    );
     await expect(
       prismaParser.parse(ctx(root), { schema: 'contract.json' }),
-    ).rejects.toBeInstanceOf(PrismaInputError);
+    ).rejects.toBeInstanceOf(PrismaContractError);
   });
 });
 

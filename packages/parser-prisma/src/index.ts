@@ -8,6 +8,11 @@
  */
 
 export {
+  PrismaAmbiguousRelationError,
+  PrismaContractError,
+  PrismaContractVersionError,
+  PrismaDialectError,
+  PrismaEntityCollisionError,
   PrismaInputError,
   PrismaPeerMissingError,
   PrismaSchemaError,

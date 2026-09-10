@@ -112,7 +112,20 @@ export function buildSourceIR(
     b.addEntity(entity.name, (eb) => {
       for (const field of entity.fields) {
         eb.field(field.name, (fb: FieldBuilder) => {
-          const mapped = mapFieldType(field, logger);
+          const mapped = field.mappedType
+            ? {
+                type: field.mappedType,
+                constraints: {
+                  ...(field.maxLength !== undefined
+                    ? { maxLength: field.maxLength }
+                    : {}),
+                  ...(field.format !== undefined
+                    ? { format: field.format }
+                    : {}),
+                },
+                scalarOverride: field.scalarOverride,
+              }
+            : mapFieldType(field, logger);
           const scalar =
             mapped.scalarOverride ??
             (mapped.type.kind === 'scalar' ? mapped.type.scalar : undefined);

@@ -17,6 +17,7 @@ import { pathToFileURL } from 'node:url';
 import type { ParseContext } from '@kurotako/core';
 import type { ResolvedInput } from '../detect.js';
 import { PrismaPeerMissingError, PrismaSchemaError } from '../errors.js';
+import type { PrismaParserOptions } from '../options.js';
 import type { PrismaModel } from './model.js';
 import { toPrismaModel } from './read.js';
 
@@ -80,6 +81,7 @@ async function resolveInternals(
 export async function readDmmf(
   input: Extract<ResolvedInput, { mode: 7 }>,
   ctx: ParseContext,
+  options?: Pick<PrismaParserOptions, 'rename'>,
 ): Promise<{ model: PrismaModel; prismaVersion: string }> {
   const { getDMMF, prismaVersion } = await resolveInternals(ctx);
 
@@ -96,5 +98,5 @@ export async function readDmmf(
     throw new PrismaSchemaError(ctx.namespace, message, { cause: err });
   }
 
-  return { model: toPrismaModel(doc), prismaVersion };
+  return { model: toPrismaModel(doc, options), prismaVersion };
 }

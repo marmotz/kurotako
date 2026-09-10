@@ -13,6 +13,8 @@ import * as v from 'valibot';
 export const PrismaParserOptions = v.strictObject({
   schema: v.optional(v.string(), './prisma/schema.prisma'),
   version: v.optional(v.picklist([7, 8])),
+  namespacePrefix: v.optional(v.record(v.string(), v.string())),
+  rename: v.optional(v.record(v.string(), v.string())),
 });
 
 export type PrismaParserOptions = v.InferOutput<typeof PrismaParserOptions>;

@@ -1,0 +1,13 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testRegex": ".e2e-spec.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "^@example/tasks/zod/index$": "<rootDir>/../../../packages/example-tasks/dist/zod/index.cjs",
+    "^(\\.{1,2}/.*)\\.js$": "$1"
+  }
+}
