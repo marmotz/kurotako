@@ -222,7 +222,7 @@ describe('angularGenerator.generate', () => {
         { debug() {}, info() {}, warn: (m) => warnings.push(m), error() {} },
       );
       const invoice = fileEndingWith(out.files, 'Invoice.form.ts');
-      expect(invoice).toContain('ref: FormControl<string | number>');
+      expect(invoice).toContain('ref: FormControl<string | number | null>');
       expect(invoice).toContain(
         '/* union: validated by zodValidator(schema) */',
       );

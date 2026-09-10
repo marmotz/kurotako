@@ -154,6 +154,11 @@ export function initExpr(field: Field, enumZero?: EnumZero): string {
   if (field.nullable) {
     return 'null';
   }
+  // A `ref` / non-discriminated `union` fallback field has no non-null zero;
+  // its reactive `FormControl` is seeded empty (`null`) and validated by Zod.
+  if (field.type.kind === 'ref' || field.type.kind === 'union') {
+    return 'null';
+  }
   return zeroValue(field, enumZero);
 }
 
@@ -167,6 +172,23 @@ export function initExpr(field: Field, enumZero?: EnumZero): string {
  * be provably-redundant code TS flags as an error (`This expression is never
  * nullish`), not just dead weight.
  */
+/**
+ * A `ref` / non-discriminated `union` fallback field has no synthesisable
+ * non-null zero (see `zeroValue`), so its `FormControl` is created without
+ * `{ nonNullable: true }` and is seeded empty — Angular's `FormControl`
+ * constructor makes such a control `T | null`. The declared control type and
+ * the seed expression must both admit that `null`, or the interface member and
+ * the `new FormControl(...)` call disagree. A `field.nullable` field already
+ * carries `| null` through `controlType`; a `list` field is seeded `[]`.
+ */
+export function emptySeededNullable(field: Field): boolean {
+  return (
+    !field.nullable &&
+    !field.list &&
+    (field.type.kind === 'ref' || field.type.kind === 'union')
+  );
+}
+
 export function controlExpr(
   field: Field,
   typeArg: string,
@@ -176,14 +198,13 @@ export function controlExpr(
     return `new FormControl<${typeArg}>(${sourceExpr})`;
   }
   // A `ref` / non-discriminated `union` fallback control has no `nonNullable`
-  // seed literal — the seed is `init?.x ?? undefined`, cast to the exact
-  // control type; `zodValidator(schema)` is what actually validates it. The
-  // union case also carries a note (the ticket reserves it for the fallback).
+  // seed literal — the seed is `init?.x ?? undefined`, coerced to `null` for
+  // the empty control; `zodValidator(schema)` is what actually validates it.
   if (field.type.kind === 'union') {
-    return `new FormControl<${typeArg}>((${sourceExpr}) as ${typeArg}) /* union: validated by zodValidator(schema) */`;
+    return `new FormControl<${typeArg} | null>(${sourceExpr}) /* union: validated by zodValidator(schema) */`;
   }
   if (field.type.kind === 'ref') {
-    return `new FormControl<${typeArg}>((${sourceExpr}) as ${typeArg})`;
+    return `new FormControl<${typeArg} | null>(${sourceExpr})`;
   }
   return `new FormControl(${sourceExpr}, { nonNullable: true })`;
 }
@@ -199,9 +220,13 @@ export function fieldControlEntry(
   field: Field,
   resolvers: TypeResolvers,
 ): ControlEntry {
+  const inner = controlType(field, resolvers);
+  // `unknown` already admits `null`; only a concrete ref/union type needs the
+  // explicit widening to match the empty-seeded `FormControl`.
+  const nullable = emptySeededNullable(field) && inner !== 'unknown';
   return {
     name: field.name,
-    fullType: `FormControl<${controlType(field, resolvers)}>`,
+    fullType: `FormControl<${inner}${nullable ? ' | null' : ''}>`,
   };
 }
 
