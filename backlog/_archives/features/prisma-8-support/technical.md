@@ -2,9 +2,9 @@
 
 Design for adding the **Prisma 8 mode** to `@kurotako/parser-prisma`. Product decisions
 come from [overview.md](overview.md). The IR produced is unchanged
-([`@kurotako/ir`](../../_archives/features/ir-model/technical.md)); the driver contract is
-unchanged ([`@kurotako/config`](../../_archives/features/config-system/technical.md) /
-[`@kurotako/core`](../../_archives/features/core-pipeline/technical.md)). This document
+([`@kurotako/ir`](../ir-model/technical.md)); the driver contract is
+unchanged ([`@kurotako/config`](../config-system/technical.md) /
+[`@kurotako/core`](../core-pipeline/technical.md)). This document
 turns the overview into a `contract.json` → `PrismaModel` reader plugged behind the
 existing version-mode seam.
 
@@ -12,27 +12,27 @@ existing version-mode seam.
 
 The v1 parser already ships the seam this feature fills in:
 
-- [`src/detect.ts`](../../../packages/parser-prisma/src/detect.ts) — `resolveInput()`
+- [`src/detect.ts`](../../../../packages/parser-prisma/src/detect.ts) — `resolveInput()`
   returns `{ mode: 7, … }` or `{ mode: 8, kind: 'contract', contractPath }`
-  ([detect.ts:17-19](../../../packages/parser-prisma/src/detect.ts)). Mode 8 detection
+  ([detect.ts:17-19](../../../../packages/parser-prisma/src/detect.ts)). Mode 8 detection
   (`contract.json` file, or a folder containing one, or `version: 8`) is **already
-  implemented and tested** ([detect.ts:102-161](../../../packages/parser-prisma/src/detect.ts)).
-- [`src/parser.ts:29-35`](../../../packages/parser-prisma/src/parser.ts) — mode 8 currently
+  implemented and tested** ([detect.ts:102-161](../../../../packages/parser-prisma/src/detect.ts)).
+- [`src/parser.ts:29-35`](../../../../packages/parser-prisma/src/parser.ts) — mode 8 currently
   throws `PrismaInputError('… not implemented in kurotako v1')`. This feature replaces
   that branch.
-- [`src/dmmf/model.ts`](../../../packages/parser-prisma/src/dmmf/model.ts) — the
+- [`src/dmmf/model.ts`](../../../../packages/parser-prisma/src/dmmf/model.ts) — the
   mode-neutral `PrismaModel` / `PrismaEntity` / `PrismaField` / `PrismaRelationEdge` /
   `PrismaEnum` records. Docstring already states it is meant to be produced by "the
   deferred Prisma 8 `contract.json` reader … without touching the mapping layer".
-- [`src/map/build.ts`](../../../packages/parser-prisma/src/map/build.ts),
-  [`map/scalars.ts`](../../../packages/parser-prisma/src/map/scalars.ts),
-  [`map/defaults.ts`](../../../packages/parser-prisma/src/map/defaults.ts),
-  [`map/relations.ts`](../../../packages/parser-prisma/src/map/relations.ts) — consume only
+- [`src/map/build.ts`](../../../../packages/parser-prisma/src/map/build.ts),
+  [`map/scalars.ts`](../../../../packages/parser-prisma/src/map/scalars.ts),
+  [`map/defaults.ts`](../../../../packages/parser-prisma/src/map/defaults.ts),
+  [`map/relations.ts`](../../../../packages/parser-prisma/src/map/relations.ts) — consume only
   `PrismaModel`. Reused unchanged **if** the contract reader emits the same shape (see
   "PrismaModel gaps" below for the two exceptions).
-- [`src/options.ts`](../../../packages/parser-prisma/src/options.ts) — `v.strictObject`
+- [`src/options.ts`](../../../../packages/parser-prisma/src/options.ts) — `v.strictObject`
   with `schema` + `version: v.picklist([7, 8])`.
-- [`src/errors.ts`](../../../packages/parser-prisma/src/errors.ts) — `PrismaInputError`,
+- [`src/errors.ts`](../../../../packages/parser-prisma/src/errors.ts) — `PrismaInputError`,
   `PrismaPeerMissingError`, `PrismaSchemaError`, all `extends TakoError`.
 - `package.json`: peer `@prisma/internals` `>=5 <8` (optional), dev `@prisma/dmmf` +
   `@prisma/internals` `7.10.0`.
@@ -94,7 +94,7 @@ Confirmed facts driving the design:
   (`Low = "low"`); member name is the stored value when no value is given.
 - **`type` blocks** (value objects, ex-composite types) — structured, no table. Map to
   `FieldType { kind: 'unknown' }`, same as the mode-7 treatment of composite types
-  ([Accepted limitations](../../_archives/features/parser-prisma/technical.md)).
+  ([Accepted limitations](../parser-prisma/technical.md)).
 - **`domain` vs `storage` split**: `domain` is the logical model (names, nullability,
   relations); `storage` holds tables/columns/native types/keys/indexes/FKs. Constraints
   like `maxLength` (from `@db.VarChar(n)`) and non-unique indexes live in `storage` and
@@ -107,7 +107,7 @@ Sources: [What is Prisma 8?](https://www.prisma.io/docs/orm),
 
 ## Spike first (task #1)
 
-The public docs give only excerpts. As with [spike #59](../../_archives/tasks/59-prisma-getdmmf-spike.md)
+The public docs give only excerpts. As with spike #59
 for `getDMMF`, the first task emits a real `contract.json` from a Prisma 8 RC project
 (PostgreSQL) covering every case kurotako maps, and records the **verbatim** structure for:
 
@@ -143,8 +143,8 @@ findings below are therefore current as of the latest published PostgreSQL contr
 spike time, independent of which CLI meta-package version triggers `contract emit`. PostgreSQL
 target, `prisma orm init --target postgres --authoring psl` scaffold, `prisma contract
 emit`. Contract source and emitted `contract.json` are committed verbatim as
-[`src/contract/__fixtures__/contract.prisma`](../../../packages/parser-prisma/src/contract/__fixtures__/contract.prisma)
-and [`contract.json`](../../../packages/parser-prisma/src/contract/__fixtures__/contract.json)
+[`src/contract/__fixtures__/contract.prisma`](../../../../packages/parser-prisma/src/contract/__fixtures__/contract.prisma)
+and [`contract.json`](../../../../packages/parser-prisma/src/contract/__fixtures__/contract.json)
 (1391 lines). The fixture exercises every case listed in "Spike first" above except
 `@@index([...], where: ...)` partial indexes and `cuid()`/`ulid()`/`nanoid()` generators
 (only `uuid()`, `autoincrement()`, `now()` were exercised; the others share the same
@@ -448,7 +448,7 @@ src/contract/
 
 - **`schema.ts`** — `v.looseObject` at every level (Prisma will add keys; kurotako must
   not break on them — same lesson as
-  [valibot-looseobject](../../../packages/parser-prisma/src/dmmf/read.ts) elsewhere). Only
+  [valibot-looseobject](../../../../packages/parser-prisma/src/dmmf/read.ts) elsewhere). Only
   the paths kurotako consumes are typed: `schemaVersion`, `target`, `targetFamily`,
   `domain.namespaces.<ns>.models.<M>.{fields,relations,storage}`, and the relevant
   `storage` sub-tree. Parse failure → `PrismaContractError` (new) carrying the Valibot
@@ -542,7 +542,7 @@ if (input.mode === 8) {
 
 `generatorVersion` comes from a field in `contract.json` (the emitting Prisma version, or
 `schemaVersion` as fallback — spike confirms). `watchPaths` / `anchor` already handle the
-`contract.json` path ([parser.ts:46-58](../../../packages/parser-prisma/src/parser.ts)) —
+`contract.json` path ([parser.ts:46-58](../../../../packages/parser-prisma/src/parser.ts)) —
 no change.
 
 ### `PrismaModel` gaps (`dmmf/model.ts`)
@@ -558,7 +558,7 @@ Two shape mismatches to resolve so mode 8 can reuse `map/`:
    `isImplicitM2M` match — both sides carry `fromFields`).
 2. **`nullable` vs `optional`.** Mode 7: `nullable ← !isRequired`,
    `optional ← hasDefaultValue || isUpdatedAt`
-   ([build.ts:154-159](../../../packages/parser-prisma/src/map/build.ts)). The contract
+   ([build.ts:154-159](../../../../packages/parser-prisma/src/map/build.ts)). The contract
    distinguishes PSL `?` (`nullable: true`) from "has a default". `contract/read.ts` sets
    `PrismaField.isRequired = !nullable` and `hasDefaultValue` from the presence of
    `default`; `isUpdatedAt` from the contract's updated-at marker (spike). No `map/`
@@ -576,13 +576,13 @@ finds one truly unavoidable, it is added as optional and mode 7 leaves it unset.
   a smoke test. `@prisma/internals` / `@prisma/dmmf` `7.10.0` stay for mode-7 tests.
 - **Peer**: `@prisma/internals` stays `>=5 <8`, still `optional` — mode 8 does not touch
   it, mode 7 keeps its current contract. No bump (`<8` is deliberate:
-  [spike #59](../../_archives/tasks/59-prisma-getdmmf-spike.md) chose it, and Prisma 8's
+  spike #59 chose it, and Prisma 8's
   `@prisma/internals` — if it ships — has a different API kurotako does not use).
 
 ## Tests (vitest, colocated)
 
 Fixture-driven, mirroring the mode-7 suite
-([parser-prisma/technical.md §Tests](../../_archives/features/parser-prisma/technical.md)):
+([parser-prisma/technical.md §Tests](../parser-prisma/technical.md)):
 real `contract.json` samples → `readContract` → `PrismaModel` → `buildSourceIR`, asserting
 the `SourceIR` structure.
 
@@ -621,7 +621,7 @@ the `SourceIR` structure.
   emit`; kurotako reads the artifact.
 - **Map Prisma namespaces onto namespaced IR identifiers.** Rejected ([overview](overview.md)):
   contradicts "generated identifiers are never prefixed"
-  ([docs/architecture.md](../../../docs/architecture.md)). Flatten + opt-in rename/prefix
+  ([docs/architecture.md](../../../../docs/architecture.md)). Flatten + opt-in rename/prefix
   instead.
 - **Error on any multi-namespace contract in v1.** Rejected: the flatten + collision-error
   path already makes multi-namespace safe by default, and the rename/prefix escape hatch
@@ -631,60 +631,60 @@ the `SourceIR` structure.
   `@N`.
 - **Design the reader fully from the docs, no spike.** Rejected ([overview](overview.md)):
   the public contract schema is incomplete and Prisma 8 is RC; a captured fixture is the
-  ground truth, exactly as [spike #59](../../_archives/tasks/59-prisma-getdmmf-spike.md)
+  ground truth, exactly as spike #59
   did for `getDMMF`.
 - **New `@kurotako/parser-prisma8` package.** Rejected in v1 already
-  ([parser-prisma/overview.md](../../_archives/features/parser-prisma/overview.md)): one
+  ([parser-prisma/overview.md](../parser-prisma/overview.md)): one
   package, one `prisma` config key, internal version mode.
 
 ## Consequences verified against the repo
 
-- [`src/parser.ts:29-35`](../../../packages/parser-prisma/src/parser.ts) — the only
+- [`src/parser.ts:29-35`](../../../../packages/parser-prisma/src/parser.ts) — the only
   behavioural change to existing code: the mode-8 `throw` becomes the real path.
-- [`src/detect.ts`](../../../packages/parser-prisma/src/detect.ts) — **no change**. Mode-8
+- [`src/detect.ts`](../../../../packages/parser-prisma/src/detect.ts) — **no change**. Mode-8
   resolution and its `detect.test.ts` cases already pass.
-- [`src/dmmf/model.ts`](../../../packages/parser-prisma/src/dmmf/model.ts) — likely no
+- [`src/dmmf/model.ts`](../../../../packages/parser-prisma/src/dmmf/model.ts) — likely no
   change; at most one new optional field. The file is misnamed for a shared shape
   (`dmmf/`), but renaming `dmmf/model.ts` → `model.ts` at package root touches every
   importer — **out of scope**, noted as a follow-up cleanup.
-- [`src/map/*`](../../../packages/parser-prisma/src/map) — **no change** if
+- [`src/map/*`](../../../../packages/parser-prisma/src/map) — **no change** if
   `contract/read.ts` honours the `PrismaModel` contract (the two gaps above are handled in
   the reader, not the mapper). `map/relations.ts:isImplicitM2M`
-  ([relations.ts:63-73](../../../packages/parser-prisma/src/map/relations.ts)) simply never
+  ([relations.ts:63-73](../../../../packages/parser-prisma/src/map/relations.ts)) simply never
   matches in mode 8.
-- [`src/options.ts`](../../../packages/parser-prisma/src/options.ts) — two optional keys
+- [`src/options.ts`](../../../../packages/parser-prisma/src/options.ts) — two optional keys
   added; `v.strictObject` still rejects typos. Existing configs unaffected (both keys
   optional).
-- [`src/index.ts`](../../../packages/parser-prisma/src/index.ts) — export the four new
+- [`src/index.ts`](../../../../packages/parser-prisma/src/index.ts) — export the four new
   error classes alongside the existing three.
 - `package.json` — `prisma@8` devDep added; peer range untouched.
 - **Changeset**: required — new public behaviour (`contract.json` support) and new
   exported error classes on a published package
-  ([.changeset/README.md](../../../.changeset/README.md)). `minor` bump.
+  ([.changeset/README.md](../../../../.changeset/README.md)). `minor` bump.
 - **Docs**: `apps/docs` parser-prisma page and
-  [docs/architecture.md](../../../docs/architecture.md) mention "Prisma 8 mode deferred" —
+  [docs/architecture.md](../../../../docs/architecture.md) mention "Prisma 8 mode deferred" —
   reconcile when this lands (doc-only, not this phase).
-- [generator-zod](../../_archives/features/generator-zod/overview.md) and other downstream
+- [generator-zod](../generator-zod/overview.md) and other downstream
   generators are **unaffected**: they consume `SourceIR`, which is identical between modes.
 
 ## Découpage en tâches d'implémentation
 
-Fichiers sous [`../../tasks/`](../../tasks/), issues sur `marmotz/kurotako`.
+GitHub issues are tracked in `marmotz/kurotako`.
 
-1. [#107 prisma8-contract-spike](../../tasks/107-prisma8-contract-spike.md) — émettre un
+1. #107 prisma8-contract-spike — émettre un
    vrai `contract.json` (Prisma 8 RC, PostgreSQL), committer la fixture, consigner la
    structure verbatim dans ce document. Bloque tout le reste.
-2. [#108 prisma8-contract-schema](../../tasks/108-prisma8-contract-schema.md) —
+2. #108 prisma8-contract-schema —
    `src/contract/schema.ts` (Valibot `looseObject`), `version.ts` (guard `schemaVersion`),
    4 classes d'erreur, ré-exports, devDep `prisma@8` (dep : #107).
-3. [#109 prisma8-codec-mapping](../../tasks/109-prisma8-codec-mapping.md) —
+3. #109 prisma8-codec-mapping —
    `src/contract/codecs.ts` : table codec `pg/*` → `ScalarType` / `format`, tolérance
    `@N`, `PrismaDialectError` (deps : #107, #108).
-4. [#110 prisma8-contract-reader](../../tasks/110-prisma8-contract-reader.md) —
+4. #110 prisma8-contract-reader —
    `src/contract/read.ts` : `contract.json` → `PrismaModel` (aplatissement des
    namespaces, jointure `storage`, synthèse des edges de relation, `nullable`/`optional`)
    (deps : #108, #109).
-5. [#111 prisma8-options-and-wiring](../../tasks/111-prisma8-options-and-wiring.md) —
+5. #111 prisma8-options-and-wiring —
    options `namespacePrefix` / `rename` + `src/contract/naming.ts` (résolution +
    `PrismaEntityCollisionError`), passe rename mode 7, branchement mode 8 dans
    `parser.ts`, tests end-to-end, changeset `minor` (deps : #108, #110).

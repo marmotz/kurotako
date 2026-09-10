@@ -131,7 +131,7 @@ interface EnumDef {
 - **`Decimal` / `bigint` / `Json` / `Bytes`**: named scalars only; runtime representation
   left to each generator.
 - **Enums**: both source-level and entity-local, entity-local resolved first.
-- **Union types & aliases** (see [ir-union-type/technical.md](../backlog/features/ir-union-type/technical.md)):
+- **Union types & aliases** (see [ir-union-type/technical.md](../backlog/_archives/features/ir-union-type/technical.md)):
   `FieldType` carries `ref` (a same-source name) and `union` (optionally discriminated);
   `SourceIR.typeAliases` is a named-field-type registry. Recursion via `ref` is allowed —
   a cycle is reported informationally, never fatally. Degenerate unions (`< 2` variants)

@@ -1,6 +1,6 @@
 # TypeScript generator (`@kurotako/gen-typescript`)
 
-**Status**: technical design in [technical.md](technical.md)
+**Status**: completed
 
 ## Context
 
@@ -15,7 +15,7 @@ generators depend on.
 For each IR entity, emit plain TypeScript type declarations (no runtime, no import of a
 validation library), aligned on the IR types, optionality/nullability and enums, exported
 from the source submodule with a barrel per namespace, following the deterministic naming
-rules in [`docs/architecture.md`](../../../docs/architecture.md).
+rules in [`docs/architecture.md`](../../../../docs/architecture.md).
 
 ## Decisions made
 
@@ -25,7 +25,7 @@ rules in [`docs/architecture.md`](../../../docs/architecture.md).
   and with variant derivation via mapped/utility types; declaration merging is irrelevant
   for regenerated code.
 - **Export naming** (deterministic, namespace never prefixes -
-  [`docs/architecture.md`](../../../docs/architecture.md)): entity `User` -> `UserDto`,
+  [`docs/architecture.md`](../../../../docs/architecture.md)): entity `User` -> `UserDto`,
   aligned on `gen-zod`'s inferred type name. Variants follow the same pattern
   (`UserCreateDto`, `UserUpdateDto`, ...).
 - **Variants (v1)**: parity with `gen-zod` - per entity, the full shape plus `Create`,
@@ -65,8 +65,8 @@ rules in [`docs/architecture.md`](../../../docs/architecture.md).
 
 ## Depends on
 
-- [ir-model](../../_archives/features/ir-model/overview.md),
-  [core-pipeline](../../_archives/features/core-pipeline/overview.md).
-- Mirrors [generator-zod](../../_archives/features/generator-zod/overview.md) on naming,
+- [ir-model](../ir-model/overview.md),
+  [core-pipeline](../core-pipeline/overview.md).
+- Mirrors [generator-zod](../generator-zod/overview.md) on naming,
   variants, relation families, enums and scalar mapping - keep the two aligned; `gen-zod`
   is the reference when a rule is ambiguous.

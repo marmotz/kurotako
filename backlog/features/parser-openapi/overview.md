@@ -62,6 +62,6 @@ conforming to [`@kurotako/ir`](../../_archives/features/ir-model/overview.md), c
 - [ir-model](../../_archives/features/ir-model/overview.md),
   [core-pipeline](../../_archives/features/core-pipeline/overview.md),
   [config-system](../../_archives/features/config-system/overview.md).
-- **Hard, blocking**: [ir-union-type](../ir-union-type/overview.md) — the IR must gain a
+- **Hard, blocking**: [ir-union-type](../../_archives/features/ir-union-type/overview.md) — the IR must gain a
   property-level union type and a root type-alias registry before `parser-openapi` can map
   `oneOf` / `anyOf`. That feature is discussed and shipped first.

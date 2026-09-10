@@ -1,17 +1,17 @@
 # IR union type
 
-**Status**: technical design — [technical.md](technical.md)
+**Status**: completed
 
 ## Context
 
-The IR ([`docs/ir.md`](../../../docs/ir.md), package `@kurotako/ir`) models an entity as a
+The IR ([`docs/ir.md`](../../../../docs/ir.md), package `@kurotako/ir`) models an entity as a
 flat list of fields, each carrying exactly one `FieldType` (`scalar` / `enum` /
 `unknown`), plus relations. It cannot express "this value is one of several shapes".
 `parser-openapi` needs it: OpenAPI / JSON Schema `oneOf` / `anyOf` appear both on a single
 property and as the whole definition of a named schema. Without a union type the parser
 falls back to `unknown`, losing every variant for all downstream generators.
 
-`@kurotako/ir` is implemented (archived [ir-model](../../_archives/features/ir-model/overview.md));
+`@kurotako/ir` is implemented (archived [ir-model](../ir-model/overview.md));
 `gen-zod` and `gen-angular` are implemented too. This feature is an evolution of all
 three.
 
@@ -81,9 +81,9 @@ its own) — and have every v1 generator handle the new shape.
 
 ## Depends on
 
-- [ir-model](../../_archives/features/ir-model/overview.md) — evolution of an archived
+- [ir-model](../ir-model/overview.md) — evolution of an archived
   feature (schemas, validate, builder, helpers, generators).
 
 ## Blocks
 
-- [parser-openapi](../parser-openapi/overview.md) — hard, blocking dependency.
+- [parser-openapi](../../../features/parser-openapi/overview.md) — hard, blocking dependency.

@@ -1,13 +1,13 @@
 # Prisma 8 support in `@kurotako/parser-prisma`
 
-**Statut** : conception technique — [technical.md](technical.md)
+**Statut**: completed
 
 ## Contexte
 
 `@kurotako/parser-prisma` ne couvre aujourd'hui que Prisma ≤ 7, via `getDMMF`
 (`@prisma/internals`, peer optionnelle `>=5 <8`). Le mode Prisma 8 — lecture directe
 du contrat émis par Prisma 8 — avait été explicitement reporté après kurotako v1 (voir
-[`_archives/features/parser-prisma/overview.md`](../../_archives/features/parser-prisma/overview.md)
+[`_archives/features/parser-prisma/overview.md`](../parser-prisma/overview.md)
 "Deferred past kurotako v1"). Cette feature est ce fast-follow : Prisma 8 est en RC
 (`8.0.0-rc.x`), la finale est imminente et le format du contrat est jugé stabilisé.
 
@@ -24,7 +24,7 @@ technique du mode 8 est donc à refaire, pas à recopier.
 Ajouter le mode Prisma 8 au parser : consommer un `contract.json` déjà émis
 (`prisma contract emit`, à la charge de l'utilisateur), le mapper sur le même
 `SourceIR` conforme à
-[`@kurotako/ir`](../../_archives/features/ir-model/overview.md) que le mode 7, et livrer
+[`@kurotako/ir`](../ir-model/overview.md) que le mode 7, et livrer
 une couverture équivalente (modèles, scalaires, `?`/`[]`, `@id`, `@unique`, `@default`,
 relations, enums, types natifs, métadonnées) pour le dialecte PostgreSQL.
 
@@ -50,7 +50,7 @@ relations, enums, types natifs, métadonnées) pour le dialecte PostgreSQL.
   `domain.namespaces` du contrat sont aplatis sous l'unique namespace kurotako de
   l'instance de parser — cohérent avec le mode 7 (1 schéma = 1 namespace). Les
   identifiants d'entités restent non préfixés
-  ([docs/architecture.md](../../../docs/architecture.md)).
+  ([docs/architecture.md](../../../../docs/architecture.md)).
 - **Alias de collision, deux mécanismes cumulables.** Quand deux namespaces Prisma
   définissent une entité de même nom, l'utilisateur désambiguïse via les options du
   parser :
@@ -90,6 +90,6 @@ relations, enums, types natifs, métadonnées) pour le dialecte PostgreSQL.
 
 ## Depends on
 
-- [`_archives/features/parser-prisma`](../../_archives/features/parser-prisma/overview.md)
+- [`_archives/features/parser-prisma`](../parser-prisma/overview.md)
   — mode 7 (DMMF), livré en kurotako v1. Cette feature en réutilise `map/build.ts`,
   `map/scalars.ts`, `map/relations.ts`, `map/defaults.ts` et le `PrismaModel` neutre.

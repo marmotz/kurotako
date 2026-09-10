@@ -12,5 +12,4 @@ Versioning is **independent** per package (`linked: []`, `fixed: []`). Packages 
 `0.x`; the public API may change between minor versions. `.github/workflows/release.yml`
 publishes on manual dispatch, in two phases (version PR, then publish).
 
-See [the docs](https://github.com/changesets/changesets/blob/main/docs/intro-to-using-changesets.md)
-for more.
+See [the docs](https://github.com/changesets/changesets/blob/main/docs/intro-to-using-changesets.md) for more.

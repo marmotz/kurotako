@@ -2,11 +2,11 @@
 
 Design for `@kurotako/gen-typescript`. Product decisions come from [overview.md](overview.md);
 the generator role and the DAG/artifact model live in
-[`docs/architecture.md`](../../../docs/architecture.md). This document turns the overview
+[`docs/architecture.md`](../../../../docs/architecture.md). This document turns the overview
 into a concrete package and an IR -> TypeScript source-text mapping.
 
 This generator is the **pure-types sibling of `gen-zod`**. Its
-[technical design](../../_archives/features/generator-zod/technical.md) is the reference
+[technical design](../generator-zod/technical.md) is the reference
 for every shared rule (naming matrix, variant derivation, relation families, filter
 shapes, determinism); this document only records what differs because the target is plain
 `type` declarations with no runtime.
@@ -22,7 +22,7 @@ shapes, determinism); this document only records what differs because the target
   `packages/*/vitest.config.ts`), Biome. Node >= 24, **no `Bun.*` API**. The generator
   produces **strings only**; core's `Writer` owns all I/O.
 - Upstream contracts already implemented and read **only** through their public surface:
-  - [`@kurotako/ir`](../../_archives/features/ir-model/technical.md) — `IR` / `SourceIR` /
+  - [`@kurotako/ir`](../ir-model/technical.md) — `IR` / `SourceIR` /
     `Entity` / `Field` / `FieldType` / `ScalarType` / `Constraints` / `DefaultValue` /
     `Relation` / `EnumDef` types, the `JsonValue` type (`packages/ir/src/schemas.ts:15`),
     and the pure helpers in `packages/ir/src/helpers.ts`:
@@ -30,13 +30,13 @@ shapes, determinism); this document only records what differs because the target
     **shared-decision** helpers `createFields`, `isCreateOptional`, `updateFields`,
     `isDbAssigned`, and **`scalarTsType`** — the mandated scalar -> TS-type mapping every
     generator's typed output must agree on.
-  - [`@kurotako/core`](../../_archives/features/core-pipeline/technical.md) — `Generator`,
+  - [`@kurotako/core`](../core-pipeline/technical.md) — `Generator`,
     `GenerateContext` (`{ ir, dependencies, logger }`, `ir` already namespace-filtered),
     `GenOutput` (`{ files: VirtualFile[]; artifact: GeneratorArtifact }`), and the fixed
     `GeneratorArtifact` / `EntitySymbols` shape (`packages/core/src/types.ts`). A generator
     owns the `<namespace>/<generatorName>/` prefix on every `VirtualFile.path`; core
     synthesizes `<namespace>/index.ts`.
-  - [`@kurotako/config`](../../_archives/features/config-system/technical.md) —
+  - [`@kurotako/config`](../config-system/technical.md) —
     `defineGenerator({ name, optionsSchema?, dependsOn?, generate(ctx, options) })`
     (`packages/config/src/define-driver.ts`); runtime identity, curries `options` away.
 - Downstream: **nothing consumes this generator in v1** (decided: standalone). `gen-zod`
@@ -115,7 +115,7 @@ export const typescriptGenerator = defineGenerator({
 ## Naming (`names.ts`) — reuse the `gen-zod` matrix, `Dto` half only
 
 Identical stem rules to
-[`gen-zod` §Naming](../../_archives/features/generator-zod/technical.md#naming-namests--deterministic-never-namespace-prefixed)
+[`gen-zod` §Naming](../generator-zod/technical.md#naming-namests--deterministic-never-namespace-prefixed)
 (`packages/gen-zod/src/names.ts`), keeping the `Dto` type identifiers and dropping every
 `Schema` identifier:
 
@@ -183,7 +183,7 @@ sorted by name, imports sorted by specifier.
 The non-nullable, non-list TS type of a field is
 **`scalarTsType(field.type)`** (`packages/ir/src/helpers.ts`) verbatim — no local
 re-encoding (mandated by the helper's own doc comment and
-[`ir-model` §Shared-decision helpers](../../_archives/features/ir-model/technical.md#shared-decision-helpers-helpersts)):
+[`ir-model` §Shared-decision helpers](../ir-model/technical.md#shared-decision-helpers-helpersts)):
 
 | `FieldType` | TS type |
 |---|---|
@@ -321,7 +321,7 @@ export interface TypeScriptArtifactExtra {
 ## Determinism (drift-guard)
 
 Same guarantees as `gen-zod`
-([§Determinism](../../_archives/features/generator-zod/technical.md#determinism)): `ctx.ir`
+([§Determinism](../generator-zod/technical.md#determinism)): `ctx.ir`
 already namespace-filtered and key-ordered by core; entity/field order preserved and never
 sorted; enums sorted by name; import lines sorted by specifier; no timestamps, absolute
 paths or `Date.now()`; `generate` synchronous, reads nothing outside `ctx`. The
@@ -428,30 +428,30 @@ full-file snapshots) and **artifact structure**.
 
 ## Découpage en tâches d'implémentation
 
-Task files under [`../../tasks/`](../../tasks/), GitHub issues on `marmotz/kurotako`
+GitHub issues are tracked in `marmotz/kurotako`
 (label `feature:generator-typescript`).
 
 1. [#118](https://github.com/marmotz/kurotako/issues/118)
-   [118-ts-gen-scaffold](../../tasks/118-ts-gen-scaffold.md) — package skeleton
+   118-ts-gen-scaffold — package skeleton
    (`package.json` / `tsconfig` / `tsup` / `vitest`, root `tsconfig` ref), `src/errors.ts`,
    `src/names.ts`, `src/generator.ts` skeleton, barrel. No feature dep.
 2. [#119](https://github.com/marmotz/kurotako/issues/119)
-   [119-ts-gen-scalars-jsdoc-field](../../tasks/119-ts-gen-scalars-jsdoc-field.md) —
+   119-ts-gen-scalars-jsdoc-field —
    `render/scalars.ts` (wraps `scalarTsType`), `render/jsdoc.ts`, `render/field.ts`
    (member assembly), `emit/scalars.ts` (`JsonValue` helper) (dep: #118).
 3. [#120](https://github.com/marmotz/kurotako/issues/120)
-   [120-ts-gen-variants-relations](../../tasks/120-ts-gen-variants-relations.md) —
+   120-ts-gen-variants-relations —
    `render/variants.ts` (delegates to the IR shared-decision helpers), `render/relations.ts`
    (flat vs deep, cross-source degrade) (dep: #119).
 4. [#121](https://github.com/marmotz/kurotako/issues/121)
-   [121-ts-gen-emit-enums-filters](../../tasks/121-ts-gen-emit-enums-filters.md) —
+   121-ts-gen-emit-enums-filters —
    `emit/enums.ts` (const array + type, collision guard), `emit/filters.ts` (Where
    operator interfaces) (dep: #118).
 5. [#122](https://github.com/marmotz/kurotako/issues/122)
-   [122-ts-gen-emit-entity-barrel](../../tasks/122-ts-gen-emit-entity-barrel.md) —
+   122-ts-gen-emit-entity-barrel —
    `emit/entity.ts` (per-entity file, 5 × 2 matrix, sorted type-only imports),
    `emit/barrel.ts` (deps: #120, #121).
 6. [#123](https://github.com/marmotz/kurotako/issues/123)
-   [123-ts-gen-artifact-and-wiring](../../tasks/123-ts-gen-artifact-and-wiring.md) —
+   123-ts-gen-artifact-and-wiring —
    `artifact.ts` (`GeneratorArtifact` + `TypeScriptArtifactExtra`), `generate()` wiring
    over `ctx.ir.sources`, changeset, README, end-to-end + determinism tests (dep: #122).
