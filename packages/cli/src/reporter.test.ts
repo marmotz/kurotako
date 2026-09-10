@@ -52,9 +52,32 @@ describe('ConsoleReporter', () => {
     }
   });
 
-  it('child(tag) tags meta with scope', () => {
+  it('shows only the message by default, appends structured meta with debug', () => {
+    const meta = { namespace: 'tasks', collisionCount: 32 };
+
+    const quiet = new MemoryStream();
+    new ConsoleReporter({ stream: quiet, color: false }).warn('clash', meta);
+    expect(quiet.text).toBe('tako clash\n');
+
+    const loud = new MemoryStream();
+    new ConsoleReporter({ stream: loud, color: false, debug: true }).warn(
+      'clash',
+      meta,
+    );
+    expect(loud.text).toBe('tako clash namespace=tasks collisionCount=32\n');
+  });
+
+  it('a multi-line message is written verbatim', () => {
     const stream = new MemoryStream();
-    const reporter = new ConsoleReporter({ stream, color: false });
+    new ConsoleReporter({ stream, color: false }).warn('line one\nline two', {
+      namespace: 'pg',
+    });
+    expect(stream.text).toBe('tako line one\nline two\n');
+  });
+
+  it('child(tag) tags meta with scope, surfaced with debug', () => {
+    const stream = new MemoryStream();
+    const reporter = new ConsoleReporter({ stream, color: false, debug: true });
     reporter.child('prisma').info('parsing', { namespace: 'pg' });
     expect(stream.text).toBe('tako parsing scope=prisma namespace=pg\n');
   });

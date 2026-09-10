@@ -6,6 +6,9 @@
  * - human output goes to **stderr**, `stdout` stays clean;
  * - `info` / `warn` / `error` shown by default; `debug` only with `--debug` /
  *   `TAKO_DEBUG` (a hidden flag, not advertised);
+ * - the human-readable message is always shown; the structured `meta` object is
+ *   printed only with `--debug` (a custom `Logger` still receives it in full),
+ *   so default output stays prose, not `key=value` noise;
  * - `tako ` prefix, level-coloured; colour auto-off when the stream is not a TTY
  *   or `NO_COLOR` is set;
  * - `child(tag)` returns a `Logger` tagging every `meta` with `{ scope: tag }`.
@@ -76,7 +79,8 @@ export class ConsoleReporter implements Logger {
 
   private write(level: Level, msg: string, meta?: unknown): void {
     const prefix = this.color ? `${ANSI[level]}tako${ANSI_RESET}` : 'tako';
-    const detail = meta === undefined ? '' : ` ${formatMeta(meta)}`;
+    const detail =
+      meta === undefined || !this.showDebug ? '' : ` ${formatMeta(meta)}`;
     this.stream.write(`${prefix} ${msg}${detail}\n`);
   }
 }
