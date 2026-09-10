@@ -93,6 +93,7 @@ export const FieldTypeSchema: v.GenericSchema<FieldType> = v.lazy(() =>
     v.object({ kind: v.literal('unknown'), hint: v.optional(v.string()) }),
     v.object({ kind: v.literal('ref'), ref: v.string() }),
     v.object({ kind: v.literal('map'), value: FieldTypeSchema }),
+    v.object({ kind: v.literal('array'), element: FieldTypeSchema }),
     v.object({
       kind: v.literal('union'),
       variants: v.array(FieldTypeSchema),

@@ -66,6 +66,7 @@ type FieldType =
   | { kind: 'unknown'; hint?: string }     // escape hatch for unmodelled cases
   | { kind: 'ref'; ref: string }           // bare name, same source: entity first, then typeAliases
   | { kind: 'map'; value: FieldType }      // typed string-key dictionary, recursive
+  | { kind: 'array'; element: FieldType }  // ordered list, recursive (nested arrays allowed)
   | {                                       // recursive; producers flatten nested unions
       kind: 'union'
       variants: FieldType[]                 // schema tolerates < 2 (normalised in the cross-ref pass)
@@ -146,8 +147,9 @@ interface EnumDef {
 - **Metadata**: doc comments, `@map`/`@@map`, indexes, composite uniques — in the IR from
   v1.
 - **Serialization**: in memory; `--emit-ir` dumps `generated/ir/*.json` on demand.
-- **Versioning**: single `irVersion` string (currently `'3'` — `'3'` added the `map`
-  `FieldType` and `Entity.additionalProperties`); `@kurotako/ir` versioned independently.
+- **Versioning**: single `irVersion` string (currently `'4'` — `'3'` added the `map`
+  `FieldType` and `Entity.additionalProperties`, `'4'` added the `array` `FieldType`);
+  `@kurotako/ir` versioned independently.
   `isCompatible` is strict equality, so an `--emit-ir` dump from an older `irVersion` is
   rejected with `version_incompatible`.
 

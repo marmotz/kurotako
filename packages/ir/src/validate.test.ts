@@ -12,7 +12,7 @@ import {
 /** A fresh, fully valid IR for each test to mutate. */
 function makeIr(): IR {
   return {
-    irVersion: '3',
+    irVersion: '4',
     sources: {
       pg: {
         namespace: 'pg',
@@ -150,7 +150,7 @@ describe('validateIR — baseline', () => {
 
   it('parseIR round-trips ref / union / discriminator / typeAliases as plain JSON', () => {
     const ir: IR = {
-      irVersion: '3',
+      irVersion: '4',
       sources: {
         geo: {
           namespace: 'geo',
@@ -227,6 +227,21 @@ describe('validateIR — typed maps', () => {
     };
     expect(validateIR(ir).ok).toBe(true);
     user.additionalProperties = { kind: 'ref', ref: 'Missing' };
+    expect(codesOf(ir)).toContain('unresolved_ref');
+  });
+
+  it('walks the element of an array field type', () => {
+    const ir = makeIr();
+    const user = entityOf(pgOf(ir), 'User');
+    user.fields[0]!.type = {
+      kind: 'array',
+      element: { kind: 'ref', ref: 'Post' },
+    };
+    expect(validateIR(ir).ok).toBe(true);
+    user.fields[0]!.type = {
+      kind: 'array',
+      element: { kind: 'ref', ref: 'Missing' },
+    };
     expect(codesOf(ir)).toContain('unresolved_ref');
   });
 });

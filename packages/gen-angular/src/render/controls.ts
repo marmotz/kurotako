@@ -57,6 +57,10 @@ function typeBase(type: FieldType, resolvers: TypeResolvers): string {
       return resolvers.refTypeName(type.ref);
     case 'map':
       return `Record<string, ${typeBase(type.value, resolvers)}>`;
+    case 'array':
+      return type.element.kind === 'union'
+        ? `(${typeBase(type.element, resolvers)})[]`
+        : `${typeBase(type.element, resolvers)}[]`;
     case 'union':
       return unionType(
         type,
@@ -134,6 +138,9 @@ function zeroValue(field: Field, enumZero?: EnumZero): string {
   if (field.type.kind === 'map') {
     return '{}';
   }
+  if (field.type.kind === 'array') {
+    return '[]';
+  }
   // `ref` / non-discriminated `union`: no synthesisable zero — the control type
   // is `RefDto` / `A | B` and the seed is cast (`controlExpr`); `zodValidator`
   // flags the still-empty control until the consumer fills it
@@ -143,7 +150,7 @@ function zeroValue(field: Field, enumZero?: EnumZero): string {
 
 /** The control's initial-value expression: a literal default, else the type's zero. */
 export function initExpr(field: Field, enumZero?: EnumZero): string {
-  if (field.list) {
+  if (field.list || field.type.kind === 'array') {
     return field.default?.kind === 'value'
       ? JSON.stringify(field.default.value)
       : '[]';

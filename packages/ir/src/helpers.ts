@@ -77,6 +77,8 @@ export function collectRefNames(
     }
   } else if (type.kind === 'map') {
     collectRefNames(type.value, into);
+  } else if (type.kind === 'array') {
+    collectRefNames(type.element, into);
   }
   return into;
 }
@@ -156,6 +158,8 @@ function fieldTypeKey(type: FieldType): string {
       return `unknown:${type.hint ?? ''}`;
     case 'map':
       return `map:${fieldTypeKey(type.value)}`;
+    case 'array':
+      return `array:${fieldTypeKey(type.element)}`;
     case 'union':
       return `union:${flattenUnion(type).map(fieldTypeKey).join(',')}`;
   }
@@ -329,6 +333,10 @@ export function scalarTsType(type: FieldType): string {
         .join(' | ');
     case 'map':
       return `Record<string, ${scalarTsType(type.value)}>`;
+    case 'array': {
+      const element = scalarTsType(type.element);
+      return type.element.kind === 'union' ? `(${element})[]` : `${element}[]`;
+    }
   }
 }
 

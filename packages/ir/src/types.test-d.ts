@@ -43,7 +43,7 @@ export const sampleSource: SourceIR = {
 };
 
 export const sampleIr: IR = {
-  irVersion: '3',
+  irVersion: '4',
   sources: { pg: sampleSource },
 };
 
@@ -87,6 +87,8 @@ export function describeFieldType(type: FieldType): string {
       return type.ref;
     case 'map':
       return `Record<string, ${describeFieldType(type.value)}>`;
+    case 'array':
+      return `${describeFieldType(type.element)}[]`;
     case 'union':
       return type.variants.map(describeFieldType).join(' | ');
   }

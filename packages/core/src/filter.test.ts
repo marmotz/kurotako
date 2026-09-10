@@ -13,7 +13,7 @@ function makeSource(namespace: string): SourceIR {
 
 function makeIR(): IR {
   return {
-    irVersion: '3',
+    irVersion: '4',
     sources: {
       a: createSourceIR({ namespace: 'a', parser: 'prisma' })
         .addEntity('User', (e) => {

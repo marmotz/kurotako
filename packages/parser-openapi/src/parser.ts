@@ -276,9 +276,10 @@ function mapSchema(
   }
   if (schema.type === 'array') {
     const items = asSchema(schema.items);
-    if (items.type === 'array')
-      throw new OpenApiUnsupportedError('nested arrays are not supported');
-    return mapSchema(items, names, resolveRef, external);
+    return {
+      kind: 'array',
+      element: mapSchema(items, names, resolveRef, external),
+    };
   }
   if (
     schema.type === 'object' ||

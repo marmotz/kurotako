@@ -52,6 +52,7 @@ export interface TypeVariantBuilder {
   ref(name: string): this;
   union(build: (u: UnionBuilder) => void): this;
   map(build: (value: TypeVariantBuilder) => void): this;
+  array(build: (element: TypeVariantBuilder) => void): this;
   unknown(hint?: string): this;
 }
 
@@ -70,6 +71,7 @@ export interface FieldBuilder {
   ref(name: string): this;
   union(build: (u: UnionBuilder) => void): this;
   map(build: (value: TypeVariantBuilder) => void): this;
+  array(build: (element: TypeVariantBuilder) => void): this;
   unknown(hint?: string): this;
   list(): this;
   optional(): this;
@@ -205,6 +207,13 @@ class UnionBuilderImpl implements UnionBuilder {
     return this;
   }
 
+  array(build: (element: TypeVariantBuilder) => void): this {
+    const element = new TypeAliasBuilderImpl(this.#path, 'array-element');
+    build(element);
+    this.#variants.push({ kind: 'array', element: element.build().type });
+    return this;
+  }
+
   unknown(hint?: string): this {
     this.#variants.push(
       hint === undefined ? { kind: 'unknown' } : { kind: 'unknown', hint },
@@ -290,6 +299,13 @@ class TypeAliasBuilderImpl implements TypeAliasBuilder {
     return this;
   }
 
+  array(build: (element: TypeVariantBuilder) => void): this {
+    const element = new TypeAliasBuilderImpl(this.#path, 'array-element');
+    build(element);
+    this.#type = { kind: 'array', element: element.build().type };
+    return this;
+  }
+
   unknown(hint?: string): this {
     this.#type =
       hint === undefined ? { kind: 'unknown' } : { kind: 'unknown', hint };
@@ -357,6 +373,13 @@ class FieldBuilderImpl implements FieldBuilder {
     const value = new TypeAliasBuilderImpl(this.#path, 'map-value');
     build(value);
     this.#field.type = { kind: 'map', value: value.build().type };
+    return this;
+  }
+
+  array(build: (element: TypeVariantBuilder) => void): this {
+    const element = new TypeAliasBuilderImpl(this.#path, 'array-element');
+    build(element);
+    this.#field.type = { kind: 'array', element: element.build().type };
     return this;
   }
 

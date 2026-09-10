@@ -38,6 +38,7 @@ export type FieldType =
   | { kind: 'unknown'; hint?: string }
   | { kind: 'ref'; ref: string }
   | { kind: 'map'; value: FieldType }
+  | { kind: 'array'; element: FieldType }
   | {
       kind: 'union';
       variants: FieldType[];

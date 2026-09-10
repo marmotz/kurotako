@@ -127,6 +127,29 @@ describe('baseExpr — typed maps', () => {
   });
 });
 
+describe('baseExpr — array field type', () => {
+  it('renders z.array() recursively and collects nested refs', () => {
+    const type: FieldType = {
+      kind: 'array',
+      element: { kind: 'array', element: { kind: 'ref', ref: 'Task' } },
+    };
+    expect(baseExpr(type, dialectFor(4))).toBe('z.array(z.array(TaskSchema))');
+    expect([...collectTypeDeps(type).refs]).toEqual(['Task']);
+  });
+
+  it('renders an array of a map value', () => {
+    expect(
+      baseExpr(
+        {
+          kind: 'array',
+          element: { kind: 'map', value: { kind: 'scalar', scalar: 'string' } },
+        },
+        dialectFor(4),
+      ),
+    ).toBe('z.array(z.record(z.string(), z.string()))');
+  });
+});
+
 describe('collectTypeDeps', () => {
   it('gathers enum schemas and ref names, recursing into unions', () => {
     const deps = collectTypeDeps({

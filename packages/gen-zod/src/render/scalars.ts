@@ -93,6 +93,8 @@ export function baseExpr(
         : refSchemaName(type.ref);
     case 'map':
       return `z.record(z.string(), ${baseExpr(type.value, dialect, cyclicRefs)})`;
+    case 'array':
+      return `z.array(${baseExpr(type.element, dialect, cyclicRefs)})`;
     case 'union': {
       const variants = flattenUnion(type);
       if (variants.length === 0) {
@@ -142,6 +144,9 @@ export function collectTypeDeps(
     case 'map':
       collectTypeDeps(type.value, into);
       break;
+    case 'array':
+      collectTypeDeps(type.element, into);
+      break;
     case 'scalar':
     case 'unknown':
       break;
@@ -178,6 +183,10 @@ export function typeExpr(type: FieldType, source: SourceIR): string {
         .join(' | ');
     case 'map':
       return `Record<string, ${typeExpr(type.value, source)}>`;
+    case 'array':
+      return type.element.kind === 'union'
+        ? `(${typeExpr(type.element, source)})[]`
+        : `${typeExpr(type.element, source)}[]`;
     default:
       return scalarTsType(type);
   }
