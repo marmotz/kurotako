@@ -1,0 +1,117 @@
+// use prisma-next
+
+types {
+  Email = String
+}
+
+/// A user account.
+model User {
+  id        Int      @id @default(autoincrement())
+  /// The user's login email.
+  email     String   @unique
+  username  String?
+  name      String?
+  nickname  Email?
+  tags      String[]
+  role      UserRole @default(USER)
+  address   Address?
+  posts     Post[]
+  profile   Profile?
+  createdAt DateTime @default(now())
+  updatedAt temporal.updatedAt()
+
+  @@unique([email, username], map: "user_email_username_unique")
+  @@index([name], name: "user_name_idx")
+  @@map("app_user")
+}
+
+/// A user profile (1:1 with User).
+model Profile {
+  id     Int     @id @default(autoincrement())
+  bio    String?
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId Int     @unique
+}
+
+model Post {
+  id        Int       @id @default(autoincrement())
+  title     String
+  content   String?
+  published Boolean   @default(false)
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  authorId  Int
+  tags      PostTag[]
+  createdAt DateTime  @default(now())
+  updatedAt temporal.updatedAt()
+
+  @@index([authorId, published], name: "post_author_published_idx")
+  @@index([title], type: "btree", name: "post_title_idx")
+  @@map("post")
+}
+
+/// Explicit join model for the Post <-> Tag many-to-many relation.
+model PostTag {
+  postId Int
+  tagId  Int
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+}
+
+model Tag {
+  id    Int       @id @default(autoincrement())
+  name  String    @unique
+  posts PostTag[]
+}
+
+model UuidPk {
+  id String @id @default(uuid())
+}
+
+type Address {
+  street  String
+  city    String
+  zip     String?
+  country String
+}
+
+/// Role granted to a user.
+enum UserRole {
+  @@type("pg/text@1")
+  /// Regular user.
+  USER
+  /// Site administrator.
+  ADMIN
+}
+
+/// A priority level with explicit stored values.
+enum Priority {
+  Low    = "low"
+  Medium = "medium"
+  High   = "high"
+}
+
+namespace billing {
+  model Invoice {
+    id     Int           @id @default(autoincrement())
+    number String        @unique
+    amount Decimal
+    items  InvoiceItem[]
+  }
+
+  model InvoiceItem {
+    id        Int     @id @default(autoincrement())
+    label     String
+    invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+    invoiceId Int
+  }
+
+  /// Homonym of the public.User model, in another namespace.
+  model User {
+    id    Int    @id @default(autoincrement())
+    email String @unique
+
+    @@map("billing_user")
+  }
+}
