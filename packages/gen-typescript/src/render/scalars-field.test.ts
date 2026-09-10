@@ -111,6 +111,26 @@ describe('fieldTsType and memberLine', () => {
     );
   });
 
+  it('renders array field types recursively, parenthesising a union element', () => {
+    const source = createSourceIR({ namespace: 'types', parser: 'test' })
+      .addEntity('Board', (entity) => {
+        entity.field('grid', (field) =>
+          field.array((row) => row.array((cell) => cell.scalar('int'))),
+        );
+        entity.field('mixed', (field) =>
+          field.array((element) =>
+            element.union((u) => u.scalar('string').scalar('int')),
+          ),
+        );
+      })
+      .build();
+    const entity = entityOf(source, 'Board');
+    expect(fieldTsType(fieldOf(entity, 0), source, entity)).toBe('number[][]');
+    expect(fieldTsType(fieldOf(entity, 1), source, entity)).toBe(
+      '(string | number)[]',
+    );
+  });
+
   it('renders field prose, constraint/default tags and unknown hints as JSDoc', () => {
     const source = blogSource();
     const entity = entityOf(source, 'User');

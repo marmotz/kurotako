@@ -83,6 +83,16 @@ describe('controlType', () => {
     expect(initExpr(field)).toBe('{}');
   });
 
+  it('array field -> T[] control type and empty-array seed', () => {
+    const field = scalarField('string', {
+      type: { kind: 'array', element: { kind: 'ref', ref: 'Task' } },
+    });
+    expect(
+      controlType(field, resolvers({ refTypeName: (r) => `${r}Dto` })),
+    ).toBe('TaskDto[]');
+    expect(initExpr(field)).toBe('[]');
+  });
+
   it('ref field -> the resolved Zod DTO / alias type name', () => {
     const field = scalarField('string', {
       type: { kind: 'ref', ref: 'Address' },

@@ -120,14 +120,14 @@ describe('prismaParser.parse — single file', () => {
     expect(validateSourceIR(ir).ok).toBe(true);
   });
 
-  it('regression: a Prisma-built SourceIR still validates under IR_VERSION 3', async () => {
+  it('regression: a Prisma-built SourceIR still validates under IR_VERSION 4', async () => {
     const ir = await parse();
     expect(ir.typeAliases).toBeUndefined();
     const wrapped = validateIR({
       irVersion: IR_VERSION,
       sources: { [ir.namespace]: ir },
     });
-    expect(IR_VERSION).toBe('3');
+    expect(IR_VERSION).toBe('4');
     expect(wrapped.ok).toBe(true);
   });
 

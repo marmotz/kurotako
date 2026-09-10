@@ -300,6 +300,42 @@ describe('createSourceIR — typed maps', () => {
   });
 });
 
+describe('createSourceIR — array field type', () => {
+  it('builds array fields, aliases, nested arrays and array-in-map values', () => {
+    const source = createSourceIR({ namespace: 'api', parser: 'openapi' })
+      .addEntity('Board', (e) => {
+        e.field('tasks', (f) => f.array((element) => element.ref('Task')));
+        e.field('grid', (f) =>
+          f.array((row) => row.array((cell) => cell.scalar('int'))),
+        );
+        e.additionalProperties((value) =>
+          value.array((element) => element.scalar('string')),
+        );
+      })
+      .addEntity('Task', (e) => e.field('id', (f) => f.scalar('string')))
+      .addTypeAlias('TaskList', (t) =>
+        t.array((element) => element.ref('Task')),
+      )
+      .build();
+    expect(source.entities.Board?.fields[0]?.type).toEqual({
+      kind: 'array',
+      element: { kind: 'ref', ref: 'Task' },
+    });
+    expect(source.entities.Board?.fields[1]?.type).toEqual({
+      kind: 'array',
+      element: { kind: 'array', element: { kind: 'scalar', scalar: 'int' } },
+    });
+    expect(source.entities.Board?.additionalProperties).toEqual({
+      kind: 'array',
+      element: { kind: 'scalar', scalar: 'string' },
+    });
+    expect(source.typeAliases?.TaskList?.type).toEqual({
+      kind: 'array',
+      element: { kind: 'ref', ref: 'Task' },
+    });
+  });
+});
+
 describe('createSourceIR — build() gate', () => {
   it('surfaces a downstream assertSourceIR failure with a located path', () => {
     try {

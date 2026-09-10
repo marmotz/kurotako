@@ -24,6 +24,21 @@ describe('FieldTypeSchema — ref / union / map', () => {
     });
   });
 
+  it('accepts arrays, nested arrays and arrays nested in maps/unions', () => {
+    roundTrips(FieldTypeSchema, {
+      kind: 'array',
+      element: { kind: 'ref', ref: 'Task' },
+    });
+    roundTrips(FieldTypeSchema, {
+      kind: 'array',
+      element: { kind: 'array', element: { kind: 'scalar', scalar: 'int' } },
+    });
+    roundTrips(FieldTypeSchema, {
+      kind: 'map',
+      value: { kind: 'array', element: { kind: 'scalar', scalar: 'string' } },
+    });
+  });
+
   it('accepts recursively typed maps and entity catch-all properties', () => {
     roundTrips(FieldTypeSchema, {
       kind: 'map',

@@ -213,8 +213,11 @@ for an HTTP input schema it denotes a missing payload property.
 
 OpenAPI 3.0 `nullable: true` and OpenAPI 3.1 `type: [T, 'null']` both set
 `nullable: true`; the non-null member maps normally. A 3.1 multi-type array with more
-than one non-null member maps to a union. An array maps its item type then sets
-`list: true`; nested arrays are rejected because the current IR has one list wrapper.
+than one non-null member maps to a union. A plain `property: { type: 'array', items:
+<scalar|ref> }` maps its item type then sets `list: true` (a fast path); every other
+array schema — an array-typed alias/response/component, an array in a `oneOf` or
+`additionalProperties`, a nested array — maps to the IR `{ kind: 'array', element }`
+field type (IR format `'4'`).
 
 `additionalProperties: false` generates no IR extension. `true` maps to
 `{ kind: 'map', value: { kind: 'unknown' } }` for a pure map, or to

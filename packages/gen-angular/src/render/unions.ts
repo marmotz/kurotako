@@ -83,6 +83,8 @@ function refNames(type: FieldType, into: Set<string> = new Set()): Set<string> {
     }
   } else if (type.kind === 'map') {
     refNames(type.value, into);
+  } else if (type.kind === 'array') {
+    refNames(type.element, into);
   }
   return into;
 }
@@ -119,6 +121,15 @@ function variantType(
       return 'unknown';
     case 'map':
       return `Record<string, ${variantType(type.value, refTypeName, enumTypeName, cyclicRefs)}>`;
+    case 'array': {
+      const element = variantType(
+        type.element,
+        refTypeName,
+        enumTypeName,
+        cyclicRefs,
+      );
+      return type.element.kind === 'union' ? `(${element})[]` : `${element}[]`;
+    }
     case 'union':
       return unionType(type, refTypeName, enumTypeName, cyclicRefs).text;
   }

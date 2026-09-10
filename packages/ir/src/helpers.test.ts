@@ -39,7 +39,7 @@ const roleEntityLevel: EnumDef = {
 };
 
 const ir: IR = {
-  irVersion: '3',
+  irVersion: '4',
   sources: {
     pg: {
       namespace: 'pg',
@@ -247,6 +247,33 @@ describe('shared-decision helpers', () => {
       }),
     ).toBe('Record<string, Record<string, number>>');
   });
+
+  it('scalarTsType renders arrays, parenthesising a union element', () => {
+    expect(
+      scalarTsType({ kind: 'array', element: { kind: 'ref', ref: 'Task' } }),
+    ).toBe('Task[]');
+    expect(
+      scalarTsType({
+        kind: 'array',
+        element: {
+          kind: 'array',
+          element: { kind: 'scalar', scalar: 'int' },
+        },
+      }),
+    ).toBe('number[][]');
+    expect(
+      scalarTsType({
+        kind: 'array',
+        element: {
+          kind: 'union',
+          variants: [
+            { kind: 'scalar', scalar: 'string' },
+            { kind: 'scalar', scalar: 'int' },
+          ],
+        },
+      }),
+    ).toBe('(string | number)[]');
+  });
 });
 
 describe('union type helpers', () => {
@@ -283,7 +310,7 @@ describe('union type helpers', () => {
   });
 
   it('iterTypeAliases yields every alias with its namespace', () => {
-    const ir: IR = { irVersion: '3', sources: { pg: aliasSource } };
+    const ir: IR = { irVersion: '4', sources: { pg: aliasSource } };
     expect([...iterTypeAliases(ir)].map((a) => a.alias.name)).toEqual([
       'Contact',
     ]);

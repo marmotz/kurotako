@@ -141,6 +141,80 @@ describe('openapiParser', () => {
     expect(source.entities.PostUsersByIdRequest).toBeDefined();
   });
 
+  it('preserves array-ness for array roots, nested arrays and array payloads', async () => {
+    const cwd = await fixture(
+      'openapi.json',
+      JSON.stringify({
+        openapi: '3.1.0',
+        info: { title: 'Test', version: '1' },
+        paths: {
+          '/tasks': {
+            get: {
+              operationId: 'listTasks',
+              responses: {
+                '200': {
+                  content: {
+                    'application/json': {
+                      schema: {
+                        type: 'array',
+                        items: { $ref: '#/components/schemas/Task' },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        components: {
+          schemas: {
+            Task: {
+              type: 'object',
+              required: ['id'],
+              properties: { id: { type: 'string' } },
+            },
+            Matrix: {
+              type: 'array',
+              items: { type: 'array', items: { type: 'integer' } },
+            },
+            Board: {
+              type: 'object',
+              properties: {
+                tags: { type: 'array', items: { type: 'string' } },
+                grid: {
+                  type: 'array',
+                  items: { type: 'array', items: { type: 'integer' } },
+                },
+              },
+            },
+          },
+        },
+      }),
+    );
+    const source = await openapiParser.parse(context(cwd), {
+      document: 'openapi.json',
+    });
+    expect(source.typeAliases?.ListTasks200ResponseJson?.type).toEqual({
+      kind: 'array',
+      element: { kind: 'ref', ref: 'Task' },
+    });
+    expect(source.typeAliases?.Matrix?.type).toEqual({
+      kind: 'array',
+      element: { kind: 'array', element: { kind: 'scalar', scalar: 'int' } },
+    });
+    const tags = source.entities.Board?.fields.find((f) => f.name === 'tags');
+    expect(tags?.list).toBe(true);
+    expect(tags?.type).toEqual({ kind: 'scalar', scalar: 'string' });
+    // A nested-array object property: the outer level uses the `list` fast path,
+    // the inner level the `array` field type — `int[][]` either way.
+    const grid = source.entities.Board?.fields.find((f) => f.name === 'grid');
+    expect(grid?.list).toBe(true);
+    expect(grid?.type).toEqual({
+      kind: 'array',
+      element: { kind: 'scalar', scalar: 'int' },
+    });
+  });
+
   it('maps named string enums and merges object allOf members', async () => {
     const cwd = await mkdtemp(join(tmpdir(), 'kurotako-openapi-'));
     await writeFile(

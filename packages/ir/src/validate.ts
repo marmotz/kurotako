@@ -183,6 +183,16 @@ function walkFieldType(
     case 'map':
       walkFieldType(type.value, `${path}.value`, entity, source, issues, info);
       return;
+    case 'array':
+      walkFieldType(
+        type.element,
+        `${path}.element`,
+        entity,
+        source,
+        issues,
+        info,
+      );
+      return;
     case 'union': {
       if (type.variants.length < 2) {
         pushIssue(
@@ -233,6 +243,8 @@ function collectRefs(type: FieldType, out: Set<string>): void {
     }
   } else if (type.kind === 'map') {
     collectRefs(type.value, out);
+  } else if (type.kind === 'array') {
+    collectRefs(type.element, out);
   }
 }
 

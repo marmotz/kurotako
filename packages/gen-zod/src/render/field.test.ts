@@ -38,6 +38,19 @@ describe('fieldExpr assembly', () => {
     ).toBe('z.array(z.string())');
   });
 
+  it('list + array field type -> z.array(z.array(...)) (nested-array property)', () => {
+    expect(
+      fieldExpr(
+        field({
+          list: true,
+          type: { kind: 'array', element: { kind: 'scalar', scalar: 'int' } },
+        }),
+        { optional: false, variant: 'full' },
+        v4,
+      ),
+    ).toBe('z.array(z.array(z.int()))');
+  });
+
   it('list + nullable + optional order', () => {
     expect(
       fieldExpr(
