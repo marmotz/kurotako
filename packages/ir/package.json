@@ -1,6 +1,6 @@
 {
   "name": "@kurotako/ir",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Intermediate representation for kurotako: the schema model parsers produce and generators consume.",
   "keywords": [
     "kurotako",

@@ -1,6 +1,6 @@
 {
   "name": "kurotako",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "kurotako meta-package: installs the tako CLI and re-exports defineConfig under a single name.",
   "keywords": [
     "kurotako",
