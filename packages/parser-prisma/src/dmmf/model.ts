@@ -7,6 +7,8 @@
  * no classes, no `Date`/`RegExp`.
  */
 
+import type { FieldType, ScalarType, StringFormat } from '@kurotako/ir';
+
 /** A Prisma default: a literal, a literal array, or a function call. */
 export type PrismaDefault =
   | string
@@ -29,6 +31,11 @@ export interface PrismaField {
   nativeType: [string, string[]] | null;
   default?: PrismaDefault;
   doc?: string;
+  /** Contract-mode mapping, already resolved from its Prisma 8 codec. */
+  mappedType?: FieldType;
+  scalarOverride?: ScalarType;
+  format?: StringFormat;
+  maxLength?: number;
 }
 
 export interface PrismaRelationEdge {

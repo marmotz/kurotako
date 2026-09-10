@@ -17,6 +17,19 @@ describe('PrismaParserOptions', () => {
     expect(parsed).toEqual({ schema: './db/schema.prisma', version: 7 });
   });
 
+  it('accepts mode-8 naming options', () => {
+    expect(
+      v.parse(PrismaParserOptions, {
+        version: 8,
+        namespacePrefix: { billing: 'Billing' },
+        rename: { 'public.User': 'Account' },
+      }),
+    ).toMatchObject({
+      namespacePrefix: { billing: 'Billing' },
+      rename: { 'public.User': 'Account' },
+    });
+  });
+
   it('rejects a version outside the picklist', () => {
     expect(() => v.parse(PrismaParserOptions, { version: 6 })).toThrow();
   });

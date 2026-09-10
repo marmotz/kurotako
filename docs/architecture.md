@@ -22,6 +22,10 @@ generators, feeds each its input, collects the artifacts.
 - A source's **config key** is its **namespace** (`pg`, `mongo`, `crm`...).
 - The source's `use` field designates the parser object (`prismaParser`, …). The same package can be instantiated
   several times under different namespaces (two `schema.prisma` files).
+- `parser-prisma` accepts Prisma 7 schemas through DMMF and Prisma 8 PostgreSQL
+  `contract.json` artifacts. In contract mode, one Prisma contract is flattened into one
+  kurotako source namespace; `rename` and `namespacePrefix` resolve model names before IR
+  construction, and unresolved collisions fail rather than silently selecting a model.
 - Config shape (user-facing, `defineConfig`): each source is
   `{ use: <parser>, options?: { … } }`. `@kurotako/config` validates `options` against the parser's Valibot
   `optionsSchema` and **curries the argument away**; `@kurotako/core` only ever sees the single-argument contract below.

@@ -1,0 +1,30 @@
+{
+  "name": "kurotako-example-prisma8-outputpkg",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "packageManager": "bun@1.4.0",
+  "devDependencies": {
+    "@kurotako/cli": "link:@kurotako/cli",
+    "@kurotako/config": "link:@kurotako/config",
+    "@kurotako/parser-prisma": "link:@kurotako/parser-prisma",
+    "@kurotako/gen-zod": "link:@kurotako/gen-zod",
+    "@kurotako/gen-angular": "link:@kurotako/gen-angular",
+    "@kurotako/gen-typescript": "link:@kurotako/gen-typescript",
+    "@prisma/orm-postgres": "8.0.0-rc.9",
+    "prisma": "8.0.0-rc.13",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "@angular/core": "^22.1.0",
+    "@angular/forms": "^22.1.0",
+    "zod": "^4"
+  },
+  "scripts": {
+    "tako:generate": "tako generate",
+    "prisma:contract": "prisma contract emit",
+    "prisma:db:init": "prisma db init"
+  }
+}

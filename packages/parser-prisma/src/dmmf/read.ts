@@ -8,6 +8,7 @@
  * exposes them (6.x does), otherwise `indexes` stays empty.
  */
 import type * as DMMF from '@prisma/dmmf';
+import type { PrismaParserOptions } from '../options.js';
 import type {
   PrismaDefault,
   PrismaEntity,
@@ -153,9 +154,28 @@ function readEnum(e: DMMF.DatamodelEnum): PrismaEnum {
   return def;
 }
 
-export function toPrismaModel(doc: DMMF.Document): PrismaModel {
-  return {
+export function toPrismaModel(
+  doc: DMMF.Document,
+  options?: Pick<PrismaParserOptions, 'rename'>,
+): PrismaModel {
+  const result: PrismaModel = {
     entities: doc.datamodel.models.map((m) => readEntity(m, doc)),
     enums: doc.datamodel.enums.map(readEnum),
   };
+  if (!options?.rename) {
+    return result;
+  }
+  const names = new Map(
+    result.entities.map((entity) => [
+      entity.name,
+      options.rename?.[entity.name] ?? entity.name,
+    ]),
+  );
+  for (const entity of result.entities) {
+    entity.name = names.get(entity.name) ?? entity.name;
+    for (const edge of entity.relationEdges) {
+      edge.targetEntity = names.get(edge.targetEntity) ?? edge.targetEntity;
+    }
+  }
+  return result;
 }
