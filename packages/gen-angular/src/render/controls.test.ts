@@ -179,13 +179,13 @@ describe('initExpr', () => {
     expect(initExpr(field)).toBe('undefined');
   });
 
-  it('a ref field zeroes to undefined (no synthesisable zero)', () => {
+  it('a ref field zeroes to null (empty-seeded, validated by Zod)', () => {
     expect(
       initExpr(scalarField('string', { type: { kind: 'ref', ref: 'A' } })),
-    ).toBe('undefined');
+    ).toBe('null');
   });
 
-  it('a union field zeroes to undefined', () => {
+  it('a union field zeroes to null', () => {
     const field = scalarField('string', {
       type: {
         kind: 'union',
@@ -195,7 +195,7 @@ describe('initExpr', () => {
         ],
       },
     });
-    expect(initExpr(field)).toBe('undefined');
+    expect(initExpr(field)).toBe('null');
   });
 });
 
@@ -214,7 +214,7 @@ describe('controlExpr', () => {
     );
   });
 
-  it('ref / union fallback field: explicit type argument, seed cast, validated-by-zod comment', () => {
+  it('ref / union fallback field: null-inclusive type argument, null-coerced seed, validated-by-zod comment', () => {
     const field = scalarField('string', {
       type: {
         kind: 'union',
@@ -224,8 +224,8 @@ describe('controlExpr', () => {
         ],
       },
     });
-    expect(controlExpr(field, 'string | number', 'init?.x ?? undefined')).toBe(
-      'new FormControl<string | number>((init?.x ?? undefined) as string | number) /* union: validated by zodValidator(schema) */',
+    expect(controlExpr(field, 'string | number', 'init?.x ?? null')).toBe(
+      'new FormControl<string | number | null>(init?.x ?? null) /* union: validated by zodValidator(schema) */',
     );
   });
 });

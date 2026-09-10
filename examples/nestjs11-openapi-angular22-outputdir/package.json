@@ -1,0 +1,20 @@
+{
+  "name": "kurotako-example-openapi-outputdir",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*"
+  ],
+  "packageManager": "bun@1.4.0",
+  "devDependencies": {
+    "@kurotako/cli": "link:@kurotako/cli",
+    "@kurotako/config": "link:@kurotako/config",
+    "@kurotako/parser-openapi": "link:@kurotako/parser-openapi",
+    "@kurotako/gen-zod": "link:@kurotako/gen-zod",
+    "@kurotako/gen-angular": "link:@kurotako/gen-angular"
+  },
+  "scripts": {
+    "openapi:emit": "cd apps/backend && bun run openapi:emit",
+    "tako:generate": "tako generate"
+  }
+}

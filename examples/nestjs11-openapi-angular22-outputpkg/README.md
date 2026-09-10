@@ -1,0 +1,81 @@
+# nestjs11-openapi-angular22-outputpkg
+
+The **mode B** (`package`) counterpart of `nestjs11-openapi-angular22-outputdir`: the
+same NestJS 11 contract producer and in-memory store, but `tako generate` writes one
+shared `@example/tasks` workspace package (TypeScript + Zod + Angular) that
+`apps/frontend` consumes as an ordinary dependency.
+
+`apps/backend` is unchanged — it produces `openapi.json` and consumes nothing generated.
+
+## How it flows
+
+1. `apps/backend/src/tasks/dto.ts` — `@nestjs/swagger` + `class-validator` DTO classes,
+   the single source of truth.
+2. `bun run openapi:emit` -> `apps/backend/openapi.json` (committed).
+3. `bun run tako:generate` -> writes `packages/example-tasks/`, builds it with tsup,
+   and links it into the workspace.
+4. `apps/frontend` imports `@example/tasks` (top-level types), `@example/tasks/zod/index`
+   (schemas + DTO types) and `@example/tasks/angular/zod-forms.runtime` (the
+   `zodTreeValidate` helper).
+
+Re-run `openapi:emit` then `tako:generate` after every controller/DTO change.
+
+### Known limitation — no generated `@Injectable` factories in the frontend
+
+Mode B builds `@example/tasks` with tsup/esbuild, not `ng-packagr`, so the generated
+`NewTaskFormFactory` `@Injectable` class in `@example/tasks/angular/NewTask.form.ts`
+carries no `design:paramtypes` metadata — importing that file crashes the app at load
+(`NG0202`). The two form components here are therefore composed **by hand** from plain
+`FormGroup`/`FormControl` and `@angular/forms/signals`, still validated by the real
+generated `NewTaskCreateSchema` / `NewTaskUpdateSchema` and the generated
+`zodTreeValidate` runtime helper (which has no decorated class and imports fine). The
+`outputdir` example is unaffected — mode A emits plain `.ts` compiled by Angular's own
+AOT pipeline.
+
+## Setup
+
+```bash
+# from the repo root, once, after any change to a linked package:
+bun run --filter '*' build
+cd packages/cli            && bun link && cd -
+cd packages/config         && bun link && cd -
+cd packages/parser-openapi  && bun link && cd -
+cd packages/gen-zod        && bun link && cd -
+cd packages/gen-angular    && bun link && cd -
+cd packages/gen-typescript && bun link && cd -
+```
+
+```bash
+# from this project's root, once per clone:
+bun link @kurotako/cli @kurotako/config @kurotako/parser-openapi @kurotako/gen-zod @kurotako/gen-angular @kurotako/gen-typescript
+bun run bootstrap   # writes a placeholder packages/example-tasks/package.json so the
+                    # `@example/tasks` workspace dependency resolves, then `bun install`
+```
+
+Mode B also needs `tsup.config.base.ts` **and** `tsconfig.base.json` at the workspace
+root (one directory above `packagesDir`) — `tako generate` fails fast if either is
+missing.
+
+## Generate
+
+```bash
+bun run openapi:emit
+bun run tako:generate   # writes + builds + links packages/example-tasks
+```
+
+`packages/example-tasks/` is entirely regenerable (gitignored) — every file, including
+`package.json`, is written by `tako generate`.
+
+## Run
+
+```bash
+cd apps/backend && bun run start:dev    # NestJS on http://localhost:3000, Swagger UI at /docs
+cd apps/frontend && bun run start       # Angular dev server
+```
+
+## Tests
+
+```bash
+cd apps/backend  && bun run test:e2e
+cd apps/frontend && bun run test
+```
