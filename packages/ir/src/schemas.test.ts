@@ -9,7 +9,7 @@ function roundTrips<T>(schema: v.GenericSchema<T>, value: unknown): void {
   expect(JSON.parse(JSON.stringify(parsed))).toEqual(parsed);
 }
 
-describe('FieldTypeSchema — ref / union', () => {
+describe('FieldTypeSchema — ref / union / map', () => {
   it('accepts a { kind: ref } type', () => {
     roundTrips(FieldTypeSchema, { kind: 'ref', ref: 'Address' });
   });
@@ -21,6 +21,28 @@ describe('FieldTypeSchema — ref / union', () => {
         { kind: 'scalar', scalar: 'string' },
         { kind: 'ref', ref: 'Address' },
       ],
+    });
+  });
+
+  it('accepts recursively typed maps and entity catch-all properties', () => {
+    roundTrips(FieldTypeSchema, {
+      kind: 'map',
+      value: { kind: 'map', value: { kind: 'ref', ref: 'Address' } },
+    });
+    roundTrips(SourceIrSchema, {
+      namespace: 'api',
+      parser: 'openapi',
+      enums: {},
+      entities: {
+        Search: {
+          name: 'Search',
+          fields: [],
+          additionalProperties: { kind: 'scalar', scalar: 'string' },
+          relations: [],
+          indexes: [],
+          uniques: [],
+        },
+      },
     });
   });
 

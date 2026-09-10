@@ -180,6 +180,9 @@ function walkFieldType(
       }
       return;
     }
+    case 'map':
+      walkFieldType(type.value, `${path}.value`, entity, source, issues, info);
+      return;
     case 'union': {
       if (type.variants.length < 2) {
         pushIssue(
@@ -228,6 +231,8 @@ function collectRefs(type: FieldType, out: Set<string>): void {
     for (const variant of type.variants) {
       collectRefs(variant, out);
     }
+  } else if (type.kind === 'map') {
+    collectRefs(type.value, out);
   }
 }
 
@@ -346,6 +351,16 @@ function checkSource(
       fieldNames.add(field.name);
       checkConstraints(issues, `${fPath}.constraints`, field.constraints);
       walkFieldType(field.type, fPath, entity, source, issues, info);
+    }
+    if (entity.additionalProperties !== undefined) {
+      walkFieldType(
+        entity.additionalProperties,
+        `${ePath}.additionalProperties`,
+        entity,
+        source,
+        issues,
+        info,
+      );
     }
 
     for (const [localKey, def] of Object.entries(entity.enums ?? {})) {

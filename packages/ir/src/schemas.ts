@@ -92,6 +92,7 @@ export const FieldTypeSchema: v.GenericSchema<FieldType> = v.lazy(() =>
     v.object({ kind: v.literal('enum'), ref: v.string() }),
     v.object({ kind: v.literal('unknown'), hint: v.optional(v.string()) }),
     v.object({ kind: v.literal('ref'), ref: v.string() }),
+    v.object({ kind: v.literal('map'), value: FieldTypeSchema }),
     v.object({
       kind: v.literal('union'),
       variants: v.array(FieldTypeSchema),
@@ -195,6 +196,7 @@ export const CompositeUniqueSchema = v.object({
 export const EntitySchema = v.object({
   name: v.string(),
   fields: v.array(FieldSchema),
+  additionalProperties: v.optional(FieldTypeSchema),
   relations: v.array(RelationSchema),
   enums: v.optional(v.record(v.string(), EnumDefSchema)),
   primaryKey: v.optional(v.array(v.string())),

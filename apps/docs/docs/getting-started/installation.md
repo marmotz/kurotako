@@ -57,6 +57,7 @@ use (see the [API reference](../api/)).
 | Package | Schema source |
 |---|---|
 | `@kurotako/parser-prisma` | Prisma `schema.prisma` |
+| `@kurotako/parser-openapi` | OpenAPI 3.0/3.1 document (JSON/YAML or HTTP(S) URL) |
 
 ### 3. The generators you want output from
 

@@ -41,7 +41,7 @@ import {
   relationExpr,
   relationTypeExpr,
 } from '../render/relations.js';
-import { collectTypeDeps, typeExpr } from '../render/scalars.js';
+import { baseExpr, collectTypeDeps, typeExpr } from '../render/scalars.js';
 import { filterClass, variantFields } from '../render/variants.js';
 
 type Entry = [name: string, expr: string];
@@ -100,6 +100,19 @@ export function emitEntity(
     for (const e of deps.enums) {
       usedEnumSchemas.add(e);
     }
+    for (const ref of deps.refs) {
+      if (source.entities[ref] !== undefined) {
+        trackSibling(ref, refSchemaName(ref));
+        trackSibling(ref, typeName(ref));
+      } else {
+        usedAliases.add(ref);
+      }
+    }
+  };
+  const recordAdditionalPropertiesDeps = (): void => {
+    if (entity.additionalProperties === undefined) return;
+    const deps = collectTypeDeps(entity.additionalProperties);
+    for (const e of deps.enums) usedEnumSchemas.add(e);
     for (const ref of deps.refs) {
       if (source.entities[ref] !== undefined) {
         trackSibling(ref, refSchemaName(ref));
@@ -203,6 +216,13 @@ export function emitEntity(
     const selections = variantFields(entity, variant);
     const ownEntries: Entry[] = [];
     let ownHasRef = false;
+    recordAdditionalPropertiesDeps();
+    if (
+      entity.additionalProperties !== undefined &&
+      collectTypeDeps(entity.additionalProperties).refs.size > 0
+    ) {
+      ownHasRef = true;
+    }
     for (const sel of selections) {
       recordTypeDeps(sel.field);
       if (collectTypeDeps(sel.field.type).refs.size > 0) {
@@ -225,7 +245,10 @@ export function emitEntity(
         : { entries: [], typed: [] };
 
     if (relEntries.length === 0) {
-      const obj = objectExpr(ownEntries);
+      const obj =
+        entity.additionalProperties === undefined
+          ? objectExpr(ownEntries)
+          : `${objectExpr(ownEntries)}.catchall(${baseExpr(entity.additionalProperties, dialect, cyclicRefs)})`;
       const body = variant === 'update' ? `${obj}.partial()` : obj;
       if (!ownHasRef) {
         return [
@@ -260,7 +283,7 @@ export function emitEntity(
         : `z.infer<typeof ${baseName}>`;
 
     return [
-      `const ${baseName} = ${objectExpr(ownEntries)};`,
+      `const ${baseName} = ${entity.additionalProperties === undefined ? objectExpr(ownEntries) : `${objectExpr(ownEntries)}.catchall(${baseExpr(entity.additionalProperties, dialect, cyclicRefs)})`};`,
       `export const ${name}: z.ZodType<${dto}> = ${finalValue};`,
       `export type ${dto} = ${ownDtoExpr}${typeIntersection(relTyped)};`,
       '',

@@ -62,6 +62,24 @@ describe('emitEntity', () => {
   });
 });
 
+describe('emitEntity — typed maps', () => {
+  it('renders map fields and a compatible index signature', () => {
+    const source = createSourceIR({ namespace: 'api', parser: 'openapi' })
+      .addEntity('Bag', (entity) => {
+        entity.field('labels', (field) =>
+          field.map((value) => value.scalar('string')),
+        );
+        entity.additionalProperties((value) => value.scalar('int'));
+      })
+      .build();
+    const output = emitEntity(source, entityOf(source, 'Bag'));
+    expect(output).toContain('labels: Record<string, string>;');
+    expect(output).toContain(
+      '[key: string]: number | Record<string, string> | undefined;',
+    );
+  });
+});
+
 describe('emitBarrel', () => {
   it('re-exports shared and entity files', () => {
     expect(emitBarrel(blogSource(), true)).toContain(

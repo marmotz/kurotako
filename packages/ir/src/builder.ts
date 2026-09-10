@@ -51,6 +51,7 @@ export interface TypeVariantBuilder {
   enum(ref: string): this;
   ref(name: string): this;
   union(build: (u: UnionBuilder) => void): this;
+  map(build: (value: TypeVariantBuilder) => void): this;
   unknown(hint?: string): this;
 }
 
@@ -68,6 +69,7 @@ export interface FieldBuilder {
   enum(ref: string): this;
   ref(name: string): this;
   union(build: (u: UnionBuilder) => void): this;
+  map(build: (value: TypeVariantBuilder) => void): this;
   unknown(hint?: string): this;
   list(): this;
   optional(): this;
@@ -100,6 +102,7 @@ export interface RelationBuilder {
 
 export interface EntityBuilder {
   field(name: string, def: (f: FieldBuilder) => void): this;
+  additionalProperties(def: (value: TypeVariantBuilder) => void): this;
   relation(name: string, def: (r: RelationBuilder) => void): this;
   localEnum(name: string, def: (e: EnumBuilder) => void): this;
   primaryKey(...fields: string[]): this;
@@ -195,6 +198,13 @@ class UnionBuilderImpl implements UnionBuilder {
     return this;
   }
 
+  map(build: (value: TypeVariantBuilder) => void): this {
+    const value = new TypeAliasBuilderImpl(this.#path, 'map-value');
+    build(value);
+    this.#variants.push({ kind: 'map', value: value.build().type });
+    return this;
+  }
+
   unknown(hint?: string): this {
     this.#variants.push(
       hint === undefined ? { kind: 'unknown' } : { kind: 'unknown', hint },
@@ -273,6 +283,13 @@ class TypeAliasBuilderImpl implements TypeAliasBuilder {
     return this;
   }
 
+  map(build: (value: TypeVariantBuilder) => void): this {
+    const value = new TypeAliasBuilderImpl(this.#path, 'map-value');
+    build(value);
+    this.#type = { kind: 'map', value: value.build().type };
+    return this;
+  }
+
   unknown(hint?: string): this {
     this.#type =
       hint === undefined ? { kind: 'unknown' } : { kind: 'unknown', hint };
@@ -333,6 +350,13 @@ class FieldBuilderImpl implements FieldBuilder {
     const builder = new UnionBuilderImpl(this.#path);
     build(builder);
     this.#field.type = builder.build();
+    return this;
+  }
+
+  map(build: (value: TypeVariantBuilder) => void): this {
+    const value = new TypeAliasBuilderImpl(this.#path, 'map-value');
+    build(value);
+    this.#field.type = { kind: 'map', value: value.build().type };
     return this;
   }
 
@@ -512,6 +536,7 @@ class EntityBuilderImpl implements EntityBuilder {
   #uniques: { fields: string[]; name?: string }[] = [];
   #doc: string | undefined;
   #dbName: string | undefined;
+  #additionalProperties: FieldType | undefined;
 
   constructor(namespace: string, name: string) {
     this.#namespace = namespace;
@@ -539,6 +564,16 @@ class EntityBuilderImpl implements EntityBuilder {
     );
     def(builder);
     this.#fields.push(builder);
+    return this;
+  }
+
+  additionalProperties(def: (value: TypeVariantBuilder) => void): this {
+    const value = new TypeAliasBuilderImpl(
+      `${this.#namespace}.${this.#name}.additionalProperties`,
+      'additionalProperties',
+    );
+    def(value);
+    this.#additionalProperties = value.build().type;
     return this;
   }
 
@@ -613,6 +648,9 @@ class EntityBuilderImpl implements EntityBuilder {
     }
     if (this.#dbName !== undefined) {
       entity.dbName = this.#dbName;
+    }
+    if (this.#additionalProperties !== undefined) {
+      entity.additionalProperties = this.#additionalProperties;
     }
     return entity;
   }

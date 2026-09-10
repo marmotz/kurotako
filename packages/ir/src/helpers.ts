@@ -75,6 +75,8 @@ export function collectRefNames(
     for (const variant of type.variants) {
       collectRefNames(variant, into);
     }
+  } else if (type.kind === 'map') {
+    collectRefNames(type.value, into);
   }
   return into;
 }
@@ -104,6 +106,9 @@ export function refCycleMembers(source: SourceIR): Set<string> {
     const set = edgesFor(key);
     for (const field of entity.fields) {
       collectRefNames(field.type, set);
+    }
+    if (entity.additionalProperties !== undefined) {
+      collectRefNames(entity.additionalProperties, set);
     }
   }
 
@@ -149,6 +154,8 @@ function fieldTypeKey(type: FieldType): string {
       return `ref:${type.ref}`;
     case 'unknown':
       return `unknown:${type.hint ?? ''}`;
+    case 'map':
+      return `map:${fieldTypeKey(type.value)}`;
     case 'union':
       return `union:${flattenUnion(type).map(fieldTypeKey).join(',')}`;
   }
@@ -320,6 +327,8 @@ export function scalarTsType(type: FieldType): string {
             : scalarTsType(variant),
         )
         .join(' | ');
+    case 'map':
+      return `Record<string, ${scalarTsType(type.value)}>`;
   }
 }
 

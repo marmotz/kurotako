@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "tsBuildInfoFile": "tsconfig.tsbuildinfo"
+  },
+  "include": ["src"],
+  "references": [
+    { "path": "../ir" },
+    { "path": "../core" },
+    { "path": "../config" },
+    { "path": "../gen-zod" },
+    { "path": "../gen-typescript" },
+    { "path": "../gen-angular" }
+  ]
+}

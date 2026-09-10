@@ -75,6 +75,14 @@ describe('controlType', () => {
     expect(controlType(field, noEnum)).toBe('unknown');
   });
 
+  it('map field -> Record control type and empty-object seed', () => {
+    const field = scalarField('string', {
+      type: { kind: 'map', value: { kind: 'scalar', scalar: 'int' } },
+    });
+    expect(controlType(field, noEnum)).toBe('Record<string, number>');
+    expect(initExpr(field)).toBe('{}');
+  });
+
   it('ref field -> the resolved Zod DTO / alias type name', () => {
     const field = scalarField('string', {
       type: { kind: 'ref', ref: 'Address' },

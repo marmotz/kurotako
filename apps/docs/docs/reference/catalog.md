@@ -64,6 +64,35 @@ as unknown IR fields; a foreign database dialect, an unsupported contract versio
 invalid contract, a post-rename entity collision, or an ambiguous cross-namespace relation
 fails with one of the exported `Prisma*Error` classes.
 
+### `@kurotako/parser-openapi`
+
+Reads an OpenAPI 3.0 or 3.1 document (local JSON/YAML or an unauthenticated HTTP(S) URL)
+and produces IR entities, type aliases, enums and typed maps from `components.schemas`
+and every reachable inline schema in operations (request bodies, responses, parameters).
+
+- **Export:** `openapiParser` — the value you pass to `use` in a `sources` entry.
+- **Name:** `openapi` — its `name` field, shown in diagnostics.
+
+| Option     | Type     | Default | Notes                                                                                                          |
+|------------|----------|---------|--------------------------------------------------------------------------------------------------------------|
+| `document` | `string` | —       | required; a local path resolved against the config directory, or an `http:`/`https:` URL with no credentials. |
+
+Unknown option keys are a hard error. References are resolved (not dereferenced) by
+`@apidevtools/json-schema-ref-parser`; unsupported schemes, credential-bearing URLs,
+unresolved references, name collisions, and unsupported JSON Schema keywords each fail
+with one of the exported `OpenApi*Error` classes.
+
+```ts
+sources: {
+  api: {
+    use: openapiParser,
+    options: {
+      document: './openapi.yaml',
+    },
+  },
+}
+```
+
 ## Generators
 
 ### `@kurotako/gen-zod`

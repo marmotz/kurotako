@@ -49,6 +49,9 @@ export function collectTypeDependencies(
         collectTypeDependencies(variant, source, entity, into);
       }
       break;
+    case 'map':
+      collectTypeDependencies(type.value, source, entity, into);
+      break;
     case 'unknown':
       break;
   }
@@ -77,6 +80,8 @@ export function renderFieldType(type: FieldType, source: SourceIR): string {
             )
             .join(' | ');
     }
+    case 'map':
+      return `Record<string, ${renderFieldType(type.value, source)}>`;
     case 'scalar':
     case 'enum':
     case 'unknown':
