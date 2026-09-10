@@ -37,6 +37,7 @@ export type FieldType =
   | { kind: 'enum'; ref: string }
   | { kind: 'unknown'; hint?: string }
   | { kind: 'ref'; ref: string }
+  | { kind: 'map'; value: FieldType }
   | {
       kind: 'union';
       variants: FieldType[];

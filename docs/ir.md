@@ -38,6 +38,7 @@ interface SourceIR {
 interface Entity {
   name: string
   fields: Field[]
+  additionalProperties?: FieldType         // typed values accepted for undeclared keys
   relations: Relation[]
   enums?: Record<string, EnumDef>            // entity-local enums; resolved before source-level
   primaryKey?: string[]                      // field name(s); composite when > 1
@@ -64,6 +65,7 @@ type FieldType =
   | { kind: 'enum'; ref: string }          // resolved: entity-local enums first, then source-level
   | { kind: 'unknown'; hint?: string }     // escape hatch for unmodelled cases
   | { kind: 'ref'; ref: string }           // bare name, same source: entity first, then typeAliases
+  | { kind: 'map'; value: FieldType }      // typed string-key dictionary, recursive
   | {                                       // recursive; producers flatten nested unions
       kind: 'union'
       variants: FieldType[]                 // schema tolerates < 2 (normalised in the cross-ref pass)
@@ -144,9 +146,10 @@ interface EnumDef {
 - **Metadata**: doc comments, `@map`/`@@map`, indexes, composite uniques — in the IR from
   v1.
 - **Serialization**: in memory; `--emit-ir` dumps `generated/ir/*.json` on demand.
-- **Versioning**: single `irVersion` string (currently `'2'`); `@kurotako/ir` versioned
-  independently. `isCompatible` is strict equality, so an `--emit-ir` dump from an older
-  `irVersion` is rejected with `version_incompatible`.
+- **Versioning**: single `irVersion` string (currently `'3'` — `'3'` added the `map`
+  `FieldType` and `Entity.additionalProperties`); `@kurotako/ir` versioned independently.
+  `isCompatible` is strict equality, so an `--emit-ir` dump from an older `irVersion` is
+  rejected with `version_incompatible`.
 
 ## Closed points
 

@@ -39,7 +39,7 @@ const roleEntityLevel: EnumDef = {
 };
 
 const ir: IR = {
-  irVersion: '2',
+  irVersion: '3',
   sources: {
     pg: {
       namespace: 'pg',
@@ -238,6 +238,15 @@ describe('shared-decision helpers', () => {
       }),
     ).toBe('string | Address | number');
   });
+
+  it('scalarTsType renders recursive maps', () => {
+    expect(
+      scalarTsType({
+        kind: 'map',
+        value: { kind: 'map', value: { kind: 'scalar', scalar: 'int' } },
+      }),
+    ).toBe('Record<string, Record<string, number>>');
+  });
 });
 
 describe('union type helpers', () => {
@@ -274,7 +283,7 @@ describe('union type helpers', () => {
   });
 
   it('iterTypeAliases yields every alias with its namespace', () => {
-    const ir: IR = { irVersion: '2', sources: { pg: aliasSource } };
+    const ir: IR = { irVersion: '3', sources: { pg: aliasSource } };
     expect([...iterTypeAliases(ir)].map((a) => a.alias.name)).toEqual([
       'Contact',
     ]);

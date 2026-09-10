@@ -114,6 +114,19 @@ describe('baseExpr — ref and union', () => {
   });
 });
 
+describe('baseExpr — typed maps', () => {
+  it('renders maps recursively and collects nested refs', () => {
+    const type: FieldType = {
+      kind: 'map',
+      value: { kind: 'map', value: { kind: 'ref', ref: 'Address' } },
+    };
+    expect(baseExpr(type, dialectFor(4))).toBe(
+      'z.record(z.string(), z.record(z.string(), AddressSchema))',
+    );
+    expect([...collectTypeDeps(type).refs]).toEqual(['Address']);
+  });
+});
+
 describe('collectTypeDeps', () => {
   it('gathers enum schemas and ref names, recursing into unions', () => {
     const deps = collectTypeDeps({

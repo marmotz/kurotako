@@ -277,6 +277,29 @@ describe('createSourceIR — union / ref / typeAliases', () => {
   });
 });
 
+describe('createSourceIR — typed maps', () => {
+  it('builds map fields, aliases and entity additional properties', () => {
+    const source = createSourceIR({ namespace: 'api', parser: 'openapi' })
+      .addEntity('Bag', (e) => {
+        e.field('items', (f) => f.map((value) => value.ref('Item')));
+        e.additionalProperties((value) =>
+          value.map((nested) => nested.scalar('string')),
+        );
+      })
+      .addEntity('Item', (e) => e.field('id', (f) => f.scalar('string')))
+      .addTypeAlias('Labels', (t) => t.map((value) => value.scalar('string')))
+      .build();
+    expect(source.entities.Bag?.additionalProperties).toEqual({
+      kind: 'map',
+      value: { kind: 'scalar', scalar: 'string' },
+    });
+    expect(source.entities.Bag?.fields[0]?.type).toEqual({
+      kind: 'map',
+      value: { kind: 'ref', ref: 'Item' },
+    });
+  });
+});
+
 describe('createSourceIR — build() gate', () => {
   it('surfaces a downstream assertSourceIR failure with a located path', () => {
     try {

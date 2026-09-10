@@ -111,6 +111,22 @@ describe('emitEntity', () => {
   });
 });
 
+describe('emitEntity — typed maps', () => {
+  it('emits record schemas and object catch-alls', () => {
+    const source = createSourceIR({ namespace: 'api', parser: 'openapi' })
+      .addEntity('Bag', (entity) => {
+        entity.field('labels', (field) =>
+          field.map((value) => value.scalar('string')),
+        );
+        entity.additionalProperties((value) => value.scalar('int'));
+      })
+      .build();
+    const out = emitEntity(irOf(source), source, entityOf(source, 'Bag'), d);
+    expect(out).toContain('labels: z.record(z.string(), z.string())');
+    expect(out).toContain('.catchall(z.int())');
+  });
+});
+
 describe('emitBarrel', () => {
   it('re-exports enums, filters and every entity file', () => {
     const out = emitBarrel(blogSource());

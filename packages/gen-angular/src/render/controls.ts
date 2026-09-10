@@ -5,7 +5,13 @@
  * `Field` directly (never by parsing Zod source text) — see
  * `generator-angular/technical.md` §Control type per scalar.
  */
-import type { Entity, Field, ScalarType, SourceIR } from '@kurotako/ir';
+import type {
+  Entity,
+  Field,
+  FieldType,
+  ScalarType,
+  SourceIR,
+} from '@kurotako/ir';
 import { resolveEnum } from '@kurotako/ir';
 import type { Variant } from '../names.js';
 import { type RefTypeName, unionType } from './unions.js';
@@ -39,24 +45,30 @@ const SCALAR_BASE: Record<ScalarType, string> = {
   json: 'unknown',
 };
 
-function baseType(field: Field, resolvers: TypeResolvers): string {
-  switch (field.type.kind) {
+function typeBase(type: FieldType, resolvers: TypeResolvers): string {
+  switch (type.kind) {
     case 'scalar':
-      return SCALAR_BASE[field.type.scalar];
+      return SCALAR_BASE[type.scalar];
     case 'enum':
-      return resolvers.enumTypeName(field.type.ref);
+      return resolvers.enumTypeName(type.ref);
     case 'unknown':
       return 'unknown';
     case 'ref':
-      return resolvers.refTypeName(field.type.ref);
+      return resolvers.refTypeName(type.ref);
+    case 'map':
+      return `Record<string, ${typeBase(type.value, resolvers)}>`;
     case 'union':
       return unionType(
-        field.type,
+        type,
         resolvers.refTypeName,
         resolvers.enumTypeName,
         resolvers.cyclicRefs,
       ).text;
   }
+}
+
+function baseType(field: Field, resolvers: TypeResolvers): string {
+  return typeBase(field.type, resolvers);
 }
 
 /** The `FormControl<T>` type argument for a field: `list` wraps, then `nullable`. */
@@ -118,6 +130,9 @@ function zeroValue(field: Field, enumZero?: EnumZero): string {
     // against the field's exact union type.
     const value = enumZero?.(field.type.ref);
     return value === undefined ? 'undefined' : JSON.stringify(value);
+  }
+  if (field.type.kind === 'map') {
+    return '{}';
   }
   // `ref` / non-discriminated `union`: no synthesisable zero — the control type
   // is `RefDto` / `A | B` and the seed is cast (`controlExpr`); `zodValidator`

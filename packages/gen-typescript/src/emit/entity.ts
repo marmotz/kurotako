@@ -12,7 +12,7 @@ import {
 } from '../names.js';
 import { memberLine } from '../render/field.js';
 import { type RelationMember, relationMember } from '../render/relations.js';
-import { collectTypeDependencies } from '../render/scalars.js';
+import { collectTypeDependencies, renderFieldType } from '../render/scalars.js';
 import { filterClass, variantFields } from '../render/variants.js';
 
 function typeBlock(name: string, members: string[]): string {
@@ -147,6 +147,14 @@ export function emitEntity(
         entity,
       ),
     );
+    if (entity.additionalProperties !== undefined) {
+      const declared = variantFields(entity, variant)
+        .map((selection) => renderFieldType(selection.field.type, source))
+        .join(' | ');
+      own.push(
+        `  [key: string]: ${renderFieldType(entity.additionalProperties, source)}${declared === '' ? '' : ` | ${declared}`} | undefined;`,
+      );
+    }
     const relations: string[] = [];
     if (family === 'deep') {
       for (let index = 0; index < entity.relations.length; index += 1) {

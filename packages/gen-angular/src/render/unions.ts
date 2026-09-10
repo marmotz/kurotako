@@ -81,6 +81,8 @@ function refNames(type: FieldType, into: Set<string> = new Set()): Set<string> {
     for (const variant of type.variants) {
       refNames(variant, into);
     }
+  } else if (type.kind === 'map') {
+    refNames(type.value, into);
   }
   return into;
 }
@@ -115,6 +117,8 @@ function variantType(
       return refTypeName(type.ref);
     case 'unknown':
       return 'unknown';
+    case 'map':
+      return `Record<string, ${variantType(type.value, refTypeName, enumTypeName, cyclicRefs)}>`;
     case 'union':
       return unionType(type, refTypeName, enumTypeName, cyclicRefs).text;
   }

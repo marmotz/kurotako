@@ -97,6 +97,20 @@ describe('fieldTsType and memberLine', () => {
     );
   });
 
+  it('renders typed maps recursively', () => {
+    const source = createSourceIR({ namespace: 'types', parser: 'test' })
+      .addEntity('Record', (entity) => {
+        entity.field('labels', (field) =>
+          field.map((value) => value.map((nested) => nested.scalar('string'))),
+        );
+      })
+      .build();
+    const entity = entityOf(source, 'Record');
+    expect(fieldTsType(fieldOf(entity, 0), source, entity)).toBe(
+      'Record<string, Record<string, string>>',
+    );
+  });
+
   it('renders field prose, constraint/default tags and unknown hints as JSDoc', () => {
     const source = blogSource();
     const entity = entityOf(source, 'User');
