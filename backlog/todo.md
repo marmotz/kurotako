@@ -20,4 +20,4 @@ _**Status**: [technical design](technical.md)_ — 7/7 tasks done
 
 | Done | Issue                                                  | Title                                           | Blocked by |
 |------|--------------------------------------------------------|-------------------------------------------------|------------|
-| [ ]  | [#131](https://github.com/marmotz/kurotako/issues/131) | Summarize ambiguous root-barrel export warnings | —          |
+| [x]  | [#131](https://github.com/marmotz/kurotako/issues/131) | Summarize ambiguous root-barrel export warnings | —          |

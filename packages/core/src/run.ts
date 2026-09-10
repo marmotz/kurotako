@@ -132,6 +132,9 @@ export async function run(
   // A generator that emitted `<ns>/index.ts` itself now collides with the
   // synthesized file → OutputCollisionError pointing at the prefix rule.
   checkSignal();
+  // The aggregate tree covers every generator, so it is the single place the
+  // ambiguous-export warnings are emitted. Per-output trees below select a
+  // generator subset (a subset of these collisions) and stay silent.
   const barrels = synthesizeRootBarrels(collected, artifacts, logger);
   const merged = mergeTrees(
     [
@@ -156,11 +159,7 @@ export async function run(
     const filteredFiles = collected.filter((file) =>
       names.has(file.path.split('/')[1] ?? ''),
     );
-    const outputBarrels = synthesizeRootBarrels(
-      filteredFiles,
-      artifacts,
-      logger,
-    );
+    const outputBarrels = synthesizeRootBarrels(filteredFiles, artifacts);
     return applyBanner(
       mergeTrees([
         { generator: '<filtered>', files: filteredFiles },

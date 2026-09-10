@@ -245,6 +245,43 @@ describe('run', () => {
     );
   });
 
+  it('warns once about ambiguous root-barrel exports even with several outputs', async () => {
+    const colliding = (name: string): Generator => ({
+      name,
+      generate: () => ({
+        files: [
+          { path: `pg/${name}/index.ts`, content: "export * from './User';\n" },
+          {
+            path: `pg/${name}/User.ts`,
+            content: `export const User_${name} = 0;\nexport { User_${name} as User };\n`,
+          },
+        ],
+        artifact: { entities: {} },
+      }),
+    });
+    const warn = vi.fn();
+    await run(
+      config({
+        generators: {
+          zod: { generator: colliding('zod') },
+          typescript: { generator: colliding('typescript') },
+        },
+        outputs: [
+          { dir: path.join(dir, 'a') },
+          { dir: path.join(dir, 'b'), generators: ['zod', 'typescript'] },
+        ],
+      }),
+      { logger: { debug() {}, info() {}, warn, error() {} } },
+    );
+    const barrelWarnings = warn.mock.calls.filter(([msg]) =>
+      String(msg).includes('Name clash in namespace'),
+    );
+    expect(barrelWarnings).toHaveLength(1);
+    expect(barrelWarnings[0]?.[0]).toContain(
+      "Name clash in namespace 'pg': typescript and zod each generate a declaration named 'User'.",
+    );
+  });
+
   it('two outputs with disjoint generators filters each write only their own subset', async () => {
     const dirA = path.join(dir, 'a');
     const dirB = path.join(dir, 'b');
