@@ -16,6 +16,9 @@ input technology:
 
 - `@kurotako/parser-prisma` reads a `schema.prisma` file (or Prisma's multi-file schema
   folder) and produces IR entities, fields, enums and relations.
+- `@kurotako/parser-openapi` reads an OpenAPI 3.0/3.1 document (local JSON/YAML or an
+  unauthenticated HTTP(S) URL) and produces IR entities, type aliases, enums and typed
+  maps.
 
 A parser entry lives under `sources` in `tako.config.ts`. The **config key is the
 [namespace](namespaces.md)** the parser's output is filed under:
@@ -41,6 +44,9 @@ generators — and emits files:
 - `@kurotako/gen-angular` emits TypeScript types, typed `FormGroup`s and `Validators`
   aligned on the schema constraints. It declares `dependsOn: ['zod']` and reads the Zod
   generator's artifact.
+- `@kurotako/gen-typescript` emits pure TypeScript type declarations from the IR, with no
+  runtime dependency on generated code and no dependency on another generator.
+- `@kurotako/gen-openapi` emits one OpenAPI 3.0/3.1 document per namespace from the IR.
 
 Generator entries live in the `generators` array. Order in the array is irrelevant —
 `core` computes the run order from the declared

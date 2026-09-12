@@ -24,8 +24,8 @@ you install the CLI once, then add a parser and generators as your pipeline need
 
 ### 1. The `kurotako` package (always)
 
-| Package | Role |
-|---|---|
+| Package    | Role                                                     |
+|------------|----------------------------------------------------------|
 | `kurotako` | the `tako` binary **and** `defineConfig`, in one install |
 
 ```bash
@@ -54,17 +54,19 @@ use (see the [API reference](../api/)).
 
 ### 2. One parser, per schema source
 
-| Package | Schema source |
-|---|---|
-| `@kurotako/parser-prisma` | Prisma `schema.prisma` |
+| Package                    | Schema source                                       |
+|----------------------------|-----------------------------------------------------|
+| `@kurotako/parser-prisma`  | Prisma `schema.prisma`                              |
 | `@kurotako/parser-openapi` | OpenAPI 3.0/3.1 document (JSON/YAML or HTTP(S) URL) |
 
 ### 3. The generators you want output from
 
-| Package | Output |
-|---|---|
-| `@kurotako/gen-zod` | Zod schemas |
-| `@kurotako/gen-angular` | Angular types and typed `FormGroup`s (needs `gen-zod`) |
+| Package                    | Output                                                   |
+|----------------------------|----------------------------------------------------------|
+| `@kurotako/gen-zod`        | Zod schemas                                              |
+| `@kurotako/gen-angular`    | Angular types and typed `FormGroup`s (needs `gen-zod`)   |
+| `@kurotako/gen-typescript` | pure TypeScript type declarations, no runtime dependency |
+| `@kurotako/gen-openapi`    | one OpenAPI 3.0/3.1 document per namespace               |
 
 ```bash
 # Prisma in, Zod + Angular out:
