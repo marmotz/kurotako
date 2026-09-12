@@ -1,0 +1,24 @@
+{
+  "name": "@example/tasks-sdk",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.4.0",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "tako:generate": "tako generate",
+    "build": "tsup",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@kurotako/cli": "link:@kurotako/cli",
+    "@kurotako/config": "link:@kurotako/config",
+    "@kurotako/parser-openapi": "link:@kurotako/parser-openapi",
+    "@kurotako/gen-typescript": "link:@kurotako/gen-typescript",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.8"
+  }
+}

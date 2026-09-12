@@ -13,6 +13,7 @@ covering setup and run steps.
 | [`nestjs11-prisma8-angular22-outputpkg/`](nestjs11-prisma8-angular22-outputpkg/) | Prisma 8 (contract.json)        | `package` (one shared workspace package) |
 | [`nestjs11-openapi-angular22-outputdir/`](nestjs11-openapi-angular22-outputdir/) | OpenAPI 3.0 (`@nestjs/swagger`) | `dir` (one destination per app)          |
 | [`nestjs11-openapi-angular22-outputpkg/`](nestjs11-openapi-angular22-outputpkg/) | OpenAPI 3.0 (`@nestjs/swagger`) | `package` (one shared workspace package) |
+| [`openapi-sdk-typescript/`](openapi-sdk-typescript/)                            | OpenAPI 3.0 (static file)       | `dir` (types straight into the SDK package) |
 
 See each project's own `README.md` for the `bun link` setup sequence, the source
 workflow, and `tako generate` / run commands.
@@ -21,3 +22,6 @@ workflow, and `tako generate` / run commands.
 - **OpenAPI** examples need no database: the NestJS app is the contract producer (its
   `@nestjs/swagger` DTOs emit `openapi.json`) and only the frontend consumes generated
   code.
+- **`openapi-sdk-typescript`** has no backend at all: `openapi.json` is a static,
+  committed contract, and `@kurotako/gen-typescript` produces types only, consumed by
+  a hand-written SDK package (no Zod, no Angular).
