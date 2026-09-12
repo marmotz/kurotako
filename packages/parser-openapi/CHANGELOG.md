@@ -1,6 +1,6 @@
-# @kurotako/ir
+# @kurotako/parser-openapi
 
-## 0.3.0
+## 0.2.0
 
 ### Minor Changes
 
@@ -38,25 +38,11 @@
     JSON/YAML or an unauthenticated HTTP(S) URL) into one `SourceIR`, mapping component
     and inline operation schemas to deterministic entities, aliases, enums and typed maps.
 
-## 0.2.0
+### Patch Changes
 
-### Minor Changes
-
-- 7a50439: IR union type support: `FieldType` gains `ref` and `union` kinds (recursive,
-  `v.lazy`-wrapped schema, hand-written type), a `TypeAlias` registry
-  (`SourceIR.typeAliases?`), the builder API (`f.ref`, `f.union` with
-  `UnionBuilder`, `addTypeAlias`), resolution helpers (`resolveRef`,
-  `resolveTypeAlias`, `iterTypeAliases`, `flattenUnion`) and an exhaustive
-  `scalarTsType`. Validation walks field types recursively (`unresolved_ref`,
-  `unresolved_type_alias`, `type_alias_key_mismatch`), tolerates degenerate
-  unions and reference cycles through a new non-fatal `info` channel on
-  `IrValidation` (`degenerate_union`, `union_cycle`).
-  
-  Bumps `IR_VERSION` from `1` to `2`; `isCompatible` stays strict equality, so a
-  persisted `irVersion: '1'` dump is rejected with `version_incompatible`.
-
-## 0.1.0
-
-### Minor Changes
-
-- First public release.
+- Updated dependencies [9fe08b3]
+- Updated dependencies [ecdb02c]
+- Updated dependencies [22e6559]
+  - @kurotako/ir@0.3.0
+  - @kurotako/core@0.1.2
+  - @kurotako/config@0.1.2

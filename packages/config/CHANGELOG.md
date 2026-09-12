@@ -1,5 +1,15 @@
 # @kurotako/config
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [9fe08b3]
+- Updated dependencies [ecdb02c]
+- Updated dependencies [22e6559]
+  - @kurotako/ir@0.3.0
+  - @kurotako/core@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes
