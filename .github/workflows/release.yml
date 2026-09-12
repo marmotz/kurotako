@@ -30,6 +30,13 @@ on:
     types: [closed]
     branches: [develop]
 
+# Serialize releases: a manual dispatch racing the automatic post-merge run (or two
+# merges in quick succession) can otherwise both reach `npm publish` for the same
+# version, and the loser gets a 409 "previously staged version" from the registry.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
   release:
     if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true && startsWith(github.head_ref, 'changeset-release/'))
