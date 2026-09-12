@@ -1,6 +1,6 @@
 {
   "name": "@kurotako/gen-angular",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "kurotako generator that emits Angular reactive forms from the intermediate representation.",
   "keywords": [
     "kurotako",

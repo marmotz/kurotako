@@ -40,7 +40,7 @@
     },
     "packages/cli": {
       "name": "@kurotako/cli",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "bin": {
         "tako": "./dist/bin/tako.js",
       },
@@ -58,7 +58,7 @@
     },
     "packages/config": {
       "name": "@kurotako/config",
-      "version": "0.1.2",
+      "version": "0.1.3",
       "dependencies": {
         "@kurotako/ir": "workspace:^",
         "jiti": "2.7.0",
@@ -73,7 +73,7 @@
     },
     "packages/core": {
       "name": "@kurotako/core",
-      "version": "0.1.2",
+      "version": "0.1.3",
       "dependencies": {
         "@kurotako/ir": "workspace:^",
         "tsup": "8.5.1",
@@ -82,7 +82,7 @@
     },
     "packages/gen-angular": {
       "name": "@kurotako/gen-angular",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
         "@kurotako/ir": "workspace:^",
         "valibot": "1.4.2",
@@ -136,7 +136,7 @@
     },
     "packages/gen-zod": {
       "name": "@kurotako/gen-zod",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
         "@kurotako/ir": "workspace:^",
         "valibot": "1.4.2",
@@ -192,7 +192,7 @@
     },
     "packages/parser-prisma": {
       "name": "@kurotako/parser-prisma",
-      "version": "0.2.1",
+      "version": "0.2.2",
       "dependencies": {
         "@kurotako/ir": "workspace:^",
         "valibot": "1.4.2",

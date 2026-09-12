@@ -1,6 +1,6 @@
 {
   "name": "@kurotako/core",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "kurotako pipeline core: dependency DAG, topological ordering and the parser/generator contracts.",
   "keywords": [
     "kurotako",

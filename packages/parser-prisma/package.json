@@ -1,6 +1,6 @@
 {
   "name": "@kurotako/parser-prisma",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "kurotako parser that turns a Prisma schema into the intermediate representation.",
   "keywords": [
     "kurotako",
