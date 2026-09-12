@@ -1,6 +1,6 @@
 {
   "name": "@kurotako/config",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Config loading and validation for kurotako, including the defineConfig helper.",
   "keywords": [
     "kurotako",

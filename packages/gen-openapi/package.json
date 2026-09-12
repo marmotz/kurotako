@@ -1,6 +1,6 @@
 {
   "name": "@kurotako/gen-openapi",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "kurotako generator that emits an OpenAPI document (components/schemas) from the intermediate representation.",
   "keywords": [
     "kurotako",
