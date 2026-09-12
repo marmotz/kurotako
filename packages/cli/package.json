@@ -1,6 +1,6 @@
 {
   "name": "@kurotako/cli",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "The tako command-line interface for kurotako.",
   "keywords": [
     "kurotako",
