@@ -1,5 +1,6 @@
 import { defineConfig } from '@kurotako/config';
 import { angularGenerator } from '@kurotako/gen-angular';
+import { openapiGenerator } from '@kurotako/gen-openapi';
 import { zodGenerator } from '@kurotako/gen-zod';
 import { prismaParser } from '@kurotako/parser-prisma';
 
@@ -16,9 +17,12 @@ export default defineConfig({
       use: angularGenerator,
       options: { forms: ['reactive', 'signal'], relations: 'flat' },
     },
+    { use: openapiGenerator },
   ],
   outputs: [
-    { dir: './apps/backend/generated/kurotako', generators: ['zod'] },
-    { dir: './apps/frontend/generated/kurotako' },
+    // The backend also gets the generated openapi.json: it is the contract
+    // producer, so the spec documenting it is a backend-side artifact.
+    { dir: './apps/backend/generated/kurotako', generators: ['zod', 'openapi'] },
+    { dir: './apps/frontend/generated/kurotako', generators: ['zod', 'angular'] },
   ],
 });

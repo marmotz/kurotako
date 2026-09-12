@@ -3,8 +3,9 @@
 End-to-end example: NestJS 11 + Angular 22 + Prisma 7 (DMMF mode), consuming kurotako's
 **mode A** (`dir`) output — one `generated/kurotako` destination per app.
 
-- `apps/backend` gets a Zod-only destination (only ever imports validators).
-- `apps/frontend` gets an unrestricted destination (Zod schemas + Angular form factories).
+- `apps/backend` gets Zod validators plus the generated `openapi.json` (the contract
+  producer also documents its own contract).
+- `apps/frontend` gets Zod schemas + Angular form factories.
 
 This project is a fully standalone Bun workspace, independent of the kurotako repo's
 own root workspace (`workspaces: ["apps/*"]` here only).
@@ -22,15 +23,16 @@ cd packages/config          && bun link && cd -
 cd packages/parser-prisma   && bun link && cd -
 cd packages/gen-zod         && bun link && cd -
 cd packages/gen-angular     && bun link && cd -
+cd packages/gen-openapi     && bun link && cd -
 ```
 
 ```bash
 # from this project's root, once per clone:
-bun link @kurotako/cli @kurotako/config @kurotako/parser-prisma @kurotako/gen-zod @kurotako/gen-angular
+bun link @kurotako/cli @kurotako/config @kurotako/parser-prisma @kurotako/gen-zod @kurotako/gen-angular @kurotako/gen-openapi
 bun install
 ```
 
-`package.json` pins the five kurotako packages with the `link:@kurotako/<name>`
+`package.json` pins the six kurotako packages with the `link:@kurotako/<name>`
 specifier rather than a plain `0.0.0` semver range: since these packages are not
 published, a semver-range specifier makes `bun install` try (and fail, 404) to resolve
 them from the npm registry even after `bun link` has registered the local symlink —
