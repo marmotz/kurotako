@@ -2,8 +2,16 @@
 */bun.lock
 */apps/*/generated
 */apps/*/prisma/generated
-*/packages/example-*
+*/packages/example-*/**
 */packages/.gitattributes
+
+# Mode B ("package" output) bootstrap seed: `packages/example-*/package.json` is
+# committed on purpose so `bun install` can resolve the `@example/tasks`
+# workspace member on a fresh clone, before `tako generate` has ever run.
+# `tako generate` fully owns and overwrites it afterwards (its "//" marker is
+# what lets tako reset the directory instead of refusing to touch it) — see
+# each project's README.
+!*/packages/example-*/package.json
 
 # examples/ — local Prisma SQLite dev database, not committed (migrations are)
 */apps/*/prisma/dev.db

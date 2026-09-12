@@ -9,6 +9,7 @@
     { "path": "packages/kurotako" },
     { "path": "packages/parser-prisma" },
     { "path": "packages/parser-openapi" },
+    { "path": "packages/gen-openapi" },
     { "path": "packages/gen-zod" },
     { "path": "packages/gen-angular" },
     { "path": "packages/gen-typescript" }

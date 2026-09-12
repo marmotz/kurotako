@@ -220,7 +220,11 @@ describe('validateIR — typed maps', () => {
   it('walks map and entity additional-property references', () => {
     const ir = makeIr();
     const user = entityOf(pgOf(ir), 'User');
-    user.fields[0]!.type = { kind: 'map', value: { kind: 'ref', ref: 'Post' } };
+    const field = user.fields[0];
+    if (field === undefined) {
+      throw new Error('expected fields[0]');
+    }
+    field.type = { kind: 'map', value: { kind: 'ref', ref: 'Post' } };
     user.additionalProperties = {
       kind: 'map',
       value: { kind: 'ref', ref: 'Post' },
@@ -233,12 +237,16 @@ describe('validateIR — typed maps', () => {
   it('walks the element of an array field type', () => {
     const ir = makeIr();
     const user = entityOf(pgOf(ir), 'User');
-    user.fields[0]!.type = {
+    const field = user.fields[0];
+    if (field === undefined) {
+      throw new Error('expected fields[0]');
+    }
+    field.type = {
       kind: 'array',
       element: { kind: 'ref', ref: 'Post' },
     };
     expect(validateIR(ir).ok).toBe(true);
-    user.fields[0]!.type = {
+    field.type = {
       kind: 'array',
       element: { kind: 'ref', ref: 'Missing' },
     };

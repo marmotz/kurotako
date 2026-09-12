@@ -13,7 +13,7 @@ not committed and is the file consumed by `tako.config.ts`.
 
 ## Setup and generation
 
-Link the same five local kurotako packages as the Prisma 7 output-directory example,
+Link the same six local kurotako packages as the Prisma 7 output-directory example,
 then run `bun install` from this directory.
 
 ```bash

@@ -12,6 +12,7 @@
     "@kurotako/parser-prisma": "link:@kurotako/parser-prisma",
     "@kurotako/gen-zod": "link:@kurotako/gen-zod",
     "@kurotako/gen-angular": "link:@kurotako/gen-angular",
+    "@kurotako/gen-openapi": "link:@kurotako/gen-openapi",
     "@prisma/orm-postgres": "8.0.0-rc.9",
     "prisma": "8.0.0-rc.13"
   },

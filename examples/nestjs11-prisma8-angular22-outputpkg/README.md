@@ -11,7 +11,7 @@ is the source of truth; `contract.json` is generated and is consumed by `tako.co
 
 ## Setup and generation
 
-Link the same six local kurotako packages as the Prisma 7 package-output example, then
+Link the same seven local kurotako packages as the Prisma 7 package-output example, then
 run `bun install` from this directory.
 
 ```bash
@@ -20,6 +20,10 @@ bun run prisma:contract # emits apps/backend/prisma/generated/contract.json
 bun run prisma:db:init  # applies and signs the PostgreSQL contract
 bun run tako:generate   # writes and builds packages/example-tasks
 ```
+
+`packages/example-tasks` is regenerable (gitignored) except for a committed
+`package.json` stub — see the Prisma 7 package-output example's README ("Generate"
+section) for why it's needed to bootstrap `bun install` on a fresh clone.
 
 Re-emit the contract before regenerating kurotako after every `contract.prisma` change.
 The Nest service uses Prisma 8's PostgreSQL ORM runtime instead of Prisma 7's generated
