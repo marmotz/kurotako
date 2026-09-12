@@ -1,6 +1,6 @@
 {
   "name": "@kurotako/parser-openapi",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "kurotako parser that turns OpenAPI documents into the intermediate representation.",
   "keywords": [
     "kurotako",
