@@ -28,6 +28,13 @@ function strings(value: unknown): string[] {
     : [];
 }
 
+function toFieldNames(
+  columns: string[],
+  columnToField: Map<string, string>,
+): string[] {
+  return columns.map((column) => columnToField.get(column) ?? column);
+}
+
 function storageTable(
   contract: RawRecord,
   namespace: string,
@@ -131,6 +138,7 @@ function readRelationEdges(
   names: Map<string, string>,
   sourceName: string,
   table: RawRecord,
+  columnToField: Map<string, string>,
 ): PrismaRelationEdge[] {
   const foreignKeys = Array.isArray(table.foreignKeys)
     ? table.foreignKeys.map(record)
@@ -144,7 +152,8 @@ function readRelationEdges(
     const fk = foreignKeys.find((candidate) => {
       const source = record(candidate.source);
       return (
-        JSON.stringify(strings(source.columns)) === JSON.stringify(localFields)
+        JSON.stringify(toFieldNames(strings(source.columns), columnToField)) ===
+        JSON.stringify(localFields)
       );
     });
     const targetKey = `${String(to.namespace)}.${String(to.model)}`;
@@ -218,6 +227,12 @@ export function readContract(
       );
       const columns = record(table.columns);
       const bridgeFields = record(bridge.fields);
+      const columnToField = new Map(
+        Object.entries(bridgeFields).map(([name, raw]) => [
+          String(record(raw).column),
+          name,
+        ]),
+      );
       const fields = Object.entries(record(model.fields)).map(
         ([name, rawField]) => {
           const column = String(record(bridgeFields[name]).column);
@@ -237,7 +252,7 @@ export function readContract(
       );
       const uniqueColumns = new Set(
         (Array.isArray(table.uniques) ? table.uniques : []).flatMap((entry) =>
-          strings(record(entry).columns),
+          toFieldNames(strings(record(entry).columns), columnToField),
         ),
       );
       for (const field of fields)
@@ -251,11 +266,15 @@ export function readContract(
           names,
           sourceName,
           table,
+          columnToField,
         ),
-        primaryKey: strings(record(table.primaryKey).columns),
+        primaryKey: toFieldNames(
+          strings(record(table.primaryKey).columns),
+          columnToField,
+        ),
         uniques: (Array.isArray(table.uniques) ? table.uniques : []).map(
           (entry) => ({
-            fields: strings(record(entry).columns),
+            fields: toFieldNames(strings(record(entry).columns), columnToField),
             ...(typeof record(entry).name === 'string'
               ? { name: String(record(entry).name) }
               : {}),
@@ -263,7 +282,7 @@ export function readContract(
         ),
         indexes: (Array.isArray(table.indexes) ? table.indexes : []).map(
           (entry) => ({
-            fields: strings(record(entry).columns),
+            fields: toFieldNames(strings(record(entry).columns), columnToField),
             ...(typeof record(entry).name === 'string'
               ? { name: String(record(entry).name) }
               : {}),

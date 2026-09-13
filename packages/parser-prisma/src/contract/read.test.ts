@@ -37,6 +37,27 @@ describe('readContract', () => {
     expect(
       model.enums.find((item) => item.name === 'UserRole')?.values,
     ).toEqual([{ name: 'USER' }, { name: 'ADMIN' }]);
+
+    const post = model.entities.find((entity) => entity.name === 'Post');
+    expect(post?.indexes).toContainEqual({
+      fields: ['authorId'],
+      name: 'post_authorId_idx_e47547ed',
+    });
+    expect(post?.indexes).toContainEqual(
+      expect.objectContaining({ fields: ['authorId', 'published'] }),
+    );
+    expect(
+      post?.relationEdges.find((edge) => edge.fieldName === 'author'),
+    ).toMatchObject({ fromFields: ['authorId'], toFields: ['id'] });
+
+    const tag = model.entities.find((entity) => entity.name === 'Tag');
+    expect(tag?.uniques).toContainEqual({ fields: ['name'] });
+    expect(tag?.fields.find((field) => field.name === 'name')?.isUnique).toBe(
+      true,
+    );
+
+    const postTag = model.entities.find((entity) => entity.name === 'PostTag');
+    expect(postTag?.primaryKey).toEqual(['postId', 'tagId']);
   });
 
   it('rejects the namespace ambiguity emitted by Prisma 8 RC', () => {

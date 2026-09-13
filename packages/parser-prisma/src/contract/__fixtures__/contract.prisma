@@ -39,7 +39,7 @@ model Post {
   content   String?
   published Boolean   @default(false)
   author    User      @relation(fields: [authorId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  authorId  Int
+  authorId  Int       @map("author_id")
   tags      PostTag[]
   createdAt DateTime  @default(now())
   updatedAt temporal.updatedAt()
@@ -51,8 +51,8 @@ model Post {
 
 /// Explicit join model for the Post <-> Tag many-to-many relation.
 model PostTag {
-  postId Int
-  tagId  Int
+  postId Int @map("post_id")
+  tagId  Int @map("tag_id")
   post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
   tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
@@ -61,7 +61,7 @@ model PostTag {
 
 model Tag {
   id    Int       @id @default(autoincrement())
-  name  String    @unique
+  name  String    @unique @map("tag_name")
   posts PostTag[]
 }
 
