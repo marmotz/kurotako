@@ -1,5 +1,19 @@
 # @kurotako/gen-angular
 
+## 0.3.2
+
+### Patch Changes
+
+- 69f41ac: The two relative specifiers emitted by this generator's barrel (`./zod-forms.runtime`,
+  `./<entity>.form`) now carry an explicit `.js` extension, so the generated code compiles
+  under `moduleResolution: node16`/`nodenext` (previously `TS2307`/`TS2835`).
+- Updated dependencies [69f41ac]
+- Updated dependencies [69f41ac]
+- Updated dependencies [69f41ac]
+  - @kurotako/core@0.2.0
+  - @kurotako/gen-zod@0.3.2
+  - @kurotako/config@0.1.4
+
 ## 0.3.1
 
 ### Patch Changes
