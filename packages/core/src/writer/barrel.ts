@@ -9,6 +9,7 @@
 import path from 'node:path';
 import * as ts from 'typescript';
 import type { GeneratorArtifact, Logger, VirtualFile } from '../types.js';
+import { jsIndex } from './specifier.js';
 import { contributingGenerators } from './tree.js';
 
 /**
@@ -37,10 +38,10 @@ export function synthesizeRootBarrels(
     const generators = contributors.get(namespace) ?? [];
     const collisions = exportedNameCollisions(namespace, generators, files);
     const content = [
-      ...generators.map((name) => `export * from './${name}';`),
+      ...generators.map((name) => `export * from '${jsIndex(`./${name}`)}';`),
       ...[...collisions.entries()].map(
         ([identifier, owners]) =>
-          `export { ${identifier} } from './${owners[0]}';`,
+          `export { ${identifier} } from '${jsIndex(`./${owners[0]}`)}';`,
       ),
       '',
     ].join('\n');

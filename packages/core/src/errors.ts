@@ -190,9 +190,8 @@ const MISSING_PACKAGE_WORKSPACE_FILE_GUIDANCE: Record<string, string> = {
 }
 
 Use these values as-is, no adjustment needed: in particular, keep
-"moduleResolution": "bundler" — 'node16'/'nodenext' would fail to compile
-the extensionless \`export * from './zod';\` that tako's generated root
-barrel always emits.`,
+"moduleResolution": "bundler" as the simplest option compatible with every
+generated import style.`,
   'tsup.config.base.{ts,js,mjs,cjs}': `Create '<workspaceRoot>/tsup.config.base.ts':
 import type { Options } from 'tsup';
 

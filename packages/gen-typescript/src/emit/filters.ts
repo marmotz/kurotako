@@ -1,4 +1,5 @@
 /** Shared Prisma-style Where filter interfaces. */
+import { jsFile } from '@kurotako/core';
 import type { SourceIR } from '@kurotako/ir';
 import { scalarTsType } from '@kurotako/ir';
 import { enumTypeName } from '../names.js';
@@ -98,7 +99,7 @@ export function emitFilters(source: SourceIR): string {
   const imports =
     enumNames.length === 0
       ? ''
-      : `import type { ${enumNames.map(enumTypeName).join(', ')} } from './enums';\n\n`;
+      : `import type { ${enumNames.map(enumTypeName).join(', ')} } from '${jsFile('./enums')}';\n\n`;
   return blocks.length === 0
     ? 'export {};\n'
     : `${imports}${blocks.join('\n\n')}\n`;

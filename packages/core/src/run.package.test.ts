@@ -110,7 +110,7 @@ describe('run (mode B)', () => {
     );
     const barrel = path.join(dir, 'packages', 'kurotako-pg', 'src', 'index.ts');
     expect(await fs.readFile(barrel, 'utf8')).toContain(
-      "export * from './zod';",
+      "export * from './zod/index.js';",
     );
     expect(build).toHaveBeenCalledTimes(1);
     expect(vi.mocked(runInstall)).toHaveBeenCalledTimes(1);

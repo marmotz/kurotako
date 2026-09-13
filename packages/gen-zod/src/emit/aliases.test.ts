@@ -35,10 +35,10 @@ describe('emitAliases', () => {
 
   it('imports referenced entity schemas + types, not sibling aliases', () => {
     expect(out).toContain(
-      "import { CircleSchema, type CircleDto } from './Circle.schema';",
+      "import { CircleSchema, type CircleDto } from './Circle.schema.js';",
     );
     expect(out).toContain(
-      "import { GroupSchema, type GroupDto } from './Group.schema';",
+      "import { GroupSchema, type GroupDto } from './Group.schema.js';",
     );
     expect(out).not.toContain("from './Scalar'");
   });

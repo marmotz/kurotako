@@ -13,6 +13,7 @@
  * hand-written and the `const` is annotated `z.ZodType<<Name>>`, because
  * `z.infer` on a self-/mutually-recursive `z.lazy` chain is `TS7022`.
  */
+import { jsFile } from '@kurotako/core';
 import type { SourceIR, TypeAlias } from '@kurotako/ir';
 import type { ZodDialect } from '../dialect.js';
 import {
@@ -93,13 +94,14 @@ export function emitAliases(
   ];
   if (enums.size > 0) {
     const names = [...enums].sort((a, b) => a.localeCompare(b)).join(', ');
+    const spec = jsFile('./enums');
     imports.push({
-      spec: './enums',
-      stmt: `import { ${names} } from './enums';`,
+      spec,
+      stmt: `import { ${names} } from '${spec}';`,
     });
   }
   for (const ref of [...entityRefs].sort((a, b) => a.localeCompare(b))) {
-    const spec = `./${ref}.schema`;
+    const spec = jsFile(`./${ref}.schema`);
     imports.push({
       spec,
       stmt: `import { ${refSchemaName(ref)}, type ${typeName(ref)} } from '${spec}';`,

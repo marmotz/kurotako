@@ -3,6 +3,7 @@
  * `./zod-forms.runtime` (when emitted) and every `./<entity>.form`. A
  * zero-entity source still yields a valid `index.ts`.
  */
+import { jsFile } from '@kurotako/core';
 import type { SourceIR } from '@kurotako/ir';
 import type { AngularGeneratorOptions } from '../options.js';
 
@@ -14,10 +15,10 @@ export function emitBarrel(
   const entities = Object.values(source.entities);
 
   if (entities.length > 0 && options.forms.length > 0) {
-    lines.push("export * from './zod-forms.runtime';");
+    lines.push(`export * from '${jsFile('./zod-forms.runtime')}';`);
   }
   for (const entity of entities) {
-    lines.push(`export * from './${entity.name}.form';`);
+    lines.push(`export * from '${jsFile(`./${entity.name}.form`)}';`);
   }
 
   return `${lines.join('\n')}\n`;

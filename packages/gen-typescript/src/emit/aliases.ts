@@ -1,4 +1,5 @@
 /** Source type aliases -> the shared aliases.ts declaration module. */
+import { jsFile } from '@kurotako/core';
 import type { SourceIR } from '@kurotako/ir';
 import { typeName } from '../names.js';
 import { collectTypeDependencies, renderFieldType } from '../render/scalars.js';
@@ -19,14 +20,14 @@ export function emitAliases(source: SourceIR): string {
 
   const imports: Array<{ specifier: string; names: string[] }> = [];
   if (enums.size > 0) {
-    imports.push({ specifier: './enums', names: [...enums] });
+    imports.push({ specifier: jsFile('./enums'), names: [...enums] });
   }
   if (usesJsonValue) {
-    imports.push({ specifier: './scalars', names: ['JsonValue'] });
+    imports.push({ specifier: jsFile('./scalars'), names: ['JsonValue'] });
   }
   for (const ref of entityRefs) {
     imports.push({
-      specifier: `./${ref}.type`,
+      specifier: jsFile(`./${ref}.type`),
       names: [typeName(ref)],
     });
   }

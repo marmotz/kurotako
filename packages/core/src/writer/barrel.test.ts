@@ -20,14 +20,18 @@ describe('synthesizeRootBarrels', () => {
     expect(barrels).toEqual([
       {
         path: 'pg/index.ts',
-        content: "export * from './angular';\nexport * from './zod';\n",
+        content:
+          "export * from './angular/index.js';\nexport * from './zod/index.js';\n",
       },
     ]);
   });
 
   it('still emits a barrel for a single-generator namespace', () => {
     expect(synthesizeRootBarrels([file('pg/zod/enums.ts')])).toEqual([
-      { path: 'pg/index.ts', content: "export * from './zod';\n" },
+      {
+        path: 'pg/index.ts',
+        content: "export * from './zod/index.js';\n",
+      },
     ]);
   });
 
@@ -59,7 +63,7 @@ describe('synthesizeRootBarrels', () => {
       {
         path: 'pg/index.ts',
         content:
-          "export * from './typescript';\nexport * from './zod';\nexport { User } from './typescript';\n",
+          "export * from './typescript/index.js';\nexport * from './zod/index.js';\nexport { User } from './typescript/index.js';\n",
       },
     ]);
     expect(log.warn).toHaveBeenCalledTimes(1);
@@ -161,10 +165,10 @@ describe('synthesizeRootBarrels', () => {
     expect(synthesizeRootBarrels(files)[0]).toEqual({
       path: 'pg/index.ts',
       content:
-        "export * from './typescript';\nexport * from './zod';\n" +
-        "export { Order } from './typescript';\n" +
-        "export { Task } from './typescript';\n" +
-        "export { User } from './typescript';\n",
+        "export * from './typescript/index.js';\nexport * from './zod/index.js';\n" +
+        "export { Order } from './typescript/index.js';\n" +
+        "export { Task } from './typescript/index.js';\n" +
+        "export { User } from './typescript/index.js';\n",
     });
   });
 
@@ -185,7 +189,7 @@ describe('synthesizeRootBarrels', () => {
       },
     ]);
     expect(barrels[0]?.content).toContain(
-      "export { StringFilter } from './typescript';",
+      "export { StringFilter } from './typescript/index.js';",
     );
   });
 });

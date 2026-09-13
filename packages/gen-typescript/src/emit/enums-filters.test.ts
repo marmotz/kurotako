@@ -32,7 +32,7 @@ describe('emitEnums', () => {
 describe('emitFilters', () => {
   it('emits only used scalar classes and enum filters with a type-only import', () => {
     const filters = emitFilters(blogSource());
-    expect(filters).toContain("import type { Role } from './enums';");
+    expect(filters).toContain("import type { Role } from './enums.js';");
     expect(filters).toContain('export interface StringFilter');
     expect(filters).toContain('export interface BoolFilter');
     expect(filters).toContain('export interface EnumRoleFilter');

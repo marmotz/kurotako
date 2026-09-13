@@ -5,6 +5,7 @@
  * source. `Enum<Name>Filter` imports its enum from `./enums`. All entries
  * optional (`.partial()`).
  */
+import { jsFile } from '@kurotako/core';
 import type { SourceIR } from '@kurotako/ir';
 import type { ZodDialect } from '../dialect.js';
 import { enumFilterName, enumSchemaName } from '../names.js';
@@ -113,7 +114,7 @@ export function emitFilters(source: SourceIR, dialect: ZodDialect): string {
       .sort((a, b) => a.localeCompare(b))
       .map((n) => enumSchemaName(n))
       .join(', ');
-    imports.push(`import { ${names} } from './enums';`);
+    imports.push(`import { ${names} } from '${jsFile('./enums')}';`);
   }
 
   return `${[imports.join('\n'), '', ...specs.map(renderFilter)].join('\n').trimEnd()}\n`;
