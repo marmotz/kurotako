@@ -83,10 +83,10 @@ describe('emitEntity — typed maps', () => {
 describe('emitBarrel', () => {
   it('re-exports shared and entity files', () => {
     expect(emitBarrel(blogSource(), true)).toContain(
-      "export type * from './scalars';",
+      "export type * from './scalars.js';",
     );
     expect(emitBarrel(blogSource(), true)).toContain(
-      "export type * from './User.type';",
+      "export type * from './User.type.js';",
     );
   });
 
@@ -95,6 +95,6 @@ describe('emitBarrel', () => {
       namespace: 'empty',
       parser: 'test',
     }).build();
-    expect(emitBarrel(source, false)).toBe("export * from './enums';\n");
+    expect(emitBarrel(source, false)).toBe("export * from './enums.js';\n");
   });
 });

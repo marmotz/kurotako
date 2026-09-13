@@ -27,7 +27,7 @@ describe('typescriptGenerator.generate', () => {
     ]);
     expect(fileEndingWith(output.files, 'scalars.ts')).toContain('JsonValue');
     expect(fileEndingWith(output.files, 'index.ts')).toContain(
-      "export * from './enums';",
+      "export * from './enums.js';",
     );
     expect(output.artifact.entities['blog.Post']?.module).toBe(
       'blog/typescript/Post.type',
@@ -96,18 +96,20 @@ describe('typescriptGenerator.generate', () => {
       const invoice = fileEndingWith(files, 'Invoice.type.ts');
       const aliases = fileEndingWith(files, 'aliases.ts');
 
-      expect(invoice).toContain("import type { Delivery } from './aliases';");
       expect(invoice).toContain(
-        "import type { AddressDto } from './Address.type';",
+        "import type { Delivery } from './aliases.js';",
+      );
+      expect(invoice).toContain(
+        "import type { AddressDto } from './Address.type.js';",
       );
       expect(invoice).toContain('address: AddressDto;');
       expect(invoice).toContain('destination: AddressDto | Delivery;');
       expect(aliases).toContain(
-        "import type { AddressDto } from './Address.type';",
+        "import type { AddressDto } from './Address.type.js';",
       );
       expect(aliases).toContain('export type Delivery = AddressDto | string;');
       expect(fileEndingWith(files, 'index.ts')).toContain(
-        "export type * from './aliases';",
+        "export type * from './aliases.js';",
       );
 
       const imports = invoice

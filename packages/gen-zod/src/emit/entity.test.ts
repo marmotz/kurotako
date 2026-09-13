@@ -105,9 +105,9 @@ describe('emitEntity', () => {
       l.slice(l.indexOf("from '") + 6, l.length - 2),
     );
     expect(specs).toEqual([...specs].sort((a, b) => a.localeCompare(b)));
-    expect(specs).toContain('./enums');
-    expect(specs).toContain('./filters');
-    expect(specs).toContain('./Post.schema');
+    expect(specs).toContain('./enums.js');
+    expect(specs).toContain('./filters.js');
+    expect(specs).toContain('./Post.schema.js');
   });
 });
 
@@ -131,15 +131,15 @@ describe('emitBarrel', () => {
   it('re-exports enums, filters and every entity file', () => {
     const out = emitBarrel(blogSource());
     expect(out).toBe(
-      "export * from './enums';\n" +
-        "export * from './filters';\n" +
-        "export * from './User.schema';\n" +
-        "export * from './Post.schema';\n",
+      "export * from './enums.js';\n" +
+        "export * from './filters.js';\n" +
+        "export * from './User.schema.js';\n" +
+        "export * from './Post.schema.js';\n",
     );
   });
 
   it('zero-entity source -> bare index.ts (enums only)', () => {
     const empty = createSourceIR({ namespace: 'x', parser: 't' }).build();
-    expect(emitBarrel(empty)).toBe("export * from './enums';\n");
+    expect(emitBarrel(empty)).toBe("export * from './enums.js';\n");
   });
 });

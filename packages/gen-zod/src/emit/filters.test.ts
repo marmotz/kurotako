@@ -31,7 +31,7 @@ describe('emitFilters', () => {
 
   it('Enum<Name>Filter imports the enum and switches on zodVersion', () => {
     const out4 = emitFilters(blogSource(), dialectFor(4));
-    expect(out4).toContain("import { RoleSchema } from './enums';");
+    expect(out4).toContain("import { RoleSchema } from './enums.js';");
     expect(out4).toContain('export const EnumRoleFilter');
     expect(out4).toContain('equals: RoleSchema.optional()');
     expect(out4).toContain('equals: z.int().optional()');

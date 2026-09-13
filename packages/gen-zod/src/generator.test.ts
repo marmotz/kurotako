@@ -62,7 +62,7 @@ describe('zodGenerator.generate', () => {
     const out = runGenerator(irOf(geoSource()), { zodVersion: 4 });
     expect(out.files.map((f) => f.path)).toContain('geo/zod/aliases.ts');
     const barrel = fileEndingWith(out.files, 'geo/zod/index.ts');
-    expect(barrel).toContain("export * from './aliases';");
+    expect(barrel).toContain("export * from './aliases.js';");
   });
 
   it('no aliases.ts / barrel line when the source has no type aliases', () => {
@@ -79,7 +79,7 @@ describe('zodGenerator.generate', () => {
       'Group.schema.ts',
     );
     expect(group).toContain(
-      "import { ShapeSchema, type Shape } from './aliases';",
+      "import { ShapeSchema, type Shape } from './aliases.js';",
     );
     expect(group).toContain('child: z.lazy(() => ShapeSchema)');
     expect(group).toContain('export const GroupSchema: z.ZodType<GroupDto> =');

@@ -18,3 +18,4 @@ export {
 export { collectPeerDependencies } from './writer/peers.js';
 export type { PackageManager } from './writer/pm.js';
 export { resolvePackageManager, runInstall } from './writer/pm.js';
+export { jsFile, jsIndex } from './writer/specifier.js';

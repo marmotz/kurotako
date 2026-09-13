@@ -1,5 +1,5 @@
 /** One entity -> its ten flat/deep TypeScript declaration variants. */
-import type { Logger } from '@kurotako/core';
+import { jsFile, type Logger } from '@kurotako/core';
 import type { Entity, SourceIR } from '@kurotako/ir';
 import {
   FAMILIES,
@@ -33,19 +33,22 @@ function importsFor(
 ): string {
   const imports: Array<{ specifier: string; names: string[] }> = [];
   if (aliases.size > 0) {
-    imports.push({ specifier: './aliases', names: [...aliases] });
+    imports.push({ specifier: jsFile('./aliases'), names: [...aliases] });
   }
   if (enums.size > 0) {
-    imports.push({ specifier: './enums', names: [...enums] });
+    imports.push({ specifier: jsFile('./enums'), names: [...enums] });
   }
   if (filters.size > 0) {
-    imports.push({ specifier: './filters', names: [...filters] });
+    imports.push({ specifier: jsFile('./filters'), names: [...filters] });
   }
   if (usesJsonValue) {
-    imports.push({ specifier: './scalars', names: ['JsonValue'] });
+    imports.push({ specifier: jsFile('./scalars'), names: ['JsonValue'] });
   }
   for (const [entity, names] of siblings) {
-    imports.push({ specifier: `./${entity}.type`, names: [...names] });
+    imports.push({
+      specifier: jsFile(`./${entity}.type`),
+      names: [...names],
+    });
   }
   return imports
     .sort((left, right) => left.specifier.localeCompare(right.specifier))

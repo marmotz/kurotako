@@ -18,7 +18,7 @@
  * aliases are fine in TS, only mutually inferred const initializers are not.
  */
 
-import type { Logger } from '@kurotako/core';
+import { jsFile, type Logger } from '@kurotako/core';
 import type { Entity, Field, IR, SourceIR } from '@kurotako/ir';
 import type { ZodDialect } from '../dialect.js';
 import {
@@ -409,9 +409,10 @@ function buildImports(
 
   if (enums.size > 0) {
     const names = [...enums].sort((a, b) => a.localeCompare(b)).join(', ');
+    const spec = jsFile('./enums');
     lines.push({
-      spec: './enums',
-      stmt: `import { ${names} } from './enums';`,
+      spec,
+      stmt: `import { ${names} } from '${spec}';`,
     });
   }
   if (aliases.size > 0) {
@@ -419,16 +420,18 @@ function buildImports(
       .sort((a, b) => a.localeCompare(b))
       .flatMap((n) => [aliasSchemaName(n), `type ${aliasTypeName(n)}`])
       .join(', ');
+    const spec = jsFile('./aliases');
     lines.push({
-      spec: './aliases',
-      stmt: `import { ${names} } from './aliases';`,
+      spec,
+      stmt: `import { ${names} } from '${spec}';`,
     });
   }
   if (filters.size > 0) {
     const names = [...filters].sort((a, b) => a.localeCompare(b)).join(', ');
+    const spec = jsFile('./filters');
     lines.push({
-      spec: './filters',
-      stmt: `import { ${names} } from './filters';`,
+      spec,
+      stmt: `import { ${names} } from '${spec}';`,
     });
   }
   for (const target of [...siblings.keys()].sort((a, b) =>
@@ -437,7 +440,7 @@ function buildImports(
     const names = [...(siblings.get(target) ?? [])]
       .sort((a, b) => a.localeCompare(b))
       .join(', ');
-    const spec = `./${target}.schema`;
+    const spec = jsFile(`./${target}.schema`);
     lines.push({ spec, stmt: `import { ${names} } from '${spec}';` });
   }
 

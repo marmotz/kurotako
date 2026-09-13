@@ -10,7 +10,7 @@ describe('emitBarrel', () => {
     const options = v.parse(AngularGeneratorOptions, {});
     const text = emitBarrel(blogSource(), options);
     expect(text).toBe(
-      "export * from './zod-forms.runtime';\nexport * from './User.form';\nexport * from './Post.form';\n",
+      "export * from './zod-forms.runtime.js';\nexport * from './User.form.js';\nexport * from './Post.form.js';\n",
     );
   });
 

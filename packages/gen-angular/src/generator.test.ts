@@ -169,9 +169,9 @@ describe('angularGenerator.generate', () => {
       relations: 'flat',
     });
     const barrel = fileEndingWith(out.files, 'index.ts');
-    expect(barrel).toContain("export * from './zod-forms.runtime';");
-    expect(barrel).toContain("export * from './User.form';");
-    expect(barrel).toContain("export * from './Post.form';");
+    expect(barrel).toContain("export * from './zod-forms.runtime.js';");
+    expect(barrel).toContain("export * from './User.form.js';");
+    expect(barrel).toContain("export * from './Post.form.js';");
   });
 
   it('is deterministic: same IR + artifact + options -> deep-equal GenOutput on a second call', () => {
