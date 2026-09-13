@@ -1,4 +1,4 @@
-<!-- backlog-sync 2026-09-11T00:00Z — GENERATED, do not hand-edit. Regenerate: skill backlog-sync -->
+<!-- backlog-sync 2026-09-13T20:05Z — GENERATED, do not hand-edit. Regenerate: skill backlog-sync -->
 
 # Backlog
 
@@ -13,6 +13,18 @@ _**Status**: [technical design](technical.md)_ — 4/4 tasks done
 | [x]  | [#147](https://github.com/marmotz/kurotako/issues/147) | gen-openapi: document assembly (entities, typeAliases, relations) | #146 |
 | [x]  | [#148](https://github.com/marmotz/kurotako/issues/148) | gen-openapi: serialization, artifact and driver wiring | #147 |
 
+## Bug: generated relative imports are missing `.js` extensions  ·  [overview](bugs/generated-imports-missing-js-extensions/overview.md)
+
+_**Status**: technical design ready — see [`technical.md`](technical.md)_ — 0/5 tasks done
+
+| Done | Issue | Title | Blocked by |
+|------|-------|-------|------------|
+| [ ]  | [#154](https://github.com/marmotz/kurotako/issues/154) | core: add jsFile/jsIndex helper for extension-qualified relative specifiers | — |
+| [ ]  | [#155](https://github.com/marmotz/kurotako/issues/155) | core: qualify synthesized root barrel specifiers with jsIndex, update mode-B tsconfig guidance | #154 |
+| [ ]  | [#156](https://github.com/marmotz/kurotako/issues/156) | gen-typescript: qualify emitted relative specifiers with jsFile | #154 |
+| [ ]  | [#157](https://github.com/marmotz/kurotako/issues/157) | gen-zod: qualify emitted relative specifiers with jsFile | #154 |
+| [ ]  | [#158](https://github.com/marmotz/kurotako/issues/158) | gen-angular: qualify emitted relative barrel specifiers with jsFile | #154 |
+
 ## OpenAPI parser (`@kurotako/parser-openapi`)  ·  [overview](features/parser-openapi/overview.md)
 
 _**Status**: [technical design](technical.md)_ — 7/7 tasks done
@@ -26,3 +38,11 @@ _**Status**: [technical design](technical.md)_ — 7/7 tasks done
 | [x]  | [#138](https://github.com/marmotz/kurotako/issues/138) | feat(parser-openapi): scaffold driver and resolve documents | — |
 | [x]  | [#139](https://github.com/marmotz/kurotako/issues/139) | feat(parser-openapi): map component schemas to IR v3 | #134, #138 |
 | [x]  | [#140](https://github.com/marmotz/kurotako/issues/140) | feat(parser-openapi): synthesize operation payload schemas and prove pipeline integration | #135, #136, #137, #139 |
+
+## Bug: `@kurotako/parser-prisma` (version-8 mode) confuses storage column names with model field names  ·  [overview](bugs/parser-prisma-v8-index-field-names/overview.md)
+
+_**Status**: technical design done, see [`technical.md`](technical.md) — fix not started_ — 1/1 tasks done
+
+| Done | Issue | Title | Blocked by |
+|------|-------|-------|------------|
+| [x]  | [#159](https://github.com/marmotz/kurotako/issues/159) | parser-prisma: contract mode confuses storage column names with domain field names (indexes, uniques, primaryKey, isUnique, FK match) | — |

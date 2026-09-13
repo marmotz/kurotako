@@ -320,7 +320,7 @@
             "storage": {
               "fields": {
                 "authorId": {
-                  "column": "authorId"
+                  "column": "author_id"
                 },
                 "content": {
                   "column": "content"
@@ -389,10 +389,10 @@
             "storage": {
               "fields": {
                 "postId": {
-                  "column": "postId"
+                  "column": "post_id"
                 },
                 "tagId": {
-                  "column": "tagId"
+                  "column": "tag_id"
                 }
               },
               "namespaceId": "public",
@@ -488,7 +488,7 @@
                   "column": "id"
                 },
                 "name": {
-                  "column": "name"
+                  "column": "tag_name"
                 }
               },
               "namespaceId": "public",
@@ -928,7 +928,7 @@
             },
             "post": {
               "columns": {
-                "authorId": {
+                "author_id": {
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
                   "nullable": false
@@ -981,7 +981,7 @@
                   "onDelete": "restrict",
                   "onUpdate": "cascade",
                   "source": {
-                    "columns": ["authorId"],
+                    "columns": ["author_id"],
                     "namespaceId": "public",
                     "tableName": "post"
                   },
@@ -994,13 +994,13 @@
               ],
               "indexes": [
                 {
-                  "columns": ["authorId"],
+                  "columns": ["author_id"],
                   "name": "post_authorId_idx_e47547ed",
                   "prefix": "post_authorId_idx",
                   "unique": false
                 },
                 {
-                  "columns": ["authorId", "published"],
+                  "columns": ["author_id", "published"],
                   "name": "post_author_published_idx_5940983d",
                   "prefix": "post_author_published_idx",
                   "unique": false
@@ -1020,12 +1020,12 @@
             },
             "postTag": {
               "columns": {
-                "postId": {
+                "post_id": {
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
                   "nullable": false
                 },
-                "tagId": {
+                "tag_id": {
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
                   "nullable": false
@@ -1035,7 +1035,7 @@
                 {
                   "onDelete": "cascade",
                   "source": {
-                    "columns": ["postId"],
+                    "columns": ["post_id"],
                     "namespaceId": "public",
                     "tableName": "postTag"
                   },
@@ -1048,7 +1048,7 @@
                 {
                   "onDelete": "cascade",
                   "source": {
-                    "columns": ["tagId"],
+                    "columns": ["tag_id"],
                     "namespaceId": "public",
                     "tableName": "postTag"
                   },
@@ -1061,20 +1061,20 @@
               ],
               "indexes": [
                 {
-                  "columns": ["postId"],
+                  "columns": ["post_id"],
                   "name": "postTag_postId_idx_a7a72715",
                   "prefix": "postTag_postId_idx",
                   "unique": false
                 },
                 {
-                  "columns": ["tagId"],
+                  "columns": ["tag_id"],
                   "name": "postTag_tagId_idx_86854244",
                   "prefix": "postTag_tagId_idx",
                   "unique": false
                 }
               ],
               "primaryKey": {
-                "columns": ["postId", "tagId"]
+                "columns": ["post_id", "tag_id"]
               },
               "uniques": []
             },
@@ -1137,7 +1137,7 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
-                "name": {
+                "tag_name": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
@@ -1150,7 +1150,7 @@
               },
               "uniques": [
                 {
-                  "columns": ["name"]
+                  "columns": ["tag_name"]
                 }
               ]
             },
