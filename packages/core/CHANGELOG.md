@@ -1,5 +1,22 @@
 # @kurotako/core
 
+## 0.2.0
+
+### Minor Changes
+
+- 69f41ac: New exports `jsFile` and `jsIndex`: pure helpers that append `.js` (sibling file) or
+  `/index.js` (sibling directory barrel) to a relative specifier. Generators use them to
+  build relative import/export specifiers that satisfy `moduleResolution: node16`/`nodenext`,
+  which requires an explicit extension on every relative specifier.
+
+### Patch Changes
+
+- 69f41ac: The synthesized root barrel (`<namespace>/index.ts`) now qualifies every re-export
+  specifier with `/index.js` (`export * from './zod/index.js';` instead of
+  `export * from './zod';`), so it compiles under `moduleResolution: node16`/`nodenext`. The
+  mode-B `tsconfig.base.json` guidance no longer claims that setting requires
+  `moduleResolution: bundler`.
+
 ## 0.1.3
 
 ### Patch Changes
