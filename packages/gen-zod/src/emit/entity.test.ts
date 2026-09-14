@@ -127,6 +127,20 @@ describe('emitEntity — typed maps', () => {
   });
 });
 
+describe('emitEntity — unknown-hint field not last', () => {
+  it('keeps the comma right after the value, before the comment', () => {
+    const source = createSourceIR({ namespace: 'api', parser: 'openapi' })
+      .addEntity('Widget', (entity) => {
+        entity.field('status', (field) => field.unknown('enum'));
+        entity.field('label', (field) => field.scalar('string'));
+      })
+      .build();
+    const out = emitEntity(irOf(source), source, entityOf(source, 'Widget'), d);
+    expect(out).toContain('status: z.unknown() /* unknown: enum */,');
+    expect(out).not.toMatch(/\/\/ unknown[^\n]*,/);
+  });
+});
+
 describe('emitBarrel', () => {
   it('re-exports enums, filters and every entity file', () => {
     const out = emitBarrel(blogSource());

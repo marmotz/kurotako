@@ -15,12 +15,20 @@ export interface FieldExprOptions {
   variant: VariantName;
 }
 
+/** `fieldExpr`'s result: the Zod expression, plus its trailing `unknown`-hint
+ * comment (`// unknown[: hint]`), separately, since it's up to the caller to
+ * place it relative to whatever delimiter follows the expression. */
+export interface FieldExprResult {
+  expr: string;
+  comment: string | null;
+}
+
 export function fieldExpr(
   field: Field,
   opts: FieldExprOptions,
   dialect: ZodDialect,
   cyclicRefs?: ReadonlySet<string>,
-): string {
+): FieldExprResult {
   let expr = applyConstraints(
     baseExpr(field.type, dialect, cyclicRefs),
     field.constraints,
@@ -45,6 +53,5 @@ export function fieldExpr(
     expr += `.default(${JSON.stringify(field.default.value)})`;
   }
 
-  const comment = unknownHintComment(field.type);
-  return comment === null ? expr : `${expr} ${comment}`;
+  return { expr, comment: unknownHintComment(field.type) };
 }
