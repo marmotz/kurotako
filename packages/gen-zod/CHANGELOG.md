@@ -1,5 +1,22 @@
 # @kurotako/gen-zod
 
+## 0.3.4
+
+### Patch Changes
+
+- 38b3da8: Fixed a `TS1484` error under `verbatimModuleSyntax`: a sibling entity's `Dto`
+  type name is now imported with a `type` prefix (`import { XSchema, type
+  XDto } from './X.schema.js';`) instead of being mixed in untyped with the
+  schema-const name it shares an import statement with.
+- 38b3da8: Fixed a `TS2322` error on `Where`/`WhereDeep` schemas for an entity with zero
+  own filterable fields (all relations, or all `unknown`-hint fields): the
+  `z.infer<typeof <name>Base>` member is no longer intersected into the `Dto`
+  type when the base object schema is empty, since Zod's inferred
+  `Record<string, never>` index signature for `z.object({})` made every
+  `AND`/`OR`/`NOT` property incompatible with it.
+- Updated dependencies [38b3da8]
+  - @kurotako/core@0.2.1
+
 ## 0.3.3
 
 ### Patch Changes

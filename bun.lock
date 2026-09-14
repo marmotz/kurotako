@@ -73,7 +73,7 @@
     },
     "packages/core": {
       "name": "@kurotako/core",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "dependencies": {
         "@kurotako/ir": "workspace:^",
         "tsup": "8.5.1",
@@ -136,7 +136,7 @@
     },
     "packages/gen-zod": {
       "name": "@kurotako/gen-zod",
-      "version": "0.3.3",
+      "version": "0.3.4",
       "dependencies": {
         "@kurotako/ir": "workspace:^",
         "valibot": "1.4.2",
