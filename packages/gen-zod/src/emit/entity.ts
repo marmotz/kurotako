@@ -67,14 +67,19 @@ function extendExpr(baseName: string, entries: Entry[]): string {
   return `${baseName}.extend({\n${body}\n})`;
 }
 
+/** `{ k: T; ... }` object-type body for a set of typed entries, no leading ` & `. */
+function intersectionBody(entries: TypedEntry[]): string {
+  const body = entries
+    .map(([k, t]) => `  ${k}${t.optional ? '?' : ''}: ${t.type};`)
+    .join('\n');
+  return `{\n${body}\n}`;
+}
+
 function typeIntersection(entries: TypedEntry[]): string {
   if (entries.length === 0) {
     return '';
   }
-  const body = entries
-    .map(([k, t]) => `  ${k}${t.optional ? '?' : ''}: ${t.type};`)
-    .join('\n');
-  return ` & {\n${body}\n}`;
+  return ` & ${intersectionBody(entries)}`;
 }
 
 export function emitEntity(
@@ -90,15 +95,20 @@ export function emitEntity(
   const usedFilters = new Set<string>();
   /** Type-alias names referenced by a field type — imported from `./aliases`. */
   const usedAliases = new Set<string>();
-  const usedSiblings = new Map<string, Set<string>>();
+  /** Per target sibling file: symbol name -> whether it's a type (vs a value). */
+  const usedSiblings = new Map<string, Map<string, boolean>>();
 
-  const trackSibling = (target: string, symbol: string): void => {
+  const trackSibling = (
+    target: string,
+    symbol: string,
+    isType: boolean,
+  ): void => {
     if (target === entity.name) {
       return;
     }
-    const set = usedSiblings.get(target) ?? new Set<string>();
-    set.add(symbol);
-    usedSiblings.set(target, set);
+    const symbols = usedSiblings.get(target) ?? new Map<string, boolean>();
+    symbols.set(symbol, isType);
+    usedSiblings.set(target, symbols);
   };
 
   /** Record enum / alias / sibling-entity schema imports for a field type. */
@@ -109,8 +119,8 @@ export function emitEntity(
     }
     for (const ref of deps.refs) {
       if (source.entities[ref] !== undefined) {
-        trackSibling(ref, refSchemaName(ref));
-        trackSibling(ref, typeName(ref));
+        trackSibling(ref, refSchemaName(ref), false);
+        trackSibling(ref, typeName(ref), true);
       } else {
         usedAliases.add(ref);
       }
@@ -122,8 +132,8 @@ export function emitEntity(
     for (const e of deps.enums) usedEnumSchemas.add(e);
     for (const ref of deps.refs) {
       if (source.entities[ref] !== undefined) {
-        trackSibling(ref, refSchemaName(ref));
-        trackSibling(ref, typeName(ref));
+        trackSibling(ref, refSchemaName(ref), false);
+        trackSibling(ref, typeName(ref), true);
       } else {
         usedAliases.add(ref);
       }
@@ -164,6 +174,7 @@ export function emitEntity(
       trackSibling(
         rel.target.entity,
         schemaName(rel.target.entity, relSchemaFamily, 'Deep'),
+        false,
       );
       const type = relationTypeExpr(rel, 'deep', variant, {
         fromNamespace: ns,
@@ -174,6 +185,7 @@ export function emitEntity(
         trackSibling(
           rel.target.entity,
           typeName(rel.target.entity, relSchemaFamily, 'Deep'),
+          true,
         );
       }
     }
@@ -328,10 +340,21 @@ export function emitEntity(
       ['NOT', logic],
     ];
 
+    const dtoMembers: string[] = [];
+    if (ownEntries.length > 0) {
+      dtoMembers.push(`z.infer<typeof ${baseName}>`);
+    }
+    if (relTyped.length > 0) {
+      dtoMembers.push(intersectionBody(relTyped));
+    }
+    dtoMembers.push(
+      `{ AND?: ${dto} | ${dto}[]; OR?: ${dto} | ${dto}[]; NOT?: ${dto} | ${dto}[]; }`,
+    );
+
     return [
       `const ${baseName} = ${objectExpr(ownEntries)};`,
       `export const ${name}: z.ZodType<${dto}> = z.lazy(() => ${extendExpr(baseName, logicEntries)});`,
-      `export type ${dto} = z.infer<typeof ${baseName}>${typeIntersection(relTyped)} & { AND?: ${dto} | ${dto}[]; OR?: ${dto} | ${dto}[]; NOT?: ${dto} | ${dto}[]; };`,
+      `export type ${dto} = ${dtoMembers.join(' & ')};`,
       '',
     ];
   }
@@ -373,6 +396,7 @@ export function emitEntity(
       trackSibling(
         rel.target.entity,
         schemaName(rel.target.entity, 'Select', 'Deep'),
+        false,
       );
       const type = relationTypeExpr(rel, 'deep', 'select', {
         fromNamespace: ns,
@@ -383,6 +407,7 @@ export function emitEntity(
         trackSibling(
           rel.target.entity,
           typeName(rel.target.entity, 'Select', 'Deep'),
+          true,
         );
       }
     }
@@ -410,7 +435,7 @@ function buildImports(
   enums: Set<string>,
   filters: Set<string>,
   aliases: Set<string>,
-  siblings: Map<string, Set<string>>,
+  siblings: Map<string, Map<string, boolean>>,
 ): string {
   const lines: { spec: string; stmt: string }[] = [
     { spec: 'zod', stmt: "import { z } from 'zod';" },
@@ -446,8 +471,9 @@ function buildImports(
   for (const target of [...siblings.keys()].sort((a, b) =>
     a.localeCompare(b),
   )) {
-    const names = [...(siblings.get(target) ?? [])]
-      .sort((a, b) => a.localeCompare(b))
+    const names = [...(siblings.get(target) ?? new Map<string, boolean>())]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([n, isType]) => (isType ? `type ${n}` : n))
       .join(', ');
     const spec = jsFile(`./${target}.schema`);
     lines.push({ spec, stmt: `import { ${names} } from '${spec}';` });

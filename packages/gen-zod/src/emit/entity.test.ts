@@ -109,6 +109,15 @@ describe('emitEntity', () => {
     expect(specs).toContain('./filters.js');
     expect(specs).toContain('./Post.schema.js');
   });
+
+  it('sibling import mixing a schema (value) and a Dto (type) marks only the Dto as type-only', () => {
+    const line = out
+      .split('\n')
+      .find((l) => l.startsWith('import ') && l.includes("'./Post.schema.js'"));
+    expect(line).toContain('PostDeepSchema');
+    expect(line).toContain('type PostDeepDto');
+    expect(line).not.toContain('type PostDeepSchema');
+  });
 });
 
 describe('emitEntity — typed maps', () => {
@@ -124,6 +133,34 @@ describe('emitEntity — typed maps', () => {
     const out = emitEntity(irOf(source), source, entityOf(source, 'Bag'), d);
     expect(out).toContain('labels: z.record(z.string(), z.string())');
     expect(out).toContain('.catchall(z.int())');
+  });
+});
+
+describe('emitEntity — where block with zero own filterable fields', () => {
+  it('drops the z.infer<typeof Base> member instead of intersecting an empty object', () => {
+    const source = createSourceIR({ namespace: 'api', parser: 'openapi' })
+      .addEntity('Blob', (entity) => {
+        entity.field('payload', (field) => field.unknown('enum'));
+      })
+      .build();
+    const out = emitEntity(irOf(source), source, entityOf(source, 'Blob'), d);
+
+    const where = out.slice(
+      out.indexOf('export type BlobWhereDto'),
+      out.indexOf('export type BlobWhereDto') +
+        out.slice(out.indexOf('export type BlobWhereDto')).indexOf('\n'),
+    );
+    expect(where).not.toContain('z.infer<typeof');
+    expect(where).toBe(
+      'export type BlobWhereDto = { AND?: BlobWhereDto | BlobWhereDto[]; OR?: BlobWhereDto | BlobWhereDto[]; NOT?: BlobWhereDto | BlobWhereDto[]; };',
+    );
+  });
+
+  it('the existing UserWhereDto case (own filterable fields present) still includes the Base member', () => {
+    const out = userFile();
+    expect(out).toContain(
+      'export type UserWhereDto = z.infer<typeof UserWhereSchemaBase> & { AND?: UserWhereDto | UserWhereDto[]; OR?: UserWhereDto | UserWhereDto[]; NOT?: UserWhereDto | UserWhereDto[]; };',
+    );
   });
 });
 

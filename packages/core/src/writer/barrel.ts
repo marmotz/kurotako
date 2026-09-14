@@ -40,8 +40,8 @@ export function synthesizeRootBarrels(
     const content = [
       ...generators.map((name) => `export * from '${jsIndex(`./${name}`)}';`),
       ...[...collisions.entries()].map(
-        ([identifier, owners]) =>
-          `export { ${identifier} } from '${jsIndex(`./${owners[0]}`)}';`,
+        ([identifier, { owners, isType }]) =>
+          `export ${isType ? 'type ' : ''}{ ${identifier} } from '${jsIndex(`./${owners[0]}`)}';`,
       ),
       '',
     ].join('\n');
@@ -66,10 +66,10 @@ const COLLISION_SAMPLE_SIZE = 5;
  * re-exports it from (its lexically-first owner), in sorted identifier order.
  */
 function collisionResolutions(
-  collisions: Map<string, string[]>,
+  collisions: Map<string, { owners: string[]; isType: boolean }>,
 ): Record<string, string> {
   const resolutions: Record<string, string> = {};
-  for (const [identifier, owners] of collisions) {
+  for (const [identifier, { owners }] of collisions) {
     resolutions[identifier] = owners[0] as string;
   }
   return resolutions;
@@ -92,7 +92,7 @@ function listPhrase(items: string[]): string {
 function formatCollisionWarning(
   namespace: string,
   generators: string[],
-  collisions: Map<string, string[]>,
+  collisions: Map<string, { owners: string[]; isType: boolean }>,
 ): string {
   const identifiers = [...collisions.keys()];
   const count = identifiers.length;
@@ -135,7 +135,7 @@ function formatCollisionWarning(
 function collisionMeta(
   namespace: string,
   generators: string[],
-  collisions: Map<string, string[]>,
+  collisions: Map<string, { owners: string[]; isType: boolean }>,
 ): {
   namespace: string;
   generators: string[];
@@ -160,7 +160,7 @@ function exportedNameCollisions(
   namespace: string,
   generators: string[],
   files: VirtualFile[],
-): Map<string, string[]> {
+): Map<string, { owners: string[]; isType: boolean }> {
   const sourceFiles = new Map(
     files
       .filter((file) => file.path.startsWith(`${namespace}/`))
@@ -195,6 +195,8 @@ function exportedNameCollisions(
   const program = ts.createProgram({ rootNames, options, host });
   const checker = program.getTypeChecker();
   const owners = new Map<string, string[]>();
+  /** identifier -> generator -> whether that generator's declaration is type-only. */
+  const kindsByIdentifier = new Map<string, Map<string, boolean>>();
   for (const generator of generators) {
     const source = program.getSourceFile(
       toVirtualPath(`${namespace}/${generator}/index.ts`),
@@ -206,13 +208,22 @@ function exportedNameCollisions(
       const list = owners.get(exported.name) ?? [];
       list.push(generator);
       owners.set(exported.name, list);
+
+      const kinds = kindsByIdentifier.get(exported.name) ?? new Map();
+      kinds.set(generator, exported.valueDeclaration === undefined);
+      kindsByIdentifier.set(exported.name, kinds);
     }
   }
 
   return new Map(
     [...owners]
       .filter(([, owners]) => owners.length > 1)
-      .sort(([a], [b]) => a.localeCompare(b)),
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([identifier, ownerList]) => {
+        const winner = ownerList[0] as string;
+        const isType = kindsByIdentifier.get(identifier)?.get(winner) ?? false;
+        return [identifier, { owners: ownerList, isType }] as const;
+      }),
   );
 }
 
