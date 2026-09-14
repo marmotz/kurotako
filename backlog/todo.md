@@ -1,4 +1,4 @@
-<!-- backlog-sync 2026-09-14T13:08Z — GENERATED, do not hand-edit. Regenerate: skill backlog-sync -->
+<!-- backlog-sync 2026-09-14T13:52Z — GENERATED, do not hand-edit. Regenerate: skill backlog-sync -->
 
 # Backlog
 
@@ -60,3 +60,20 @@ _**Status**: reported — root cause found, fix not started_ — 1/1 tasks done
 | Done | Issue                                                  | Title                                                                            | Blocked by |
 |------|--------------------------------------------------------|----------------------------------------------------------------------------------|------------|
 | [x]  | [#163](https://github.com/marmotz/kurotako/issues/163) | gen-zod: fix comma swallowed by unknown-hint trailing comment in object emission | —          |
+
+## Bug: generated `api`-namespace output isn't `verbatimModuleSyntax`-clean ·  [overview](bugs/gen-zod-verbatim-module-syntax-type-only-exports/overview.md)
+
+_**Status**: reported — root causes found for both parts, fix not started_ — 2/2 tasks done
+
+| Done | Issue                                                  | Title                                                                                | Blocked by |
+|------|--------------------------------------------------------|---------------------------------------------------------------------------------------|------------|
+| [x]  | [#166](https://github.com/marmotz/kurotako/issues/166) | gen-zod: type-only import for sibling Dto references in buildImports                  | —          |
+| [x]  | [#167](https://github.com/marmotz/kurotako/issues/167) | core: track type vs value symbol kind for synthesized root-barrel re-exports          | —          |
+
+## Bug: `Where`/`WhereDeep` schema fails to typecheck when the entity has zero filterable fields ·  [overview](bugs/gen-zod-where-schema-empty-base-type-mismatch/overview.md)
+
+_**Status**: technical design done, see [`technical.md`](technical.md) — fix not started_ — 1/1 tasks done
+
+| Done | Issue                                                  | Title                                                                                   | Blocked by |
+|------|--------------------------------------------------------|------------------------------------------------------------------------------------------|------------|
+| [x]  | [#168](https://github.com/marmotz/kurotako/issues/168) | fix(gen-zod): Where/WhereDeep type breaks when entity has zero own filterable fields     | —          |

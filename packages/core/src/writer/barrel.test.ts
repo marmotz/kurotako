@@ -63,7 +63,7 @@ describe('synthesizeRootBarrels', () => {
       {
         path: 'pg/index.ts',
         content:
-          "export * from './typescript/index.js';\nexport * from './zod/index.js';\nexport { User } from './typescript/index.js';\n",
+          "export * from './typescript/index.js';\nexport * from './zod/index.js';\nexport type { User } from './typescript/index.js';\n",
       },
     ]);
     expect(log.warn).toHaveBeenCalledTimes(1);
@@ -166,9 +166,9 @@ describe('synthesizeRootBarrels', () => {
       path: 'pg/index.ts',
       content:
         "export * from './typescript/index.js';\nexport * from './zod/index.js';\n" +
-        "export { Order } from './typescript/index.js';\n" +
-        "export { Task } from './typescript/index.js';\n" +
-        "export { User } from './typescript/index.js';\n",
+        "export type { Order } from './typescript/index.js';\n" +
+        "export type { Task } from './typescript/index.js';\n" +
+        "export type { User } from './typescript/index.js';\n",
     });
   });
 
@@ -189,7 +189,23 @@ describe('synthesizeRootBarrels', () => {
       },
     ]);
     expect(barrels[0]?.content).toContain(
-      "export { StringFilter } from './typescript/index.js';",
+      "export type { StringFilter } from './typescript/index.js';",
     );
+  });
+
+  it('resolves a collision where the winning declaration is a value, not a type', () => {
+    const barrels = synthesizeRootBarrels([
+      { path: 'pg/aconst/index.ts', content: "export * from './User';\n" },
+      { path: 'pg/aconst/User.ts', content: 'export const User = {}\n' },
+      {
+        path: 'pg/btype/index.ts',
+        content: "export type * from './User';\n",
+      },
+      { path: 'pg/btype/User.ts', content: 'export interface User {}\n' },
+    ]);
+    expect(barrels[0]?.content).toContain(
+      "export { User } from './aconst/index.js';",
+    );
+    expect(barrels[0]?.content).not.toContain('export type { User }');
   });
 });
