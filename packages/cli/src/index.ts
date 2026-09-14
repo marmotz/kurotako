@@ -11,3 +11,13 @@ export {
 } from './diff.js';
 export { ConfigExistsError, renderError } from './errors.js';
 export { ConsoleReporter, type ConsoleReporterOptions } from './reporter.js';
+export {
+  type CheckForUpdateResult,
+  checkForUpdate,
+  compareVersions,
+  getCacheFilePath,
+  readCache,
+  refreshLatestVersion,
+  type VersionCacheEntry,
+  writeCache,
+} from './version-check.js';

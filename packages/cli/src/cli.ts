@@ -11,9 +11,11 @@ import { type CommandDef, defineCommand, renderUsage, runCommand } from 'citty';
 import { checkCommand } from './commands/check.js';
 import { generateCommand } from './commands/generate.js';
 import { initCommand } from './commands/init.js';
+import { outdatedCommand } from './commands/outdated.js';
 import { validateCommand } from './commands/validate.js';
 import { renderError } from './errors.js';
 import { ConsoleReporter } from './reporter.js';
+import { checkForUpdate } from './version-check.js';
 
 declare const __TAKO_VERSION__: string;
 const VERSION =
@@ -24,6 +26,7 @@ const subCommands = {
   generate: generateCommand,
   validate: validateCommand,
   check: checkCommand,
+  outdated: outdatedCommand,
 };
 
 const main = defineCommand({
@@ -35,7 +38,10 @@ const main = defineCommand({
   subCommands,
 });
 
-export async function runCli(argv: string[]): Promise<void> {
+export async function runCli(
+  argv: string[],
+  options: { currentVersion?: string } = {},
+): Promise<void> {
   const reporter = new ConsoleReporter({
     debug: argv.includes('--debug') || Boolean(process.env.TAKO_DEBUG),
   });
@@ -59,6 +65,14 @@ export async function runCli(argv: string[]): Promise<void> {
     return;
   }
 
+  const { notice, refresh } = checkForUpdate(options.currentVersion ?? VERSION);
+  if (notice) {
+    reporter.info(notice);
+  }
+
+  const controller = new AbortController();
+  const refreshPromise = refresh?.(controller.signal).catch(() => {});
+
   try {
     await runCommand(main, { rawArgs: argv });
     process.exitCode ??= 0;
@@ -75,5 +89,8 @@ export async function runCli(argv: string[]): Promise<void> {
       console.error(error);
       process.exitCode = 1;
     }
+  } finally {
+    controller.abort();
+    await refreshPromise;
   }
 }
