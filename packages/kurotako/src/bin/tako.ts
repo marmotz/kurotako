@@ -13,5 +13,5 @@ if (argv[0] === '--version' || argv[0] === '-v') {
   process.stdout.write(`${__TAKO_VERSION__}\n`);
   process.exitCode = 0;
 } else {
-  await runCli(argv);
+  await runCli(argv, { currentVersion: __TAKO_VERSION__ });
 }
