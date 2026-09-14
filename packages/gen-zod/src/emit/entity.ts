@@ -44,19 +44,26 @@ import {
 import { baseExpr, collectTypeDeps, typeExpr } from '../render/scalars.js';
 import { filterClass, variantFields } from '../render/variants.js';
 
-type Entry = [name: string, expr: string];
+/** `comment`, when set, is the bare `unknown`-hint text (no `//` prefix) —
+ * rendered as a `/* ... *\/` block comment before the comma, since a line
+ * comment there would swallow it. */
+type Entry = [name: string, expr: string, comment?: string | null];
 type TypedEntry = [name: string, type: RelationType];
+
+function entryLine([k, v, comment]: Entry): string {
+  return `  ${k}: ${v}${comment ? ` /* ${comment} */` : ''},`;
+}
 
 function objectExpr(entries: Entry[]): string {
   if (entries.length === 0) {
     return 'z.object({})';
   }
-  const body = entries.map(([k, v]) => `  ${k}: ${v},`).join('\n');
+  const body = entries.map(entryLine).join('\n');
   return `z.object({\n${body}\n})`;
 }
 
 function extendExpr(baseName: string, entries: Entry[]): string {
-  const body = entries.map(([k, v]) => `  ${k}: ${v},`).join('\n');
+  const body = entries.map(entryLine).join('\n');
   return `${baseName}.extend({\n${body}\n})`;
 }
 
@@ -228,14 +235,16 @@ export function emitEntity(
       if (collectTypeDeps(sel.field.type).refs.size > 0) {
         ownHasRef = true;
       }
+      const { expr, comment } = fieldExpr(
+        sel.field,
+        { optional: variant === 'update' ? false : sel.optional, variant },
+        dialect,
+        cyclicRefs,
+      );
       ownEntries.push([
         sel.field.name,
-        fieldExpr(
-          sel.field,
-          { optional: variant === 'update' ? false : sel.optional, variant },
-          dialect,
-          cyclicRefs,
-        ),
+        expr,
+        comment === null ? null : comment.slice(3),
       ]);
     }
 

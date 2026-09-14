@@ -25,7 +25,7 @@ describe('fieldExpr assembly', () => {
         { optional: false, variant: 'full' },
         v4,
       ),
-    ).toBe('z.string().nullable()');
+    ).toEqual({ expr: 'z.string().nullable()', comment: null });
   });
 
   it('list -> z.array(...)', () => {
@@ -35,7 +35,7 @@ describe('fieldExpr assembly', () => {
         { optional: false, variant: 'full' },
         v4,
       ),
-    ).toBe('z.array(z.string())');
+    ).toEqual({ expr: 'z.array(z.string())', comment: null });
   });
 
   it('list + array field type -> z.array(z.array(...)) (nested-array property)', () => {
@@ -48,7 +48,7 @@ describe('fieldExpr assembly', () => {
         { optional: false, variant: 'full' },
         v4,
       ),
-    ).toBe('z.array(z.array(z.int()))');
+    ).toEqual({ expr: 'z.array(z.array(z.int()))', comment: null });
   });
 
   it('list + nullable + optional order', () => {
@@ -58,7 +58,10 @@ describe('fieldExpr assembly', () => {
         { optional: true, variant: 'full' },
         v4,
       ),
-    ).toBe('z.array(z.string()).nullable().optional()');
+    ).toEqual({
+      expr: 'z.array(z.string()).nullable().optional()',
+      comment: null,
+    });
   });
 
   it('literal default -> .default() in create only', () => {
@@ -66,12 +69,14 @@ describe('fieldExpr assembly', () => {
       default: { kind: 'value', value: 7 },
       type: { kind: 'scalar', scalar: 'int' },
     });
-    expect(fieldExpr(f, { optional: true, variant: 'create' }, v4)).toBe(
-      'z.int().optional().default(7)',
-    );
-    expect(fieldExpr(f, { optional: false, variant: 'full' }, v4)).toBe(
-      'z.int()',
-    );
+    expect(fieldExpr(f, { optional: true, variant: 'create' }, v4)).toEqual({
+      expr: 'z.int().optional().default(7)',
+      comment: null,
+    });
+    expect(fieldExpr(f, { optional: false, variant: 'full' }, v4)).toEqual({
+      expr: 'z.int()',
+      comment: null,
+    });
   });
 
   it('expr default -> never .default()', () => {
@@ -79,9 +84,10 @@ describe('fieldExpr assembly', () => {
       default: { kind: 'expr', expr: 'now()' },
       type: { kind: 'scalar', scalar: 'datetime' },
     });
-    expect(fieldExpr(f, { optional: true, variant: 'create' }, v4)).toBe(
-      'z.coerce.date().optional()',
-    );
+    expect(fieldExpr(f, { optional: true, variant: 'create' }, v4)).toEqual({
+      expr: 'z.coerce.date().optional()',
+      comment: null,
+    });
   });
 
   it('unknown field keeps the hint comment', () => {
@@ -91,6 +97,6 @@ describe('fieldExpr assembly', () => {
         { optional: false, variant: 'full' },
         v4,
       ),
-    ).toBe('z.unknown() // unknown: Point');
+    ).toEqual({ expr: 'z.unknown()', comment: '// unknown: Point' });
   });
 });
