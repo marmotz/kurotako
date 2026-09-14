@@ -11,7 +11,7 @@ forces on already-written designs.
 
 ## Starting point
 
-- **No code exists.** [monorepo-bootstrap #6](../../tasks/6-package-skeletons.md)
+- **No code exists.** [monorepo-bootstrap #6](https://github.com/marmotz/kurotako/issues/6)
   scaffolds `packages/core/`; [core-pipeline/technical.md](../core-pipeline/technical.md)
   turns it into the orchestrator with `src/writer.ts` holding a `Writer` interface and a
   `directoryWriter` (mode A), and `run.ts` step 6 selecting it. `output.mode: 'package'`
@@ -95,14 +95,14 @@ The suggested feature order puts `output-modes` last, but the collision is real 
 `generator-zod` and `generator-angular` run together (the `gen-angular` integration,
 before `cli`). So this feature splits for scheduling:
 
-- **Part 1 — barrel + banner** ([#48](../../tasks/48-output-root-barrel-and-banner.md)):
+- **Part 1 — barrel + banner** ([#48](https://github.com/marmotz/kurotako/issues/48)):
   `writer/barrel.ts`, `writer/banner.ts`, `run.ts` steps 5b/5c, the
   `<ns>/<generatorName>/` collision guard. A **dependency of**
-  [#43](../../tasks/43-gen-angular-emit-artifact-run.md). (The `<ns>/<generatorName>/`
+  [#43](https://github.com/marmotz/kurotako/issues/43). (The `<ns>/<generatorName>/`
   prefix convention and the `peerDependencies` artifact field are folded into the
   generator tasks and #15 respectively — already amended.)
-- **Part 2 — mode B** ([#49](../../tasks/49-output-peers-and-pm.md) +
-  [#50](../../tasks/50-output-package-writer.md)): `writer/peers.ts`, `writer/pm.ts`,
+- **Part 2 — mode B** ([#49](https://github.com/marmotz/kurotako/issues/49) +
+  [#50](https://github.com/marmotz/kurotako/issues/50)): `writer/peers.ts`, `writer/pm.ts`,
   `writer/package.ts`, `tsup` dep, install. Can stay last; nothing depends on it until
   someone sets `output.mode: 'package'`.
 
@@ -154,7 +154,7 @@ still installs it as a transitive dep — acceptable, it is already the repo's b
 
 Insert one step, extend one, extend the config type.
 
-### `OutputConfig` (core `types.ts`, task [#15](../../tasks/15-core-types-and-contracts.md))
+### `OutputConfig` (core `types.ts`, task [#15](https://github.com/marmotz/kurotako/issues/15))
 
 ```ts
 export interface OutputConfig {
@@ -173,8 +173,8 @@ generate` run can now write to several destinations, each with its own mode / lo
 generator subset.
 
 `@kurotako/config`'s structural schema and `OutputOption` type gain `packageManager`
-(picklist, optional) — task [#23](../../tasks/23-config-schema.md) /
-[#22](../../tasks/22-config-types-and-errors.md). They also gain `generators?` and the
+(picklist, optional) — task [#23](https://github.com/marmotz/kurotako/issues/23) /
+[#22](https://github.com/marmotz/kurotako/issues/22). They also gain `generators?` and the
 `output` → `outputs` pluralisation — see §Multiple outputs.
 
 ### `GeneratorArtifact` (core `types.ts`)
@@ -572,7 +572,7 @@ The CLI already maps any `TakoError` to a formatted line + exit 1
 
 ## Consequences — amendments this feature forces
 
-### `core-pipeline/technical.md` (tasks [#15](../../tasks/15-core-types-and-contracts.md), [#19](../../tasks/19-core-collect.md), [#20](../../tasks/20-core-writer.md), [#21](../../tasks/21-core-run.md))
+### `core-pipeline/technical.md` (tasks [#15](https://github.com/marmotz/kurotako/issues/15), [#19](https://github.com/marmotz/kurotako/issues/19), [#20](https://github.com/marmotz/kurotako/issues/20), [#21](https://github.com/marmotz/kurotako/issues/21))
 
 - **Runtime-dependency rule relaxed**: `@kurotako/core` gains `tsup` (`dependencies`),
   loaded lazily and only on the mode-B path. The "`@kurotako/ir` only" line in §Package
@@ -587,7 +587,7 @@ The CLI already maps any `TakoError` to a formatted line + exit 1
 - `writer.ts` becomes the `writer/` directory above.
 - New error classes listed §Errors.
 
-### `generator-zod/technical.md` (tasks [#32](../../tasks/32-gen-zod-scaffold.md), [#35](../../tasks/35-gen-zod-emit-enums-filters.md), [#36](../../tasks/36-gen-zod-emit-entity-barrel.md), [#37](../../tasks/37-gen-zod-artifact-and-run.md))
+### `generator-zod/technical.md` (tasks [#32](https://github.com/marmotz/kurotako/issues/32), [#35](https://github.com/marmotz/kurotako/issues/35), [#36](https://github.com/marmotz/kurotako/issues/36), [#37](https://github.com/marmotz/kurotako/issues/37))
 
 - **Path prefix**: every `VirtualFile.path` moves from `<ns>/…` to `<ns>/zod/…`
   (`<ns>/zod/enums.ts`, `<ns>/zod/filters.ts`, `<ns>/zod/<entity>.schema.ts`,
@@ -601,7 +601,7 @@ The CLI already maps any `TakoError` to a formatted line + exit 1
 - The generator keeps emitting its **own** `<ns>/zod/index.ts`; it no longer needs to
   worry about colliding with `gen-angular`.
 
-### `generator-angular/technical.md` (tasks [#38](../../tasks/38-gen-angular-scaffold.md), [#43](../../tasks/43-gen-angular-emit-artifact-run.md))
+### `generator-angular/technical.md` (tasks [#38](https://github.com/marmotz/kurotako/issues/38), [#43](https://github.com/marmotz/kurotako/issues/43))
 
 - **Path prefix** `<ns>/angular/…` (`<ns>/angular/<entity>.form.ts`,
   `<ns>/angular/zod-forms.runtime.ts`, `<ns>/angular/index.ts`).
@@ -610,7 +610,7 @@ The CLI already maps any `TakoError` to a formatted line + exit 1
   artifact, so the change is a value change, not a code change.
 - `artifact.peerDependencies = { '@angular/core': …, '@angular/forms': … }`.
 
-### `config-system/technical.md` (tasks [#22](../../tasks/22-config-types-and-errors.md), [#23](../../tasks/23-config-schema.md), [#25](../../tasks/25-config-load.md))
+### `config-system/technical.md` (tasks [#22](https://github.com/marmotz/kurotako/issues/22), [#23](https://github.com/marmotz/kurotako/issues/23), [#25](https://github.com/marmotz/kurotako/issues/25))
 
 - `OutputOption` type (#22) + `TakoConfigSchema` (#23) gain
   `packageManager: v.optional(v.picklist(['bun','pnpm','yarn','npm']))`.
@@ -637,7 +637,7 @@ The CLI already maps any `TakoError` to a formatted line + exit 1
 - Same amendment note format as the `packageManager`/`scope` entry above — not yet split
   into a task (§Découpage en tâches d'implémentation).
 
-### `monorepo-bootstrap/technical.md` (task [#6](../../tasks/6-package-skeletons.md))
+### `monorepo-bootstrap/technical.md` (task [#6](https://github.com/marmotz/kurotako/issues/6))
 
 - `packages/core/package.json` skeleton lists `tsup` under `dependencies` (it is already a
   root devDependency; core promotes it). No new package skeleton — the "dedicated
@@ -758,22 +758,22 @@ The `outputs[]` amendment (§Multiple outputs) — `ResolvedConfig.outputs` / `R
 `CONFIG_TEMPLATE` (config) — touches code that already shipped as #15/#20/#21/#22/#23/#25/#48.
 Split into two tasks, config depending on core (same shape as #15 vs #22/#23/#25):
 
-4. [#73 core-outputs-array](../../tasks/73-core-outputs-array.md) — `ResolvedConfig.outputs`
+4. [#73 core-outputs-array](https://github.com/marmotz/kurotako/issues/73) — `ResolvedConfig.outputs`
    / `OutputConfig.generators` / `RunResult.written` (core `types.ts`), the `run.ts` step
    6/7 per-output write loop (deps: none, amends #15/#20/#21/#48).
-5. [#74 config-outputs-array](../../tasks/74-config-outputs-array.md) — `TakoConfig.outputs`
+5. [#74 config-outputs-array](https://github.com/marmotz/kurotako/issues/74) — `TakoConfig.outputs`
    / `OutputOption.generators` (config `types.ts`), `TakoConfigSchema.outputs` (`schema.ts`),
    per-entry cross-field checks + `UnknownGeneratorError` (`load.ts` / `errors.ts`),
    `CONFIG_TEMPLATE` (dep: #73, amends #22/#23/#25).
 
-1. [#48 output-root-barrel-and-banner](../../tasks/48-output-root-barrel-and-banner.md) —
+1. [#48 output-root-barrel-and-banner](https://github.com/marmotz/kurotako/issues/48) —
    `writer/banner.ts` (`BANNER` / `GITATTRIBUTES` / `applyBanner`), `writer/barrel.ts`
    (`synthesizeRootBarrels`), `run.ts` steps 5b + 5c, the stray-`<ns>/index.ts` collision
    guard (deps: #15, #19, #21). **Dependency of #43.**
-2. [#49 output-peers-and-pm](../../tasks/49-output-peers-and-pm.md) — `writer/peers.ts`
+2. [#49 output-peers-and-pm](https://github.com/marmotz/kurotako/issues/49) — `writer/peers.ts`
    (`collectPeerDependencies`, `OutputPeerConflictError`), `writer/pm.ts`
    (`resolvePackageManager`, `runInstall`, `PackageInstallError`) (dep: #15).
-3. [#50 output-package-writer](../../tasks/50-output-package-writer.md) —
+3. [#50 output-package-writer](https://github.com/marmotz/kurotako/issues/50) —
    `writer/package.ts` (`packageWriter`: `package.json`, `exports`, `peerDependencies`,
    tsconfig/tsup, `.gitattributes`, tsup build, install, `OutputNotGeneratedError` wipe
    guard), `selectWriter` `'package'` branch, `tsup` in `core` deps, mode-B

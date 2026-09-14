@@ -8,7 +8,7 @@ concrete package, a DMMF → `SourceIR` mapping, and a version-mode seam.
 
 ## Starting point
 
-- **No code exists.** [monorepo-bootstrap #6](../../tasks/6-package-skeletons.md) scaffolds
+- **No code exists.** [monorepo-bootstrap #6](https://github.com/marmotz/kurotako/issues/6) scaffolds
   `packages/parser-prisma/` with a single `src/index.ts` exporting a `version` const and one
   trivial test. This feature replaces that placeholder with the real driver.
 - Toolchain (from [monorepo-bootstrap/technical.md](../monorepo-bootstrap/technical.md)):
@@ -66,10 +66,10 @@ packages/parser-prisma/src/
 | `@kurotako/core` | `peerDependencies` + `devDependencies` (`workspace:*`) | `ParseContext` **type** only (always present via the CLI) |
 | `@kurotako/config` | `peerDependencies` + `devDependencies` (`workspace:*`) | `TakoParser` **type** only |
 | `valibot` | `dependencies` | `optionsSchema` |
-| `@prisma/internals` | **`peerDependencies`** (`>=5 <8`, pinned by [spike #59](../../tasks/59-prisma-getdmmf-spike.md)) | `getDMMF` in the Prisma ≤ 7 mode. **Decided**: reading the DMMF with the project's own Prisma keeps the parse aligned with the user's schema semantics. A clear `PrismaPeerMissingError` with an install hint is thrown when it cannot be resolved. See [Spike #59 findings](#spike-59-findings-getdmmf) — on Prisma 7 the peer no longer resolves transitively and the hint (`add @prisma/internals@7 as a devDependency`) is the nominal path. |
+| `@prisma/internals` | **`peerDependencies`** (`>=5 <8`, pinned by [spike #59](https://github.com/marmotz/kurotako/issues/59)) | `getDMMF` in the Prisma ≤ 7 mode. **Decided**: reading the DMMF with the project's own Prisma keeps the parse aligned with the user's schema semantics. A clear `PrismaPeerMissingError` with an install hint is thrown when it cannot be resolved. See [Spike #59 findings](#spike-59-findings-getdmmf) — on Prisma 7 the peer no longer resolves transitively and the hint (`add @prisma/internals@7 as a devDependency`) is the nominal path. |
 
 - `tsconfig.json` `references`: `[{ "path": "../ir" }, { "path": "../core" }, { "path": "../config" }]`
-  — [monorepo-bootstrap #6](../../tasks/6-package-skeletons.md) step 2 already mandates a
+  — [monorepo-bootstrap #6](https://github.com/marmotz/kurotako/issues/6) step 2 already mandates a
   reference per imported internal package; this feature pins the exact list (small
   consequence for #6, noted below).
 - `"sideEffects": false`.
@@ -153,7 +153,7 @@ export async function readDmmf(input: Extract<ResolvedInput, { mode: 7 }>, logge
 - **`getDMMF`** is the documented programmatic entry
   (`@prisma/internals`, `getDMMF(options): Promise<DMMF.Document>`). It parses the schema via
   the bundled `prisma-schema-wasm` module — **no query-engine binary and no network at parse
-  time** (the WASM call itself). Confirmed by [spike #59](../../tasks/59-prisma-getdmmf-spike.md)
+  time** (the WASM call itself). Confirmed by [spike #59](https://github.com/marmotz/kurotako/issues/59)
   against `@prisma/internals` 5.22 / 6.19 / 7.10 (and `8.1.0-dev`).
 - **Call shape** (`GetDMMFOptions`, stable across v5–v7): `{ datamodel: SchemaFileInput }`
   where `SchemaFileInput = string | Array<[filename, content]>`. Single-file:
@@ -189,7 +189,7 @@ export async function readDmmf(input: Extract<ResolvedInput, { mode: 7 }>, logge
   provides `@prisma/internals` transitively).
 - **`@prisma/client`-only projects** (no `prisma` devDep) never resolve `@prisma/internals`
   on any major → same `PrismaPeerMissingError` path.
-- **DMMF shape verified** (drives [#28](../../tasks/28-prisma-dmmf-reader.md)): `DMMF.Model`
+- **DMMF shape verified** (drives [#28](https://github.com/marmotz/kurotako/issues/28)): `DMMF.Model`
   exposes `name`, `dbName`, `primaryKey {name, fields}`, `uniqueIndexes [{name, fields}]`,
   `uniqueFields`, `documentation` — **no `indexes` key at all** (non-unique `@@index` is not
   in the DMMF; the [Accepted limitation](#accepted-limitations-v1-dmmf-mode) is now
@@ -198,7 +198,7 @@ export async function readDmmf(input: Extract<ResolvedInput, { mode: 7 }>, logge
   (e.g. `["VarChar", ["120"]]`, `["Uuid", []]`), `default` (literal, or `{ name, args }`
   e.g. `{ name: 'uuid', args: [4] }`, `{ name: 'now', args: [] }`), relation fields.
 - **`Unsupported("…")` fields**: in the v7 spike an optional `Unsupported(...)` field was
-  **absent** from `doc.datamodel` entirely (no `kind: 'unsupported'` entry). [#29](../../tasks/29-prisma-scalar-mapping.md)
+  **absent** from `doc.datamodel` entirely (no `kind: 'unsupported'` entry). [#29](https://github.com/marmotz/kurotako/issues/29)
   must not assume the field is present; re-verify the exact condition there.
 - Scratch script lives outside the repo (spike only); nothing committed to any package.
 
@@ -418,8 +418,8 @@ front-end swap.
 ## Consequences verified against the repo / other features
 
 - Nothing to migrate: `packages/parser-prisma/src/index.ts` is the bootstrap placeholder
-  ([task #6](../../tasks/6-package-skeletons.md)). This feature rewrites it.
-- **[monorepo-bootstrap #6](../../tasks/6-package-skeletons.md)** — the parser-prisma
+  ([task #6](https://github.com/marmotz/kurotako/issues/6)). This feature rewrites it.
+- **[monorepo-bootstrap #6](https://github.com/marmotz/kurotako/issues/6)** — the parser-prisma
   skeleton needs `tsconfig` `references` to `../ir`, `../core`, `../config` and the peer
   `@prisma/internals`. #6 step 2 already says "references to the imported internal
   packages"; the explicit list + the peer entry are a small addition to that task (doc-only
@@ -483,22 +483,22 @@ asserting the resulting `SourceIR` (structure, not a code snapshot).
 
 Task files under [`../../tasks/`](../../tasks/), GitHub issues on `marmotz/kurotako`.
 
-1. [#26 prisma-parser-scaffold](../../tasks/26-prisma-parser-scaffold.md) — `package.json`
+1. [#26 prisma-parser-scaffold](https://github.com/marmotz/kurotako/issues/26) — `package.json`
    deps (`@prisma/internals` peer), `tsconfig` refs, `src/options.ts`
    (`PrismaParserOptions`), `src/errors.ts`, `src/parser.ts` skeleton, barrel
    (deps: #6, #11, #14, #15, #22).
-2. [#27 prisma-input-detection](../../tasks/27-prisma-input-detection.md) — `src/detect.ts`
+2. [#27 prisma-input-detection](https://github.com/marmotz/kurotako/issues/27) — `src/detect.ts`
    `resolveInput()`: schema file / folder / `contract.json`, version-mode inference,
    multi-file tuples (dep: #26).
-3. [#28 prisma-dmmf-reader](../../tasks/28-prisma-dmmf-reader.md) — `src/dmmf/` neutral
+3. [#28 prisma-dmmf-reader](https://github.com/marmotz/kurotako/issues/28) — `src/dmmf/` neutral
    `PrismaModel` shape, `getDMMF` wrapper (peer resolution, error wrapping),
    `DMMF.Document → PrismaModel` (deps: #26, #27).
-4. [#29 prisma-scalar-mapping](../../tasks/29-prisma-scalar-mapping.md) —
+4. [#29 prisma-scalar-mapping](https://github.com/marmotz/kurotako/issues/29) —
    `src/map/scalars.ts` + `src/map/defaults.ts`: scalar table, `@db.*` refinement,
    `format` from generator defaults, `DefaultValue` mapping (dep: #28).
-5. [#30 prisma-relation-mapping](../../tasks/30-prisma-relation-mapping.md) —
+5. [#30 prisma-relation-mapping](https://github.com/marmotz/kurotako/issues/30) —
    `src/map/relations.ts`: relation pairing, owning side, referential actions, implicit
    m2m materialisation (deps: #28, #29).
-6. [#31 prisma-sourceir-build](../../tasks/31-prisma-sourceir-build.md) —
+6. [#31 prisma-sourceir-build](https://github.com/marmotz/kurotako/issues/31) —
    `src/map/build.ts` `buildSourceIR()` via `createSourceIR`, final `parser.ts` wiring,
    end-to-end fixture tests (deps: #29, #30).

@@ -8,9 +8,9 @@ overview decisions into a concrete API surface and orchestration algorithm.
 
 ## Starting point
 
-- **No code exists.** [monorepo-bootstrap #6](../../tasks/6-package-skeletons.md) scaffolds
+- **No code exists.** [monorepo-bootstrap #6](https://github.com/marmotz/kurotako/issues/6) scaffolds
   `packages/core/` with a single `src/index.ts` exporting a `version` const and one
-  trivial test ([task 6](../../tasks/6-package-skeletons.md)). This feature replaces that
+  trivial test ([task 6](https://github.com/marmotz/kurotako/issues/6)). This feature replaces that
   placeholder with the real module.
 - Toolchain (from [monorepo-bootstrap/technical.md](../monorepo-bootstrap/technical.md)):
   Bun workspaces, `tsc -b` project references, tsup dual ESM+CJS, vitest, Biome. Node >= 24.
@@ -59,7 +59,7 @@ packages/core/src/
   here rather than in a dedicated `@kurotako/output` package. `graph` / `merge` /
   `directoryWriter` stay hand-written; no graph library, no `fs-extra`.
 - `packages/core/tsconfig.json` gets `references: [{ "path": "../ir" }]` (already the rule
-  in [task 6](../../tasks/6-package-skeletons.md) step 2).
+  in [task 6](https://github.com/marmotz/kurotako/issues/6) step 2).
 - `"sideEffects": false`.
 
 ## Public API (`run.ts` + `types.ts`)
@@ -345,7 +345,7 @@ export function selectWriter(output: OutputConfig): Writer
 
 `selectWriter` returns `directoryWriter` when `output.mode` is `'dir'` or absent,
 `packageWriter` when it is `'package'`, and throws `UnsupportedOutputModeError` otherwise.
-Task [#20](../../tasks/20-core-writer.md) ships `directoryWriter` + a `selectWriter` that
+Task [#20](https://github.com/marmotz/kurotako/issues/20) ships `directoryWriter` + a `selectWriter` that
 still throws for `'package'`; [output-modes](../output-modes/technical.md) replaces that
 branch with the real `packageWriter` **in this same package** (the "dedicated
 `@kurotako/output` package" and the `RunOptions.writer?` override were both rejected —
@@ -451,7 +451,7 @@ disk) and desirable for reviewable output:
 ## Consequences verified against the current repo
 
 - Nothing to migrate: `packages/core/src/index.ts` is the bootstrap placeholder
-  ([task 6](../../tasks/6-package-skeletons.md)). This feature rewrites it into the module
+  ([task 6](https://github.com/marmotz/kurotako/issues/6)). This feature rewrites it into the module
   set above. `package.json` / `tsconfig.json` / `tsup.config.ts` / `vitest.config.ts` from
   bootstrap #6 are unchanged except for adding the `../ir` project reference (already
   mandated by task 6 step 2 for imported internal packages) and the `@kurotako/ir`
@@ -476,15 +476,15 @@ disk) and desirable for reviewable output:
   `hooks` syntax are settled there. It drove one **additive change to this document**:
   `ResolvedConfig.rootDir` (absolute config-file dir), consumed in step 1 as
   `ParseContext.cwd` — previously the step referenced an unsourced `cwd`. Task
-  [#15](../../tasks/15-core-types-and-contracts.md) carries the field.
+  [#15](https://github.com/marmotz/kurotako/issues/15) carries the field.
 - [output-modes/technical.md](../output-modes/technical.md) drove several **additive
   changes** recorded above: `OutputConfig.packageManager?`, `GeneratorArtifact.peerDependencies?`
   (task #15); `VirtualFile.path` prefix is `<ns>/<generatorName>/`, `mergeTrees` guards a
-  stray `<ns>/index.ts` (task [#19](../../tasks/19-core-collect.md)); `writer.ts` becomes
+  stray `<ns>/index.ts` (task [#19](https://github.com/marmotz/kurotako/issues/19)); `writer.ts` becomes
   the `writer/` directory, `selectWriter` gains the `packageWriter` branch and mode A
-  writes `.gitattributes` (task [#20](../../tasks/20-core-writer.md)); `run.ts` gains steps
+  writes `.gitattributes` (task [#20](https://github.com/marmotz/kurotako/issues/20)); `run.ts` gains steps
   5b (synthesize barrels) + 5c (`applyBanner`) and the mode-B `afterEmit.outputDir` (task
-  [#21](../../tasks/21-core-run.md)); new errors `OutputPeerConflictError` /
+  [#21](https://github.com/marmotz/kurotako/issues/21)); new errors `OutputPeerConflictError` /
   `PackageBuildError` / `PackageInstallError` (task #15). The "runtime dependency:
   `@kurotako/ir` only" rule is relaxed to allow a lazy `tsup` import on the mode-B path —
   the user chose in-core plumbing over a dedicated `@kurotako/output` package.
@@ -509,22 +509,22 @@ disk) and desirable for reviewable output:
 
 Task files under [`../../tasks/`](../../tasks/), GitHub issues on `marmotz/kurotako`.
 
-1. [#15 core-types-and-contracts](../../tasks/15-core-types-and-contracts.md) — `src/types.ts`
+1. [#15 core-types-and-contracts](https://github.com/marmotz/kurotako/issues/15) — `src/types.ts`
    (config, driver contracts, contexts, artifacts, hooks, `Logger`, `RunOptions` /
    `RunResult`), `src/errors.ts` (`TakoError` hierarchy), `src/logger.ts`, barrel + `../ir`
    wiring (deps: #6, #11).
-2. [#16 core-merge](../../tasks/16-core-merge.md) — `src/merge.ts` `mergeSources()`,
+2. [#16 core-merge](https://github.com/marmotz/kurotako/issues/16) — `src/merge.ts` `mergeSources()`,
    namespace-mismatch / duplicate rejection, `assertIR` (deps: #15, #12).
-3. [#17 core-graph](../../tasks/17-core-graph.md) — `src/graph.ts` `generatorOrder()`,
+3. [#17 core-graph](https://github.com/marmotz/kurotako/issues/17) — `src/graph.ts` `generatorOrder()`,
    Kahn, missing hard dep, cycle path (dep: #15).
-4. [#18 core-filter](../../tasks/18-core-filter.md) — `src/filter.ts` `filterIR()`
+4. [#18 core-filter](https://github.com/marmotz/kurotako/issues/18) — `src/filter.ts` `filterIR()`
    namespace-filtered deep clone (dep: #15).
-5. [#19 core-collect](../../tasks/19-core-collect.md) — `src/collect.ts` `mergeTrees()`,
+5. [#19 core-collect](https://github.com/marmotz/kurotako/issues/19) — `src/collect.ts` `mergeTrees()`,
    path normalization, cross-generator collision (dep: #15).
-6. [#20 core-writer](../../tasks/20-core-writer.md) — `src/writer/` (`types.ts`,
+6. [#20 core-writer](https://github.com/marmotz/kurotako/issues/20) — `src/writer/` (`types.ts`,
    `directory.ts` mode A + `.gitattributes` + unconditional wipe, `index.ts` `selectWriter`
    still throwing for `'package'`) (dep: #15). `writer/package.ts` / `barrel.ts` /
    `banner.ts` / `peers.ts` / `pm.ts` are added by [output-modes](../output-modes/technical.md).
-7. [#21 core-run](../../tasks/21-core-run.md) — `src/run.ts` orchestrator wiring every
+7. [#21 core-run](https://github.com/marmotz/kurotako/issues/21) — `src/run.ts` orchestrator wiring every
    step (incl. the 5b/5c barrel + banner seams) + `afterEmit` + end-to-end tests
    (deps: #15, #16, #17, #18, #19, #20).

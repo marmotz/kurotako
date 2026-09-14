@@ -252,12 +252,12 @@ must typecheck and run. A new compile fixture (§6) pins that.
 
 ## Découpage en tâches d'implémentation
 
-1. [`69-config-driver-options-helpers`](../../tasks/69-config-driver-options-helpers.md)
+1. [`69-config-driver-options-helpers`](https://github.com/marmotz/kurotako/issues/69)
    ([#69](https://github.com/marmotz/kurotako/issues/69)) — `@kurotako/config`:
    `defineParser` / `defineGenerator`, `types.ts` rework (`DriverOptions`,
    `EntryOptions`, `OptionsMember`, drop `OptionsOf`), `load.ts` `undefined` → `{}`
    normalisation, `define.test-d.ts` + `load.test.ts`.
-2. [`70-migrate-drivers-to-define-helpers`](../../tasks/70-migrate-drivers-to-define-helpers.md)
+2. [`70-migrate-drivers-to-define-helpers`](https://github.com/marmotz/kurotako/issues/70)
    ([#70](https://github.com/marmotz/kurotako/issues/70), depends on #69) — migrate
    `prismaParser` / `zodGenerator` to the helpers, add the uncommented-`CONFIG_TEMPLATE`
    compile fixture in `@kurotako/cli`.

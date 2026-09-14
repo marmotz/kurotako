@@ -8,7 +8,7 @@ overview into a concrete package, type surface and load algorithm.
 
 ## Starting point
 
-- **No code exists.** [monorepo-bootstrap #6](../../tasks/6-package-skeletons.md)
+- **No code exists.** [monorepo-bootstrap #6](https://github.com/marmotz/kurotako/issues/6)
   scaffolds the package skeletons; this feature added a **seventh, `@kurotako/config`**
   (`ir`, `core`, `config`, `cli`, `parser-prisma`, `gen-zod`, `gen-angular`) — #6 and its
   technical doc already updated, not yet implemented.
@@ -297,7 +297,7 @@ Parsers must resolve schema paths against the **config file's directory**. Previ
 `ParseContext` with a `cwd` that had no source on `ResolvedConfig` or `RunOptions`. This
 is now fixed there: `ResolvedConfig.rootDir: string` (absolute), set by `loadConfig` to
 `dirname(configFile)`, consumed in step 1 as `ParseContext.cwd`. Task
-[#15](../../tasks/15-core-types-and-contracts.md) / [#21](../../tasks/21-core-run.md)
+[#15](https://github.com/marmotz/kurotako/issues/15) / [#21](https://github.com/marmotz/kurotako/issues/21)
 carry it.
 
 ## `tako init` template (`template.ts`)
@@ -345,7 +345,7 @@ carrying ones.
 
 ## Consequences verified against the current repo / other features
 
-- **monorepo-bootstrap [#6](../../tasks/6-package-skeletons.md)** — a seventh skeleton
+- **monorepo-bootstrap [#6](https://github.com/marmotz/kurotako/issues/6)** — a seventh skeleton
   `packages/config` (`@kurotako/config`), `tsconfig` referencing `../core` + `../ir`, and
   `cli` referencing `../config`. Applied: task #6, its issue,
   [monorepo-bootstrap/technical.md §Target layout](../monorepo-bootstrap/technical.md) and
@@ -353,8 +353,8 @@ carrying ones.
 - **monorepo-bootstrap [§Peer dependency policy](../monorepo-bootstrap/technical.md#peer-dependency-policy)**
   — added by this feature: `@kurotako/config` takes `@kurotako/core` as a
   `peerDependency` + `devDependency` (not a plain `dependency`) so `config` and the CLI
-  share one `TakoError` class instance. Task [#22](../../tasks/22-config-types-and-errors.md).
-- **core-pipeline [#15](../../tasks/15-core-types-and-contracts.md)** — `ResolvedConfig`
+  share one `TakoError` class instance. Task [#22](https://github.com/marmotz/kurotako/issues/22).
+- **core-pipeline [#15](https://github.com/marmotz/kurotako/issues/15)** — `ResolvedConfig`
   gains `rootDir: string`; step 1 of `run.ts` sets `ParseContext.cwd = config.rootDir`.
   Applied: [core-pipeline/technical.md](../core-pipeline/technical.md) (§Config consumed,
   §Orchestration step 1, §Driver options, §Consequences), tasks #15 / #21 and their
@@ -380,8 +380,8 @@ carrying ones.
 - **[output-modes/technical.md](../output-modes/technical.md)** — added
   `output.packageManager?` (picklist, optional) to `OutputOption` + `TakoConfigSchema`,
   and tightened the mode-B cross-field check to require `scope` as well as `packagesDir`.
-  Tasks [#22](../../tasks/22-config-types-and-errors.md) /
-  [#23](../../tasks/23-config-schema.md).
+  Tasks [#22](https://github.com/marmotz/kurotako/issues/22) /
+  [#23](https://github.com/marmotz/kurotako/issues/23).
 - **docs/architecture.md** — the `output:` YAML snippets illustrate the shape but the
   format is `.ts`; reconcile the examples to `defineConfig({ output: { ... } })` when this
   lands (doc-only, not this phase).
@@ -413,15 +413,15 @@ carrying ones.
 
 Task files under [`../../tasks/`](../../tasks/), GitHub issues on `marmotz/kurotako`.
 
-1. [#22 config-types-and-errors](../../tasks/22-config-types-and-errors.md) — `types.ts`
+1. [#22 config-types-and-errors](https://github.com/marmotz/kurotako/issues/22) — `types.ts`
    (`TakoConfig`, `TakoParser<O>` / `TakoGenerator<O>`, entry types, `OptionsOf<D>`),
    `define.ts` (`defineConfig`), `errors.ts` (`ConfigError` hierarchy on `TakoError`),
    `template.ts` (`CONFIG_TEMPLATE`), barrel + `package.json` deps + `tsconfig` refs
    (deps: #6, #11, #15).
-2. [#23 config-schema](../../tasks/23-config-schema.md) — `schema.ts`: `NAMESPACE_RE`,
+2. [#23 config-schema](https://github.com/marmotz/kurotako/issues/23) — `schema.ts`: `NAMESPACE_RE`,
    `TakoConfigSchema` (structural Valibot), `normalizeIssues` (dep: #22).
-3. [#24 config-resolve](../../tasks/24-config-resolve.md) — `resolve.ts`:
+3. [#24 config-resolve](https://github.com/marmotz/kurotako/issues/24) — `resolve.ts`:
    `resolveConfigFile()` walk-up + `--config` override (dep: #22).
-4. [#25 config-load](../../tasks/25-config-load.md) — `load.ts`: `loadConfig()` — `jiti`
+4. [#25 config-load](https://github.com/marmotz/kurotako/issues/25) — `load.ts`: `loadConfig()` — `jiti`
    import, structural validate, cross-field checks, per-driver options + currying, output
    resolution, `LoadResult` (deps: #22, #23, #24).

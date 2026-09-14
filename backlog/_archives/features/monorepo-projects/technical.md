@@ -242,16 +242,16 @@ repo root ([`errors.ts:25-39`](../../../../packages/parser-prisma/src/errors.ts)
 
 ## 5. Découpage en tâches d'implémentation
 
-- [`89-core-parse-context-anchor-dir`](../../tasks/89-core-parse-context-anchor-dir.md)
+- [`89-core-parse-context-anchor-dir`](https://github.com/marmotz/kurotako/issues/89)
   — core: `ParseContext.anchorDir`, `Parser.anchor` hook, `run()` wiring (§2.1, §2.2, §2.4).
-- [`90-cli-tako-init-monorepo`](../../tasks/90-cli-tako-init-monorepo.md)
+- [`90-cli-tako-init-monorepo`](https://github.com/marmotz/kurotako/issues/90)
   — `tako init --monorepo`, auto-detection, `CONFIG_TEMPLATE_MONOREPO` (§2.6). No dep.
-- [`91-config-parser-anchor-currying`](../../tasks/91-config-parser-anchor-currying.md)
+- [`91-config-parser-anchor-currying`](https://github.com/marmotz/kurotako/issues/91)
   — `@kurotako/config`: `TakoParser.anchor`, `defineParser`, currying in `load.ts`
   (§2.2, §2.3). Depends on #89.
-- [`92-parser-prisma-anchor-internals-resolution`](../../tasks/92-parser-prisma-anchor-internals-resolution.md)
+- [`92-parser-prisma-anchor-internals-resolution`](https://github.com/marmotz/kurotako/issues/92)
   — parser-prisma: `anchor` impl + resolve `@prisma/internals` from `anchorDir` +
   error message (§2.5). Depends on #89, #91.
-- [`93-docs-monorepo-usage-and-example`](../../tasks/93-docs-monorepo-usage-and-example.md)
+- [`93-docs-monorepo-usage-and-example`](https://github.com/marmotz/kurotako/issues/93)
   — docs page + move `@prisma/internals` into the example sub-project (§4). Depends on
   #92, #90.

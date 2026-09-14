@@ -23,10 +23,12 @@ Dependencies between issues are carried by `Depends on #<n>` lines in the issue 
   carrying a `feature:*` label; issues without one (historical/pre-migration work) are
   ignored — that history lives in `_archives/done.md`.
 - `_archives/` — completed features moved out of the active backlog (skill
-  `backlog-archive`): `features/<slug>/` → `_archives/features/<slug>/`, its task
-  files → `_archives/tasks/`, its `todo.md` section → `_archives/done.md` (with
-  `[x]` uppercased to `[X]`). Relative links are fixed in both directions on the
-  move; links between files archived together keep their relative form.
+  `backlog-archive`): `features/<slug>/` → `_archives/features/<slug>/`, its
+  `todo.md` section → `_archives/done.md` (with `[x]` uppercased to `[X]`).
+  Relative links are fixed in both directions on the move; links between files
+  archived together keep their relative form. There is no `backlog/tasks/` or
+  `_archives/tasks/` folder — task-level links point directly to the GitHub
+  issue (`https://github.com/marmotz/kurotako/issues/<n>`).
 
 ## Reference documentation
 

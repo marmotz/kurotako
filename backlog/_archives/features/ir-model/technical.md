@@ -6,7 +6,7 @@ turns them into a concrete type surface and package API.
 
 ## Starting point
 
-- **No code exists.** [monorepo-bootstrap #6](../../tasks/6-package-skeletons.md) scaffolds
+- **No code exists.** [monorepo-bootstrap #6](https://github.com/marmotz/kurotako/issues/6) scaffolds
   `packages/ir/` with a single `src/index.ts` exporting a `version` const and one trivial
   test. This feature replaces that placeholder with the real module.
 - Toolchain (from [monorepo-bootstrap/technical.md](../monorepo-bootstrap/technical.md)):
@@ -373,7 +373,7 @@ string to preserve precision; runtime representation stays each generator's choi
 re-exported by `@kurotako/ir`).
 
 Pure, deterministic, exhaustively switched over the closed unions. `technical.md` /
-task [#13](../../tasks/13-ir-traversal-helpers.md) pin the exact predicate bodies with a
+task [#13](https://github.com/marmotz/kurotako/issues/13) pin the exact predicate bodies with a
 fixture table; `generator-zod` (#34) and `generator-angular` (#39) **must** consume these
 rather than re-encode them.
 
@@ -426,27 +426,27 @@ rather than re-encode them.
   and the scalar → TS type mapping they both need are now `@kurotako/ir` shared-decision
   helpers (`createFields`, `isCreateOptional`, `updateFields`, `isDbAssigned`,
   `scalarTsType`). Both generators **consume** them; neither re-encodes the rule. Their
-  variant sections / tasks [#34](../../tasks/34-gen-zod-variants-relations.md) /
-  [#39](../../tasks/39-gen-angular-controls-variants.md) are updated accordingly. No new IR
+  variant sections / tasks [#34](https://github.com/marmotz/kurotako/issues/34) /
+  [#39](https://github.com/marmotz/kurotako/issues/39) are updated accordingly. No new IR
   data — pure functions over the existing `Entity` / `Field`.
 - Tests (vitest, colocated): valid/invalid IR fixtures for every `IrIssueCode`; builder
   incremental-throw cases; helper resolution including an entity-local enum shadowing a
   source-level one; the shared-decision-helper fixture table
-  ([task #13](../../tasks/13-ir-traversal-helpers.md)); round-trip
+  ([task #13](https://github.com/marmotz/kurotako/issues/13)); round-trip
   `parseIR(JSON.stringify(ir))` equality.
 
 ## Découpage en tâches d'implémentation
 
 Task files under [`../../tasks/`](../../tasks/), GitHub issues on `marmotz/kurotako`.
 
-1. [#11 ir-schemas-types-version](../../tasks/11-ir-types-and-version.md) — `src/schemas.ts`
+1. [#11 ir-schemas-types-version](https://github.com/marmotz/kurotako/issues/11) — `src/schemas.ts`
    Valibot schemas (source of truth) + `src/types.ts` (`v.InferOutput` aliases) +
    `src/version.ts` (`IR_VERSION`, `isCompatible`), barrel wiring, `valibot` dependency
    (dep: #6).
-2. [#12 ir-runtime-validation](../../tasks/12-ir-runtime-validation.md) — `src/validate.ts`
+2. [#12 ir-runtime-validation](https://github.com/marmotz/kurotako/issues/12) — `src/validate.ts`
    `validateIR`/`assertIR`/`parseIR` = Valibot `safeParse` + cross-reference pass, issues
    normalised to `IrIssue` (dep: #11).
-3. [#13 ir-traversal-helpers](../../tasks/13-ir-traversal-helpers.md) — `src/helpers.ts`
+3. [#13 ir-traversal-helpers](https://github.com/marmotz/kurotako/issues/13) — `src/helpers.ts`
    resolution / iteration helpers (dep: #11).
-4. [#14 ir-source-builder](../../tasks/14-ir-source-builder.md) — `src/builder.ts` fluent
+4. [#14 ir-source-builder](https://github.com/marmotz/kurotako/issues/14) — `src/builder.ts` fluent
    `createSourceIR()` with incremental validation (deps: #11, #12).

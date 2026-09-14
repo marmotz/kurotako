@@ -58,7 +58,7 @@ content), then compares that set against the filesystem.
 `tsup.config.ts`. Reproducing that mapping in the CLI would duplicate `packageWriter`.
 Instead, the writer that already owns the layout computes it.
 
-### `Writer` interface addition (core `writer/types.ts`, task [#20](../../tasks/20-core-writer.md))
+### `Writer` interface addition (core `writer/types.ts`, task [#20](https://github.com/marmotz/kurotako/issues/20))
 
 ```ts
 export interface PlannedFile {
@@ -87,7 +87,7 @@ export interface Writer {
   `writeFile` over the plan; for `packageWriter`, `write()` = write the plan + tsup build +
   install. One layout code path, no drift between `plan` and `write`.
 
-### `run()` amendment (core `run.ts` / `types.ts`, tasks [#15](../../tasks/15-core-types-and-contracts.md), [#21](../../tasks/21-core-run.md))
+### `run()` amendment (core `run.ts` / `types.ts`, tasks [#15](https://github.com/marmotz/kurotako/issues/15), [#21](https://github.com/marmotz/kurotako/issues/21))
 
 ```ts
 export interface RunOptions {
@@ -229,11 +229,11 @@ those guarantees were written for.
 
 ## Consequences — amendments this feature forces
 
-### `core-pipeline/technical.md` — additive, delivered by **this feature's task [#51](../../tasks/51-core-writer-plan.md)**, not folded into #15/#20/#21
+### `core-pipeline/technical.md` — additive, delivered by **this feature's task [#51](https://github.com/marmotz/kurotako/issues/51)**, not folded into #15/#20/#21
 
-The v1 core tasks ship without `plan`: [#15](../../tasks/15-core-types-and-contracts.md)
-declares `RunOptions` / `RunResult` in their v1 shape, [#20](../../tasks/20-core-writer.md)
-ships `Writer` with `write()` only, [#21](../../tasks/21-core-run.md) wires `run.ts`
+The v1 core tasks ship without `plan`: [#15](https://github.com/marmotz/kurotako/issues/15)
+declares `RunOptions` / `RunResult` in their v1 shape, [#20](https://github.com/marmotz/kurotako/issues/20)
+ships `Writer` with `write()` only, [#21](https://github.com/marmotz/kurotako/issues/21) wires `run.ts`
 collect → write → `afterEmit`. This feature (post-v1 fast-follow) then layers on:
 
 - `Writer` interface gains `plan(input: WriteInput): Promise<PlannedFile[]>`; `PlannedFile`
@@ -248,9 +248,9 @@ collect → write → `afterEmit`. This feature (post-v1 fast-follow) then layer
 - The `--emit-ir` / `--dry-run` list in §"What stays out of this feature" gains `plan`
   as a sibling primitive the CLI builds `tako check` on (doc-only reconciliation).
 
-### `output-modes/technical.md` — additive, delivered by **this feature's task [#52](../../tasks/52-output-package-writer-plan.md)**
+### `output-modes/technical.md` — additive, delivered by **this feature's task [#52](https://github.com/marmotz/kurotako/issues/52)**
 
-[#50](../../tasks/50-output-package-writer.md) ships `packageWriter` with `write()` only.
+[#50](https://github.com/marmotz/kurotako/issues/50) ships `packageWriter` with `write()` only.
 This feature then adds:
 
 - `packageWriter` implements `plan()` — the deterministic subset (`src/` remap +
@@ -320,15 +320,15 @@ This feature then adds:
 
 Task files under [`../../tasks/`](../../tasks/), GitHub issues on `marmotz/kurotako`.
 
-1. [#51 core-writer-plan](../../tasks/51-core-writer-plan.md) — `Writer.plan()` +
+1. [#51 core-writer-plan](https://github.com/marmotz/kurotako/issues/51) — `Writer.plan()` +
    `PlannedFile`, `directoryWriter.plan()` (`write()` refactored to build on it),
    `RunOptions.plan` / `RunResult.plan`, the `plan` branch in `run.ts` (skips
    `afterEmit`). `packageWriter.plan()` left for #52 (deps: #20, #21).
-2. [#52 output-package-writer-plan](../../tasks/52-output-package-writer-plan.md) —
+2. [#52 output-package-writer-plan](https://github.com/marmotz/kurotako/issues/52) —
    `packageWriter.plan()`: the deterministic subset (`src/` remap + `package.json` +
    `tsconfig.json` + `tsup.config.ts` + `.gitattributes`), no tsup build, no `pm install`;
    `packageWriter.write()` rebuilt on top of it (deps: #50, #51).
-3. [#53 cli-check-command](../../tasks/53-cli-check-command.md) — `commands/check.ts`,
+3. [#53 cli-check-command](https://github.com/marmotz/kurotako/issues/53) — `commands/check.ts`,
    `diff.ts` (`comparePlanToDisk`: modified / missing / orphan + directory collapse), the
    citty `check` entry, and the `cli/technical.md` "drift-guard" reconciliation
    (deps: #44, #46, #51, #52).

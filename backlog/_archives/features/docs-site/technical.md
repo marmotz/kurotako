@@ -31,7 +31,7 @@ amendments the "new workspace + Pages deployment" decision forces on
 
 New workspace at `apps/docs`, `package.json` `name` `@kurotako/docs`, `"private": true`.
 The root `package.json` `workspaces` field gains `"apps/*"` alongside `"packages/*"`
-(amendment to [monorepo-bootstrap #1](../../tasks/1-root-workspace-scaffold.md), see
+(amendment to [monorepo-bootstrap #1](https://github.com/marmotz/kurotako/issues/1), see
 [Amendments](#amendments-to-monorepo-bootstrap)).
 
 ```
@@ -197,7 +197,7 @@ of `docusaurus build`.
   `bun run docusaurus docs:version <major.minor>` in `apps/docs`, commits
   `versioned_docs/` + `versioned_sidebars/` + `versions.json`. The workflow is manual and
   documented in `CONTRIBUTING.md` (amendment to
-  [monorepo-bootstrap #10](../../tasks/10-repo-meta-files.md)).
+  [monorepo-bootstrap #10](https://github.com/marmotz/kurotako/issues/10)).
 - **Latest served at `/`**: `docusaurus.config.ts` sets the most recent frozen version as
   `lastVersion` once one exists; until then `next` is served at `/`.
 - Only `major.minor` granularity — patch releases do not cut a docs version.
@@ -257,7 +257,7 @@ jobs:
 ## Amendments to monorepo-bootstrap
 
 Collected in task
-[#54 apps-docs-workspace-accommodation](../../tasks/54-apps-docs-workspace-accommodation.md)
+[#54 apps-docs-workspace-accommodation](https://github.com/marmotz/kurotako/issues/54)
 on that feature (see
 [monorepo-bootstrap/technical.md](../monorepo-bootstrap/technical.md)):
 
@@ -306,22 +306,22 @@ on that feature (see
 
 Task files under [`../../tasks/`](../../tasks/), GitHub issues on `marmotz/kurotako`.
 
-1. [#54 apps-docs-workspace-accommodation](../../tasks/54-apps-docs-workspace-accommodation.md)
+1. [#54 apps-docs-workspace-accommodation](https://github.com/marmotz/kurotako/issues/54)
    — fold the `apps/*` workspace into the root files (`workspaces`, `.gitignore`,
    `biome.json`, `.changeset` `ignore`, `CONTRIBUTING.md`). On the
    [monorepo-bootstrap](../monorepo-bootstrap/technical.md) feature (deps: #1, #5, #8,
    #10).
-2. [#55 docs-site-scaffold](../../tasks/55-docs-site-scaffold.md) — `apps/docs` package:
+2. [#55 docs-site-scaffold](https://github.com/marmotz/kurotako/issues/55) — `apps/docs` package:
    `package.json`, `docusaurus.config.ts` (preset-classic, `docsVersionDropdown`,
    local search), `sidebars.ts`, `tsconfig.json`, `src/css`, placeholder landing page
    (dep: #54).
-3. [#56 docs-site-typedoc-api](../../tasks/56-docs-site-typedoc-api.md) —
+3. [#56 docs-site-typedoc-api](https://github.com/marmotz/kurotako/issues/56) —
    `docusaurus-plugin-typedoc` + `typedoc-plugin-markdown`, `entryPointStrategy:
    'packages'` over `ir` / `core` / `config` / `cli`, generated `docs/api/` + sidebar
    slice, `notDocumented` warning (deps: #55, #14, #21, #25, #44).
-4. [#57 docs-site-deploy-workflow](../../tasks/57-docs-site-deploy-workflow.md) —
+4. [#57 docs-site-deploy-workflow](https://github.com/marmotz/kurotako/issues/57) —
    `.github/workflows/docs.yml` (build + `deploy-pages`), `CNAME` / `baseUrl`, one-time
    Pages settings doc (dep: #55).
-5. [#58 docs-site-v1-content](../../tasks/58-docs-site-v1-content.md) — the minimal
+5. [#58 docs-site-v1-content](https://github.com/marmotz/kurotako/issues/58) — the minimal
    hand-authored content set: getting-started, concepts, `reference/*` (deps: #55, #56,
    #46, #47, #25, #50).

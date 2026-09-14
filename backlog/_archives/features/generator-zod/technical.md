@@ -18,7 +18,7 @@ overview deferred here.
 
 ## Starting point
 
-- **No code exists.** [monorepo-bootstrap #6](../../tasks/6-package-skeletons.md) scaffolds
+- **No code exists.** [monorepo-bootstrap #6](https://github.com/marmotz/kurotako/issues/6) scaffolds
   `packages/gen-zod/` with a single `src/index.ts` exporting a `version` const and one
   trivial test. This feature replaces that placeholder with the real generator.
 - Toolchain (from [monorepo-bootstrap/technical.md](../monorepo-bootstrap/technical.md)):
@@ -94,7 +94,7 @@ packages/gen-zod/src/
   source text. The consuming project already has `zod` installed (that is what it wants
   schemas for).
 - `tsconfig.json` `references`: `[{ "path": "../ir" }, { "path": "../core" }, { "path": "../config" }]`
-  — a small pin for [monorepo-bootstrap #6](../../tasks/6-package-skeletons.md) step 2
+  — a small pin for [monorepo-bootstrap #6](https://github.com/marmotz/kurotako/issues/6) step 2
   (doc-only until #6 is implemented).
 - `"sideEffects": false`.
 
@@ -407,7 +407,7 @@ Required by [drift-guard](../drift-guard/overview.md):
 ## Consequences verified against the repo / other features
 
 - Nothing to migrate: `packages/gen-zod/src/index.ts` is the bootstrap placeholder
-  ([task #6](../../tasks/6-package-skeletons.md)). This feature rewrites it; `package.json`
+  ([task #6](https://github.com/marmotz/kurotako/issues/6)). This feature rewrites it; `package.json`
   gains `@kurotako/ir` (`workspace:*`), the `@kurotako/core` / `@kurotako/config` peers, and
   `valibot`. `tsconfig.json` gains the three `references` (small pin for #6 step 2).
 - **[ir-model/technical.md](../ir-model/technical.md)** — this generator is the first
@@ -475,22 +475,22 @@ substring / AST-parse assertions).
 
 Task files under [`../../tasks/`](../../tasks/), GitHub issues on `marmotz/kurotako`.
 
-1. [#32 gen-zod-scaffold](../../tasks/32-gen-zod-scaffold.md) — `package.json` deps,
+1. [#32 gen-zod-scaffold](https://github.com/marmotz/kurotako/issues/32) — `package.json` deps,
    `tsconfig` refs, `src/options.ts` (`ZodGeneratorOptions`), `src/errors.ts`,
    `src/names.ts`, `src/dialect.ts` (v3/v4 seam), `src/generator.ts` skeleton, barrel
    (deps: #6, #11, #15, #22).
-2. [#33 gen-zod-scalars-constraints](../../tasks/33-gen-zod-scalars-constraints.md) —
+2. [#33 gen-zod-scalars-constraints](https://github.com/marmotz/kurotako/issues/33) —
    `src/render/scalars.ts` + `constraints.ts` + `field.ts` (dialect-aware base expression,
    constraint chain, list/nullable/optional/default assembly) (deps: #32, #13).
-3. [#34 gen-zod-variants-relations](../../tasks/34-gen-zod-variants-relations.md) —
+3. [#34 gen-zod-variants-relations](https://github.com/marmotz/kurotako/issues/34) —
    `src/render/variants.ts` (full/create/update/where/select field sets) +
    `relations.ts` (flat vs deep, cross-source degrade) (dep: #33).
-4. [#35 gen-zod-emit-enums-filters](../../tasks/35-gen-zod-emit-enums-filters.md) —
+4. [#35 gen-zod-emit-enums-filters](https://github.com/marmotz/kurotako/issues/35) —
    `src/emit/enums.ts` (const array + `z.enum` + type, collision guard) +
    `filters.ts` (Prisma-style Where operator schemas) (dep: #33).
-5. [#36 gen-zod-emit-entity-barrel](../../tasks/36-gen-zod-emit-entity-barrel.md) —
+5. [#36 gen-zod-emit-entity-barrel](https://github.com/marmotz/kurotako/issues/36) —
    `src/emit/entity.ts` (per-entity file, all variants × families, sorted imports) +
    `barrel.ts` (`index.ts`) (deps: #34, #35).
-6. [#37 gen-zod-artifact-and-run](../../tasks/37-gen-zod-artifact-and-run.md) —
+6. [#37 gen-zod-artifact-and-run](https://github.com/marmotz/kurotako/issues/37) —
    `src/artifact.ts` (`GeneratorArtifact` + `ZodArtifactExtra`), `generate()` wiring over
    `ctx.ir.sources`, end-to-end + determinism tests (dep: #36).

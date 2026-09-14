@@ -164,10 +164,10 @@ Add `{ "path": "packages/kurotako" }` to the root solution `tsconfig.json` refer
 
 ## Amendments to other features
 
-- **[monorepo-bootstrap #6 package-skeletons](../../tasks/6-package-skeletons.md)** —
+- **[monorepo-bootstrap #6 package-skeletons](https://github.com/marmotz/kurotako/issues/6)** —
   add `packages/kurotako` to the skeleton set (seventh published package, eighth overall
   after `apps/docs`). Root `tsconfig.json` gains its reference.
-- **[monorepo-bootstrap #9 CI](../../tasks/9-ci-workflow.md)** — the bin smoke-test
+- **[monorepo-bootstrap #9 CI](https://github.com/marmotz/kurotako/issues/9)** — the bin smoke-test
   matrix (`node …/tako.js --version` / `bun …/tako.js --version`) runs against
   `packages/kurotako/dist/bin/tako.js` too, asserting the `kurotako` version.
 - **[config-system/technical.md](../config-system/technical.md)** — the sentence
@@ -177,7 +177,7 @@ Add `{ "path": "packages/kurotako" }` to the root solution `tsconfig.json` refer
 - **[docs/architecture.md](../../../../docs/architecture.md)** /
   [docs/vision.md](../../../../docs/vision.md) "Decisions already made" — record the
   `kurotako` meta-package (one install, re-exports `defineConfig`, binary stays `tako`).
-  Doc-only; can ride [task #60](../../tasks/60-docs-reconciliation-post-mvp.md).
+  Doc-only; can ride [task #60](https://github.com/marmotz/kurotako/issues/60).
 - **[docs-site content](../docs-site/technical.md)** — `apps/docs`
   `getting-started/quick-start.md` and `installation.md` switch step 1 to
   `npm install -D kurotako` (+ Bun/pnpm/Yarn forms) and
@@ -202,12 +202,12 @@ Add `{ "path": "packages/kurotako" }` to the root solution `tsconfig.json` refer
 One task is enough — the package is thin and touches no existing package source.
 
 1. **`packages/kurotako` skeleton + bin + re-export + tests**
-   ([86-meta-package-kurotako](../../tasks/86-meta-package-kurotako.md), done) — the
+   ([86-meta-package-kurotako](https://github.com/marmotz/kurotako/issues/86), done) — the
    package above, the root `tsconfig.json` reference, the CI smoke-test matrix entry, a
    changeset, and the doc edits (`config-system/technical.md` note, `apps/docs`
    getting-started switch).
 2. **`tako init` writes `from 'kurotako'`**
-   ([94-tako-init-kurotako-import-surface](../../tasks/94-tako-init-kurotako-import-surface.md))
+   ([94-tako-init-kurotako-import-surface](https://github.com/marmotz/kurotako/issues/94))
    — `CONFIG_TEMPLATE` / `CONFIG_TEMPLATE_MONOREPO` import line + `reference/*` docs.
    Follow-up from the post-merge review; depends on
    [#90](https://github.com/marmotz/kurotako/issues/90).

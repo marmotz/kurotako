@@ -220,12 +220,12 @@ repo-settings change, not code.
 
 | Issue | Tâche | Portée |
 |-------|-------|--------|
-| [#98](https://github.com/marmotz/kurotako/issues/98) | [../../tasks/98-repo-hygiene-prose-and-community-files.md](../../tasks/98-repo-hygiene-prose-and-community-files.md) | §7, §8 — README / AGENTS.md / CONTRIBUTING.md / vision.md refresh, SECURITY.md + templates |
-| [#99](https://github.com/marmotz/kurotako/issues/99) | [../../tasks/99-package-metadata-and-readmes.md](../../tasks/99-package-metadata-and-readmes.md) | §6 — `package.json` metadata + per-package `README.md` |
-| [#100](https://github.com/marmotz/kurotako/issues/100) | [../../tasks/100-internal-deps-workspace-caret.md](../../tasks/100-internal-deps-workspace-caret.md) | §2, §3 — `workspace:^` migration + `baseBranch` fix |
-| [#101](https://github.com/marmotz/kurotako/issues/101) | [../../tasks/101-npm-org-and-token.md](../../tasks/101-npm-org-and-token.md) | §4 — npm org (manual); `NPM_TOKEN` later dropped for OIDC (§5, #104) |
-| [#102](https://github.com/marmotz/kurotako/issues/102) | [../../tasks/102-release-workflow-enable.md](../../tasks/102-release-workflow-enable.md) | §5 — enable `release.yml`, fix job order, provenance (needs #100) |
-| [#103](https://github.com/marmotz/kurotako/issues/103) | [../../tasks/103-consolidate-changesets-version-010.md](../../tasks/103-consolidate-changesets-version-010.md) | §1, §7 — one changeset, `changeset version` → 0.1.0, CHANGELOGs (needs #99, #100) |
-| [#104](https://github.com/marmotz/kurotako/issues/104) | [../../tasks/104-publish-010-tag-release.md](../../tasks/104-publish-010-tag-release.md) | §5 — OIDC publish pipeline (`scripts/release-publish.sh`), manual first `0.1.0` publish, per-package tags + Releases, smoke test (needs #101, #102, #103) |
+| [#98](https://github.com/marmotz/kurotako/issues/98) | [../../tasks/98-repo-hygiene-prose-and-community-files.md](https://github.com/marmotz/kurotako/issues/98) | §7, §8 — README / AGENTS.md / CONTRIBUTING.md / vision.md refresh, SECURITY.md + templates |
+| [#99](https://github.com/marmotz/kurotako/issues/99) | [../../tasks/99-package-metadata-and-readmes.md](https://github.com/marmotz/kurotako/issues/99) | §6 — `package.json` metadata + per-package `README.md` |
+| [#100](https://github.com/marmotz/kurotako/issues/100) | [../../tasks/100-internal-deps-workspace-caret.md](https://github.com/marmotz/kurotako/issues/100) | §2, §3 — `workspace:^` migration + `baseBranch` fix |
+| [#101](https://github.com/marmotz/kurotako/issues/101) | [../../tasks/101-npm-org-and-token.md](https://github.com/marmotz/kurotako/issues/101) | §4 — npm org (manual); `NPM_TOKEN` later dropped for OIDC (§5, #104) |
+| [#102](https://github.com/marmotz/kurotako/issues/102) | [../../tasks/102-release-workflow-enable.md](https://github.com/marmotz/kurotako/issues/102) | §5 — enable `release.yml`, fix job order, provenance (needs #100) |
+| [#103](https://github.com/marmotz/kurotako/issues/103) | [../../tasks/103-consolidate-changesets-version-010.md](https://github.com/marmotz/kurotako/issues/103) | §1, §7 — one changeset, `changeset version` → 0.1.0, CHANGELOGs (needs #99, #100) |
+| [#104](https://github.com/marmotz/kurotako/issues/104) | [../../tasks/104-publish-010-tag-release.md](https://github.com/marmotz/kurotako/issues/104) | §5 — OIDC publish pipeline (`scripts/release-publish.sh`), manual first `0.1.0` publish, per-package tags + Releases, smoke test (needs #101, #102, #103) |
 
 Branch protection (§9) stays a maintainer decision, not tracked as a task.

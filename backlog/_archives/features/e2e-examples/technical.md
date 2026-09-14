@@ -412,17 +412,17 @@ each project's own `README.md` for its setup steps. Kept short — the per-proje
 
 Task files under [`../../tasks/`](../../tasks/), GitHub issues on `marmotz/kurotako`.
 
-1. [#77 root-tooling](../../tasks/77-e2e-examples-root-tooling.md) — `.gitignore` /
+1. [#77 root-tooling](https://github.com/marmotz/kurotako/issues/77) — `.gitignore` /
    `biome.json` exclusions, `examples/README.md` (deps: none).
-2. [#78 outputdir-scaffold](../../tasks/78-e2e-examples-outputdir-scaffold.md) — Bun
+2. [#78 outputdir-scaffold](https://github.com/marmotz/kurotako/issues/78) — Bun
    workspace, Prisma schema, `tako.config.ts` (mode A, two destinations) (dep: #77).
-3. [#79 outputpkg-scaffold](../../tasks/79-e2e-examples-outputpkg-scaffold.md) — Bun
+3. [#79 outputpkg-scaffold](https://github.com/marmotz/kurotako/issues/79) — Bun
    workspace, Prisma schema, `tako.config.ts` (mode B, shared package) (dep: #77).
-4. [#80 outputdir-backend](../../tasks/80-e2e-examples-outputdir-backend.md) — NestJS
+4. [#80 outputdir-backend](https://github.com/marmotz/kurotako/issues/80) — NestJS
    `TasksModule` + `ZodValidationPipe` (dep: #78).
-5. [#81 outputdir-frontend](../../tasks/81-e2e-examples-outputdir-frontend.md) —
+5. [#81 outputdir-frontend](https://github.com/marmotz/kurotako/issues/81) —
    Angular list/create(reactive)/edit(signal) components, flat relations (dep: #78).
-6. [#82 outputpkg-backend](../../tasks/82-e2e-examples-outputpkg-backend.md) — NestJS
+6. [#82 outputpkg-backend](https://github.com/marmotz/kurotako/issues/82) — NestJS
    `TasksModule` + `ZodValidationPipe`, consuming `@example/tasks` (dep: #79).
-7. [#83 outputpkg-frontend](../../tasks/83-e2e-examples-outputpkg-frontend.md) —
+7. [#83 outputpkg-frontend](https://github.com/marmotz/kurotako/issues/83) —
    Angular list/create(reactive)/edit(signal) components, deep relations (dep: #79).

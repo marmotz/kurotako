@@ -11,17 +11,17 @@ design: [technical.md](features/monorepo-bootstrap/technical.md)
 
 | Done | Issue                                                | Task                                                                                  | Description                                                                                                         |
 |------|------------------------------------------------------|---------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------|
-| [X]  | [#1](https://github.com/marmotz/kurotako/issues/1)   | [1-root-workspace-scaffold](tasks/1-root-workspace-scaffold.md)                       | Root `package.json`, Bun workspaces, `.gitignore`, `.node-version`, `.editorconfig`                                 |
-| [X]  | [#2](https://github.com/marmotz/kurotako/issues/2)   | [2-shared-typescript-config](tasks/2-shared-typescript-config.md)                     | `tsconfig.base.json` + solution tsconfig, `typecheck` script                                                        |
-| [X]  | [#3](https://github.com/marmotz/kurotako/issues/3)   | [3-tsup-build-preset](tasks/3-tsup-build-preset.md)                                   | `tsup.config.base.ts`, `build` script                                                                               |
-| [X]  | [#4](https://github.com/marmotz/kurotako/issues/4)   | [4-vitest-workspace](tasks/4-vitest-workspace.md)                                     | `vitest.workspace.ts`, coverage, `test` script                                                                      |
-| [X]  | [#5](https://github.com/marmotz/kurotako/issues/5)   | [5-biome-lint-format](tasks/5-biome-lint-format.md)                                   | `biome.json`, `lint`/`format` scripts                                                                               |
-| [X]  | [#6](https://github.com/marmotz/kurotako/issues/6)   | [6-package-skeletons](tasks/6-package-skeletons.md)                                   | 7 `packages/*` skeletons (ir, core, config, cli, parser-prisma, gen-zod, gen-angular)                               |
-| [X]  | [#7](https://github.com/marmotz/kurotako/issues/7)   | [7-lefthook-git-hooks](tasks/7-lefthook-git-hooks.md)                                 | `lefthook.yml`, `prepare` script                                                                                    |
-| [X]  | [#8](https://github.com/marmotz/kurotako/issues/8)   | [8-changesets-release](tasks/8-changesets-release.md)                                 | `.changeset/config.json`, independent versioning                                                                    |
-| [X]  | [#9](https://github.com/marmotz/kurotako/issues/9)   | [9-ci-workflow](tasks/9-ci-workflow.md)                                               | `.github/workflows/ci.yml`                                                                                          |
-| [X]  | [#10](https://github.com/marmotz/kurotako/issues/10) | [10-repo-meta-files](tasks/10-repo-meta-files.md)                                     | `LICENSE`, `README`, `CONTRIBUTING`, `CODE_OF_CONDUCT`                                                              |
-| [X]  | [#54](https://github.com/marmotz/kurotako/issues/54) | [54-apps-docs-workspace-accommodation](tasks/54-apps-docs-workspace-accommodation.md) | `apps/*` workspace for the docs site: `workspaces`, `.gitignore`, Biome, changesets, `CONTRIBUTING` (for docs-site) |
+| [X]  | [#1](https://github.com/marmotz/kurotako/issues/1)   | [1-root-workspace-scaffold](https://github.com/marmotz/kurotako/issues/1)                       | Root `package.json`, Bun workspaces, `.gitignore`, `.node-version`, `.editorconfig`                                 |
+| [X]  | [#2](https://github.com/marmotz/kurotako/issues/2)   | [2-shared-typescript-config](https://github.com/marmotz/kurotako/issues/2)                     | `tsconfig.base.json` + solution tsconfig, `typecheck` script                                                        |
+| [X]  | [#3](https://github.com/marmotz/kurotako/issues/3)   | [3-tsup-build-preset](https://github.com/marmotz/kurotako/issues/3)                                   | `tsup.config.base.ts`, `build` script                                                                               |
+| [X]  | [#4](https://github.com/marmotz/kurotako/issues/4)   | [4-vitest-workspace](https://github.com/marmotz/kurotako/issues/4)                                     | `vitest.workspace.ts`, coverage, `test` script                                                                      |
+| [X]  | [#5](https://github.com/marmotz/kurotako/issues/5)   | [5-biome-lint-format](https://github.com/marmotz/kurotako/issues/5)                                   | `biome.json`, `lint`/`format` scripts                                                                               |
+| [X]  | [#6](https://github.com/marmotz/kurotako/issues/6)   | [6-package-skeletons](https://github.com/marmotz/kurotako/issues/6)                                   | 7 `packages/*` skeletons (ir, core, config, cli, parser-prisma, gen-zod, gen-angular)                               |
+| [X]  | [#7](https://github.com/marmotz/kurotako/issues/7)   | [7-lefthook-git-hooks](https://github.com/marmotz/kurotako/issues/7)                                 | `lefthook.yml`, `prepare` script                                                                                    |
+| [X]  | [#8](https://github.com/marmotz/kurotako/issues/8)   | [8-changesets-release](https://github.com/marmotz/kurotako/issues/8)                                 | `.changeset/config.json`, independent versioning                                                                    |
+| [X]  | [#9](https://github.com/marmotz/kurotako/issues/9)   | [9-ci-workflow](https://github.com/marmotz/kurotako/issues/9)                                               | `.github/workflows/ci.yml`                                                                                          |
+| [X]  | [#10](https://github.com/marmotz/kurotako/issues/10) | [10-repo-meta-files](https://github.com/marmotz/kurotako/issues/10)                                     | `LICENSE`, `README`, `CONTRIBUTING`, `CODE_OF_CONDUCT`                                                              |
+| [X]  | [#54](https://github.com/marmotz/kurotako/issues/54) | [54-apps-docs-workspace-accommodation](https://github.com/marmotz/kurotako/issues/54) | `apps/*` workspace for the docs site: `workspaces`, `.gitignore`, Biome, changesets, `CONTRIBUTING` (for docs-site) |
 
 ## IR model (`@kurotako/ir`)
 
@@ -30,10 +30,10 @@ design: [technical.md](features/monorepo-bootstrap/technical.md)
 
 | Done | Issue                                                | Task                                                          | Description                                                                   |
 |------|------------------------------------------------------|--------------------------------------------------------------|-------------------------------------------------------------------------------|
-| [X]  | [#11](https://github.com/marmotz/kurotako/issues/11) | [11-ir-types-and-version](tasks/11-ir-types-and-version.md)   | `src/schemas.ts` Valibot schemas + `src/types.ts` inferred + `src/version.ts` |
-| [X]  | [#12](https://github.com/marmotz/kurotako/issues/12) | [12-ir-runtime-validation](tasks/12-ir-runtime-validation.md) | `validateIR`/`assertIR`/`parseIR` = Valibot parse + cross-ref pass            |
-| [X]  | [#13](https://github.com/marmotz/kurotako/issues/13) | [13-ir-traversal-helpers](tasks/13-ir-traversal-helpers.md)   | `src/helpers.ts` resolution / iteration helpers                               |
-| [X]  | [#14](https://github.com/marmotz/kurotako/issues/14) | [14-ir-source-builder](tasks/14-ir-source-builder.md)         | `src/builder.ts` fluent `createSourceIR()` + incremental validation           |
+| [X]  | [#11](https://github.com/marmotz/kurotako/issues/11) | [11-ir-types-and-version](https://github.com/marmotz/kurotako/issues/11)   | `src/schemas.ts` Valibot schemas + `src/types.ts` inferred + `src/version.ts` |
+| [X]  | [#12](https://github.com/marmotz/kurotako/issues/12) | [12-ir-runtime-validation](https://github.com/marmotz/kurotako/issues/12) | `validateIR`/`assertIR`/`parseIR` = Valibot parse + cross-ref pass            |
+| [X]  | [#13](https://github.com/marmotz/kurotako/issues/13) | [13-ir-traversal-helpers](https://github.com/marmotz/kurotako/issues/13)   | `src/helpers.ts` resolution / iteration helpers                               |
+| [X]  | [#14](https://github.com/marmotz/kurotako/issues/14) | [14-ir-source-builder](https://github.com/marmotz/kurotako/issues/14)         | `src/builder.ts` fluent `createSourceIR()` + incremental validation           |
 
 ## Orchestration (`@kurotako/core`)
 
@@ -42,13 +42,13 @@ design: [technical.md](features/monorepo-bootstrap/technical.md)
 
 | Done | Issue                                                | Task                                                                | Description                                                                         |
 |------|------------------------------------------------------|--------------------------------------------------------------------|-------------------------------------------------------------------------------------|
-| [X]  | [#15](https://github.com/marmotz/kurotako/issues/15) | [15-core-types-and-contracts](tasks/15-core-types-and-contracts.md) | `types.ts` (config, driver contracts, artifacts, hooks), `errors.ts`, `logger.ts`   |
-| [X]  | [#16](https://github.com/marmotz/kurotako/issues/16) | [16-core-merge](tasks/16-core-merge.md)                             | `merge.ts` — `mergeSources()`, namespace-mismatch / duplicate rejection, `assertIR` |
-| [X]  | [#17](https://github.com/marmotz/kurotako/issues/17) | [17-core-graph](tasks/17-core-graph.md)                             | `graph.ts` — `generatorOrder()`, Kahn, missing hard dep, cycle detection            |
-| [X]  | [#18](https://github.com/marmotz/kurotako/issues/18) | [18-core-filter](tasks/18-core-filter.md)                           | `filter.ts` — `filterIR()` namespace-filtered deep clone                            |
-| [X]  | [#19](https://github.com/marmotz/kurotako/issues/19) | [19-core-collect](tasks/19-core-collect.md)                         | `collect.ts` — `mergeTrees()`, path normalization, cross-generator collision        |
-| [X]  | [#20](https://github.com/marmotz/kurotako/issues/20) | [20-core-writer](tasks/20-core-writer.md)                           | `writer.ts` — `Writer` seam + mode A `directoryWriter` (unconditional wipe)         |
-| [X]  | [#21](https://github.com/marmotz/kurotako/issues/21) | [21-core-run](tasks/21-core-run.md)                                 | `run.ts` — orchestrator wiring every step + `afterEmit` hook + e2e tests            |
+| [X]  | [#15](https://github.com/marmotz/kurotako/issues/15) | [15-core-types-and-contracts](https://github.com/marmotz/kurotako/issues/15) | `types.ts` (config, driver contracts, artifacts, hooks), `errors.ts`, `logger.ts`   |
+| [X]  | [#16](https://github.com/marmotz/kurotako/issues/16) | [16-core-merge](https://github.com/marmotz/kurotako/issues/16)                             | `merge.ts` — `mergeSources()`, namespace-mismatch / duplicate rejection, `assertIR` |
+| [X]  | [#17](https://github.com/marmotz/kurotako/issues/17) | [17-core-graph](https://github.com/marmotz/kurotako/issues/17)                             | `graph.ts` — `generatorOrder()`, Kahn, missing hard dep, cycle detection            |
+| [X]  | [#18](https://github.com/marmotz/kurotako/issues/18) | [18-core-filter](https://github.com/marmotz/kurotako/issues/18)                           | `filter.ts` — `filterIR()` namespace-filtered deep clone                            |
+| [X]  | [#19](https://github.com/marmotz/kurotako/issues/19) | [19-core-collect](https://github.com/marmotz/kurotako/issues/19)                         | `collect.ts` — `mergeTrees()`, path normalization, cross-generator collision        |
+| [X]  | [#20](https://github.com/marmotz/kurotako/issues/20) | [20-core-writer](https://github.com/marmotz/kurotako/issues/20)                           | `writer.ts` — `Writer` seam + mode A `directoryWriter` (unconditional wipe)         |
+| [X]  | [#21](https://github.com/marmotz/kurotako/issues/21) | [21-core-run](https://github.com/marmotz/kurotako/issues/21)                                 | `run.ts` — orchestrator wiring every step + `afterEmit` hook + e2e tests            |
 
 ## Configuration system
 
@@ -57,10 +57,10 @@ design: [technical.md](features/monorepo-bootstrap/technical.md)
 
 | Done | Issue                                                | Task                                                              | Description                                                                              |
 |------|------------------------------------------------------|-----------------------------------------------------------------|------------------------------------------------------------------------------------------|
-| [X]  | [#22](https://github.com/marmotz/kurotako/issues/22) | [22-config-types-and-errors](tasks/22-config-types-and-errors.md) | `types.ts` + `defineConfig` + `errors.ts` + `CONFIG_TEMPLATE`, package skeleton          |
-| [X]  | [#23](https://github.com/marmotz/kurotako/issues/23) | [23-config-schema](tasks/23-config-schema.md)                     | `schema.ts` — `NAMESPACE_RE`, structural `TakoConfigSchema`, `normalizeIssues`           |
-| [X]  | [#24](https://github.com/marmotz/kurotako/issues/24) | [24-config-resolve](tasks/24-config-resolve.md)                   | `resolve.ts` — `resolveConfigFile()` walk-up + `--config` override                       |
-| [X]  | [#25](https://github.com/marmotz/kurotako/issues/25) | [25-config-load](tasks/25-config-load.md)                         | `load.ts` — `loadConfig()`: jiti import, validate, curry options, build `ResolvedConfig` |
+| [X]  | [#22](https://github.com/marmotz/kurotako/issues/22) | [22-config-types-and-errors](https://github.com/marmotz/kurotako/issues/22) | `types.ts` + `defineConfig` + `errors.ts` + `CONFIG_TEMPLATE`, package skeleton          |
+| [X]  | [#23](https://github.com/marmotz/kurotako/issues/23) | [23-config-schema](https://github.com/marmotz/kurotako/issues/23)                     | `schema.ts` — `NAMESPACE_RE`, structural `TakoConfigSchema`, `normalizeIssues`           |
+| [X]  | [#24](https://github.com/marmotz/kurotako/issues/24) | [24-config-resolve](https://github.com/marmotz/kurotako/issues/24)                   | `resolve.ts` — `resolveConfigFile()` walk-up + `--config` override                       |
+| [X]  | [#25](https://github.com/marmotz/kurotako/issues/25) | [25-config-load](https://github.com/marmotz/kurotako/issues/25)                         | `load.ts` — `loadConfig()`: jiti import, validate, curry options, build `ResolvedConfig` |
 
 ## Prisma parser (`@kurotako/parser-prisma`)
 
@@ -69,13 +69,13 @@ design: [technical.md](features/monorepo-bootstrap/technical.md)
 
 | Done | Issue                                                | Task                                                              | Description                                                                                                                |
 |------|------------------------------------------------------|-----------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
-| [X]  | [#59](https://github.com/marmotz/kurotako/issues/59) | [59-prisma-getdmmf-spike](tasks/59-prisma-getdmmf-spike.md)       | **Spike, blocks #26**: verify `getDMMF` availability / call shape / Prisma version range in `@prisma/internals`            |
-| [X]  | [#26](https://github.com/marmotz/kurotako/issues/26) | [26-prisma-parser-scaffold](tasks/26-prisma-parser-scaffold.md)   | Package scaffold: `options.ts` (`PrismaParserOptions`), `errors.ts`, `parser.ts` skeleton, deps (`@prisma/internals` peer) |
-| [X]  | [#27](https://github.com/marmotz/kurotako/issues/27) | [27-prisma-input-detection](tasks/27-prisma-input-detection.md)   | `detect.ts` — `resolveInput()`: file / folder / `contract.json`, version-mode inference                                    |
-| [X]  | [#28](https://github.com/marmotz/kurotako/issues/28) | [28-prisma-dmmf-reader](tasks/28-prisma-dmmf-reader.md)           | `dmmf/` — neutral `PrismaModel`, `getDMMF` wrapper, `DMMF.Document → PrismaModel`                                          |
-| [X]  | [#29](https://github.com/marmotz/kurotako/issues/29) | [29-prisma-scalar-mapping](tasks/29-prisma-scalar-mapping.md)     | `map/scalars.ts` + `map/defaults.ts` — scalar / `@db.*` / `format` / `DefaultValue` mapping                                |
-| [X]  | [#30](https://github.com/marmotz/kurotako/issues/30) | [30-prisma-relation-mapping](tasks/30-prisma-relation-mapping.md) | `map/relations.ts` — relation pairing, owning side, implicit-m2m materialisation                                           |
-| [X]  | [#31](https://github.com/marmotz/kurotako/issues/31) | [31-prisma-sourceir-build](tasks/31-prisma-sourceir-build.md)     | `map/build.ts` — `buildSourceIR()` via `createSourceIR`, final wiring, e2e tests                                           |
+| [X]  | [#59](https://github.com/marmotz/kurotako/issues/59) | [59-prisma-getdmmf-spike](https://github.com/marmotz/kurotako/issues/59)       | **Spike, blocks #26**: verify `getDMMF` availability / call shape / Prisma version range in `@prisma/internals`            |
+| [X]  | [#26](https://github.com/marmotz/kurotako/issues/26) | [26-prisma-parser-scaffold](https://github.com/marmotz/kurotako/issues/26)   | Package scaffold: `options.ts` (`PrismaParserOptions`), `errors.ts`, `parser.ts` skeleton, deps (`@prisma/internals` peer) |
+| [X]  | [#27](https://github.com/marmotz/kurotako/issues/27) | [27-prisma-input-detection](https://github.com/marmotz/kurotako/issues/27)   | `detect.ts` — `resolveInput()`: file / folder / `contract.json`, version-mode inference                                    |
+| [X]  | [#28](https://github.com/marmotz/kurotako/issues/28) | [28-prisma-dmmf-reader](https://github.com/marmotz/kurotako/issues/28)           | `dmmf/` — neutral `PrismaModel`, `getDMMF` wrapper, `DMMF.Document → PrismaModel`                                          |
+| [X]  | [#29](https://github.com/marmotz/kurotako/issues/29) | [29-prisma-scalar-mapping](https://github.com/marmotz/kurotako/issues/29)     | `map/scalars.ts` + `map/defaults.ts` — scalar / `@db.*` / `format` / `DefaultValue` mapping                                |
+| [X]  | [#30](https://github.com/marmotz/kurotako/issues/30) | [30-prisma-relation-mapping](https://github.com/marmotz/kurotako/issues/30) | `map/relations.ts` — relation pairing, owning side, implicit-m2m materialisation                                           |
+| [X]  | [#31](https://github.com/marmotz/kurotako/issues/31) | [31-prisma-sourceir-build](https://github.com/marmotz/kurotako/issues/31)     | `map/build.ts` — `buildSourceIR()` via `createSourceIR`, final wiring, e2e tests                                           |
 
 ## Zod generator (`@kurotako/gen-zod`)
 
@@ -84,12 +84,12 @@ design: [technical.md](features/generator-zod/technical.md)
 
 | Done | Issue                                                | Task                                                                      | Description                                                                                |
 |------|------------------------------------------------------|-------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
-| [X]  | [#32](https://github.com/marmotz/kurotako/issues/32) | [32-gen-zod-scaffold](tasks/32-gen-zod-scaffold.md)                       | Package deps, `options.ts`, `errors.ts`, `names.ts`, `dialect.ts` (v3/v4), skeleton        |
-| [X]  | [#33](https://github.com/marmotz/kurotako/issues/33) | [33-gen-zod-scalars-constraints](tasks/33-gen-zod-scalars-constraints.md) | `render/scalars.ts` + `constraints.ts` + `field.ts` — dialect-aware expression rendering   |
-| [X]  | [#34](https://github.com/marmotz/kurotako/issues/34) | [34-gen-zod-variants-relations](tasks/34-gen-zod-variants-relations.md)   | `render/variants.ts` (full/create/update/where/select) + `relations.ts` (flat/deep)        |
-| [X]  | [#35](https://github.com/marmotz/kurotako/issues/35) | [35-gen-zod-emit-enums-filters](tasks/35-gen-zod-emit-enums-filters.md)   | `emit/enums.ts` (const + `z.enum` + type) + `filters.ts` (Prisma-style Where operators)    |
-| [X]  | [#36](https://github.com/marmotz/kurotako/issues/36) | [36-gen-zod-emit-entity-barrel](tasks/36-gen-zod-emit-entity-barrel.md)   | `emit/entity.ts` (per-entity file, all variants × families) + `barrel.ts`                  |
-| [X]  | [#37](https://github.com/marmotz/kurotako/issues/37) | [37-gen-zod-artifact-and-run](tasks/37-gen-zod-artifact-and-run.md)       | `artifact.ts` (`GeneratorArtifact` + `ZodArtifactExtra`) + `generate()` wiring + e2e tests |
+| [X]  | [#32](https://github.com/marmotz/kurotako/issues/32) | [32-gen-zod-scaffold](https://github.com/marmotz/kurotako/issues/32)                       | Package deps, `options.ts`, `errors.ts`, `names.ts`, `dialect.ts` (v3/v4), skeleton        |
+| [X]  | [#33](https://github.com/marmotz/kurotako/issues/33) | [33-gen-zod-scalars-constraints](https://github.com/marmotz/kurotako/issues/33) | `render/scalars.ts` + `constraints.ts` + `field.ts` — dialect-aware expression rendering   |
+| [X]  | [#34](https://github.com/marmotz/kurotako/issues/34) | [34-gen-zod-variants-relations](https://github.com/marmotz/kurotako/issues/34)   | `render/variants.ts` (full/create/update/where/select) + `relations.ts` (flat/deep)        |
+| [X]  | [#35](https://github.com/marmotz/kurotako/issues/35) | [35-gen-zod-emit-enums-filters](https://github.com/marmotz/kurotako/issues/35)   | `emit/enums.ts` (const + `z.enum` + type) + `filters.ts` (Prisma-style Where operators)    |
+| [X]  | [#36](https://github.com/marmotz/kurotako/issues/36) | [36-gen-zod-emit-entity-barrel](https://github.com/marmotz/kurotako/issues/36)   | `emit/entity.ts` (per-entity file, all variants × families) + `barrel.ts`                  |
+| [X]  | [#37](https://github.com/marmotz/kurotako/issues/37) | [37-gen-zod-artifact-and-run](https://github.com/marmotz/kurotako/issues/37)       | `artifact.ts` (`GeneratorArtifact` + `ZodArtifactExtra`) + `generate()` wiring + e2e tests |
 
 ## Angular generator (`@kurotako/gen-angular`)
 
@@ -98,12 +98,12 @@ design: [technical.md](features/generator-angular/technical.md)
 
 | Done | Issue                                                | Task                                                                          | Description                                                                                                         |
 |------|------------------------------------------------------|-----------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
-| [X]  | [#38](https://github.com/marmotz/kurotako/issues/38) | [38-gen-angular-scaffold](tasks/38-gen-angular-scaffold.md)                   | `package.json`/`tsconfig`, `options.ts`, `errors.ts`, `names.ts`, `zod-artifact.ts` reader, `generator.ts` skeleton |
-| [X]  | [#39](https://github.com/marmotz/kurotako/issues/39) | [39-gen-angular-controls-variants](tasks/39-gen-angular-controls-variants.md) | `render/controls.ts` scalar → `FormControl<T>` map + `Create`/`Update` variant field sets                           |
-| [X]  | [#40](https://github.com/marmotz/kurotako/issues/40) | [40-gen-angular-reactive-service](tasks/40-gen-angular-reactive-service.md)   | `render/reactive.ts` `@Injectable` factory + `emit/runtime.ts` path-distributed `zodValidator`                      |
-| [X]  | [#41](https://github.com/marmotz/kurotako/issues/41) | [41-gen-angular-signal-forms](tasks/41-gen-angular-signal-forms.md)           | `render/signal.ts` `schema` + model factory + `zodTreeValidate` root tree validator                                 |
-| [X]  | [#42](https://github.com/marmotz/kurotako/issues/42) | [42-gen-angular-relations-deep](tasks/42-gen-angular-relations-deep.md)       | `render/relations.ts` `relations: 'deep'` nested `FormGroup`/`FormArray`, lazy builders                             |
-| [X]  | [#43](https://github.com/marmotz/kurotako/issues/43) | [43-gen-angular-emit-artifact-run](tasks/43-gen-angular-emit-artifact-run.md) | `emit/entity.ts`+`barrel.ts`, `artifact.ts` (`AngularArtifactExtra`), `generate()` wiring + e2e tests               |
+| [X]  | [#38](https://github.com/marmotz/kurotako/issues/38) | [38-gen-angular-scaffold](https://github.com/marmotz/kurotako/issues/38)                   | `package.json`/`tsconfig`, `options.ts`, `errors.ts`, `names.ts`, `zod-artifact.ts` reader, `generator.ts` skeleton |
+| [X]  | [#39](https://github.com/marmotz/kurotako/issues/39) | [39-gen-angular-controls-variants](https://github.com/marmotz/kurotako/issues/39) | `render/controls.ts` scalar → `FormControl<T>` map + `Create`/`Update` variant field sets                           |
+| [X]  | [#40](https://github.com/marmotz/kurotako/issues/40) | [40-gen-angular-reactive-service](https://github.com/marmotz/kurotako/issues/40)   | `render/reactive.ts` `@Injectable` factory + `emit/runtime.ts` path-distributed `zodValidator`                      |
+| [X]  | [#41](https://github.com/marmotz/kurotako/issues/41) | [41-gen-angular-signal-forms](https://github.com/marmotz/kurotako/issues/41)           | `render/signal.ts` `schema` + model factory + `zodTreeValidate` root tree validator                                 |
+| [X]  | [#42](https://github.com/marmotz/kurotako/issues/42) | [42-gen-angular-relations-deep](https://github.com/marmotz/kurotako/issues/42)       | `render/relations.ts` `relations: 'deep'` nested `FormGroup`/`FormArray`, lazy builders                             |
+| [X]  | [#43](https://github.com/marmotz/kurotako/issues/43) | [43-gen-angular-emit-artifact-run](https://github.com/marmotz/kurotako/issues/43) | `emit/entity.ts`+`barrel.ts`, `artifact.ts` (`AngularArtifactExtra`), `generate()` wiring + e2e tests               |
 
 ## `tako` CLI (`@kurotako/cli`)
 
@@ -113,10 +113,10 @@ design: [technical.md](features/generator-angular/technical.md)
 
 | Done | Issue                                                | Task                                                                            | Description                                                                 |
 |------|------------------------------------------------------|-------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
-| [X]  | [#44](https://github.com/marmotz/kurotako/issues/44) | [44-cli-scaffold-reporter-errors](tasks/44-cli-scaffold-reporter-errors.md)     | citty command tree, `ConsoleReporter`, `renderError`, `bin/tako.ts`, barrel |
-| [X]  | [#45](https://github.com/marmotz/kurotako/issues/45) | [45-cli-init-command](tasks/45-cli-init-command.md)                             | `tako init` — write `CONFIG_TEMPLATE`, `--force`, refuse-if-exists          |
-| [X]  | [#46](https://github.com/marmotz/kurotako/issues/46) | [46-cli-generate-validate-commands](tasks/46-cli-generate-validate-commands.md) | `tako generate` (`--dry-run`) + `tako validate` via `loadAndRun`            |
-| [X]  | [#47](https://github.com/marmotz/kurotako/issues/47) | [47-cli-watch-mode](tasks/47-cli-watch-mode.md)                                 | `tako generate --watch` — chokidar loop, debounce, `watchPaths` union       |
+| [X]  | [#44](https://github.com/marmotz/kurotako/issues/44) | [44-cli-scaffold-reporter-errors](https://github.com/marmotz/kurotako/issues/44)     | citty command tree, `ConsoleReporter`, `renderError`, `bin/tako.ts`, barrel |
+| [X]  | [#45](https://github.com/marmotz/kurotako/issues/45) | [45-cli-init-command](https://github.com/marmotz/kurotako/issues/45)                             | `tako init` — write `CONFIG_TEMPLATE`, `--force`, refuse-if-exists          |
+| [X]  | [#46](https://github.com/marmotz/kurotako/issues/46) | [46-cli-generate-validate-commands](https://github.com/marmotz/kurotako/issues/46) | `tako generate` (`--dry-run`) + `tako validate` via `loadAndRun`            |
+| [X]  | [#47](https://github.com/marmotz/kurotako/issues/47) | [47-cli-watch-mode](https://github.com/marmotz/kurotako/issues/47)                                 | `tako generate --watch` — chokidar loop, debounce, `watchPaths` union       |
 
 ## Output modes (directory / npm package)
 
@@ -125,11 +125,11 @@ design: [technical.md](features/generator-angular/technical.md)
 
 | Done | Issue                                                | Task                                                                          | Description                                                                                            |
 |------|------------------------------------------------------|-----------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------|
-| [X]  | [#48](https://github.com/marmotz/kurotako/issues/48) | [48-output-root-barrel-and-banner](tasks/48-output-root-barrel-and-banner.md) | `writer/barrel.ts` + `writer/banner.ts`, `run.ts` steps 5b/5c, collision guard (dep of #43)            |
-| [X]  | [#49](https://github.com/marmotz/kurotako/issues/49) | [49-output-peers-and-pm](tasks/49-output-peers-and-pm.md)                     | `writer/peers.ts` (peerDeps aggregation) + `writer/pm.ts` (package-manager resolution)                 |
-| [X]  | [#50](https://github.com/marmotz/kurotako/issues/50) | [50-output-package-writer](tasks/50-output-package-writer.md)                 | `packageWriter` — `package.json`, tsup build, install; `selectWriter` mode-B branch                    |
-| [X]  | [#73](https://github.com/marmotz/kurotako/issues/73) | [73-core-outputs-array](tasks/73-core-outputs-array.md)                       | `outputs[]` amendment — `ResolvedConfig.outputs` / `RunResult.written`, `run.ts` per-output write loop |
-| [X]  | [#74](https://github.com/marmotz/kurotako/issues/74) | [74-config-outputs-array](tasks/74-config-outputs-array.md)                   | `outputs[]` amendment — `TakoConfig.outputs`, schema/load cross-field checks, `UnknownGeneratorError`  |
+| [X]  | [#48](https://github.com/marmotz/kurotako/issues/48) | [48-output-root-barrel-and-banner](https://github.com/marmotz/kurotako/issues/48) | `writer/barrel.ts` + `writer/banner.ts`, `run.ts` steps 5b/5c, collision guard (dep of #43)            |
+| [X]  | [#49](https://github.com/marmotz/kurotako/issues/49) | [49-output-peers-and-pm](https://github.com/marmotz/kurotako/issues/49)                     | `writer/peers.ts` (peerDeps aggregation) + `writer/pm.ts` (package-manager resolution)                 |
+| [X]  | [#50](https://github.com/marmotz/kurotako/issues/50) | [50-output-package-writer](https://github.com/marmotz/kurotako/issues/50)                 | `packageWriter` — `package.json`, tsup build, install; `selectWriter` mode-B branch                    |
+| [X]  | [#73](https://github.com/marmotz/kurotako/issues/73) | [73-core-outputs-array](https://github.com/marmotz/kurotako/issues/73)                       | `outputs[]` amendment — `ResolvedConfig.outputs` / `RunResult.written`, `run.ts` per-output write loop |
+| [X]  | [#74](https://github.com/marmotz/kurotako/issues/74) | [74-config-outputs-array](https://github.com/marmotz/kurotako/issues/74)                   | `outputs[]` amendment — `TakoConfig.outputs`, schema/load cross-field checks, `UnknownGeneratorError`  |
 
 ## Drift Guard (`tako check`)
 
@@ -138,9 +138,9 @@ design: [technical.md](features/generator-angular/technical.md)
 
 | Done | Issue                                                | Task                                                                    | Description                                                                                                  |
 |------|------------------------------------------------------|-----------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
-| [X]  | [#51](https://github.com/marmotz/kurotako/issues/51) | [51-core-writer-plan](tasks/51-core-writer-plan.md)                     | `Writer.plan()` + `PlannedFile`, `directoryWriter.plan()`, `RunOptions/RunResult.plan`, `run.ts` plan branch |
-| [X]  | [#52](https://github.com/marmotz/kurotako/issues/52) | [52-output-package-writer-plan](tasks/52-output-package-writer-plan.md) | `packageWriter.plan()` — deterministic subset (src + manifest), no tsup build / no install                   |
-| [X]  | [#53](https://github.com/marmotz/kurotako/issues/53) | [53-cli-check-command](tasks/53-cli-check-command.md)                   | `tako check` — `commands/check.ts` + `diff.ts` (`comparePlanToDisk`), citty entry                            |
+| [X]  | [#51](https://github.com/marmotz/kurotako/issues/51) | [51-core-writer-plan](https://github.com/marmotz/kurotako/issues/51)                     | `Writer.plan()` + `PlannedFile`, `directoryWriter.plan()`, `RunOptions/RunResult.plan`, `run.ts` plan branch |
+| [X]  | [#52](https://github.com/marmotz/kurotako/issues/52) | [52-output-package-writer-plan](https://github.com/marmotz/kurotako/issues/52) | `packageWriter.plan()` — deterministic subset (src + manifest), no tsup build / no install                   |
+| [X]  | [#53](https://github.com/marmotz/kurotako/issues/53) | [53-cli-check-command](https://github.com/marmotz/kurotako/issues/53)                   | `tako check` — `commands/check.ts` + `diff.ts` (`comparePlanToDisk`), citty entry                            |
 
 ## Documentation site
 
@@ -149,11 +149,11 @@ design: [technical.md](features/generator-angular/technical.md)
 
 | Done | Issue                                                | Task                                                                                  | Description                                                                 |
 |------|------------------------------------------------------|---------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
-| [X]  | [#54](https://github.com/marmotz/kurotako/issues/54) | [54-apps-docs-workspace-accommodation](tasks/54-apps-docs-workspace-accommodation.md) | `apps/*` workspace root-file edits (also listed under Monorepo bootstrap)   |
-| [X]  | [#55](https://github.com/marmotz/kurotako/issues/55) | [55-docs-site-scaffold](tasks/55-docs-site-scaffold.md)                               | `apps/docs` Docusaurus package: config, sidebar, tsconfig, placeholder page |
-| [X]  | [#56](https://github.com/marmotz/kurotako/issues/56) | [56-docs-site-typedoc-api](tasks/56-docs-site-typedoc-api.md)                         | `docusaurus-plugin-typedoc` over ir/core/config/cli, generated `docs/api/`  |
-| [X]  | [#57](https://github.com/marmotz/kurotako/issues/57) | [57-docs-site-deploy-workflow](tasks/57-docs-site-deploy-workflow.md)                 | `.github/workflows/docs.yml` + GitHub Pages deploy, `CNAME` / `baseUrl`     |
-| [X]  | [#58](https://github.com/marmotz/kurotako/issues/58) | [58-docs-site-v1-content](tasks/58-docs-site-v1-content.md)                           | Minimal content set: getting-started, concepts, `reference/*`               |
+| [X]  | [#54](https://github.com/marmotz/kurotako/issues/54) | [54-apps-docs-workspace-accommodation](https://github.com/marmotz/kurotako/issues/54) | `apps/*` workspace root-file edits (also listed under Monorepo bootstrap)   |
+| [X]  | [#55](https://github.com/marmotz/kurotako/issues/55) | [55-docs-site-scaffold](https://github.com/marmotz/kurotako/issues/55)                               | `apps/docs` Docusaurus package: config, sidebar, tsconfig, placeholder page |
+| [X]  | [#56](https://github.com/marmotz/kurotako/issues/56) | [56-docs-site-typedoc-api](https://github.com/marmotz/kurotako/issues/56)                         | `docusaurus-plugin-typedoc` over ir/core/config/cli, generated `docs/api/`  |
+| [X]  | [#57](https://github.com/marmotz/kurotako/issues/57) | [57-docs-site-deploy-workflow](https://github.com/marmotz/kurotako/issues/57)                 | `.github/workflows/docs.yml` + GitHub Pages deploy, `CNAME` / `baseUrl`     |
+| [X]  | [#58](https://github.com/marmotz/kurotako/issues/58) | [58-docs-site-v1-content](https://github.com/marmotz/kurotako/issues/58)                           | Minimal content set: getting-started, concepts, `reference/*`               |
 
 ## Driver options ergonomics
 
@@ -165,8 +165,8 @@ schema-bearing drivers) nor runs (`{ use: zodGenerator }` with no `options` →
 
 | Done | Issue                                                | Task                                                                                  | Description                                                                                                   |
 |------|------------------------------------------------------|---------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
-| [X]  | [#69](https://github.com/marmotz/kurotako/issues/69) | [69-config-driver-options-helpers](tasks/69-config-driver-options-helpers.md)         | `@kurotako/config`: `defineParser`/`defineGenerator`, entry option types (Input), `load.ts` `undefined`→`{}`  |
-| [X]  | [#70](https://github.com/marmotz/kurotako/issues/70) | [70-migrate-drivers-to-define-helpers](tasks/70-migrate-drivers-to-define-helpers.md) | Migrate `prismaParser` / `zodGenerator` to the helpers + uncommented-`CONFIG_TEMPLATE` compile fixture in cli |
+| [X]  | [#69](https://github.com/marmotz/kurotako/issues/69) | [69-config-driver-options-helpers](https://github.com/marmotz/kurotako/issues/69)         | `@kurotako/config`: `defineParser`/`defineGenerator`, entry option types (Input), `load.ts` `undefined`→`{}`  |
+| [X]  | [#70](https://github.com/marmotz/kurotako/issues/70) | [70-migrate-drivers-to-define-helpers](https://github.com/marmotz/kurotako/issues/70) | Migrate `prismaParser` / `zodGenerator` to the helpers + uncommented-`CONFIG_TEMPLATE` compile fixture in cli |
 
 ## End-to-end example projects
 
@@ -177,13 +177,13 @@ the full pipeline (Prisma parser + Zod/Angular generators) against real consumer
 
 | Done | Issue                                                | Task                                                                              | Description                                                                  |
 |------|------------------------------------------------------|-----------------------------------------------------------------------------------|------------------------------------------------------------------------------|
-| [X]  | [#77](https://github.com/marmotz/kurotako/issues/77) | [77-e2e-examples-root-tooling](tasks/77-e2e-examples-root-tooling.md)             | `.gitignore` / `biome.json` exclusions for `examples/`, `examples/README.md` |
-| [X]  | [#78](https://github.com/marmotz/kurotako/issues/78) | [78-e2e-examples-outputdir-scaffold](tasks/78-e2e-examples-outputdir-scaffold.md) | `…-outputdir/` Bun workspace, Prisma schema, `tako.config.ts` (mode A)       |
-| [X]  | [#79](https://github.com/marmotz/kurotako/issues/79) | [79-e2e-examples-outputpkg-scaffold](tasks/79-e2e-examples-outputpkg-scaffold.md) | `…-outputpkg/` Bun workspace, Prisma schema, `tako.config.ts` (mode B)       |
-| [X]  | [#80](https://github.com/marmotz/kurotako/issues/80) | [80-e2e-examples-outputdir-backend](tasks/80-e2e-examples-outputdir-backend.md)   | NestJS `TasksModule` + `ZodValidationPipe` (outputdir)                       |
-| [X]  | [#81](https://github.com/marmotz/kurotako/issues/81) | [81-e2e-examples-outputdir-frontend](tasks/81-e2e-examples-outputdir-frontend.md) | Angular list/create(reactive)/edit(signal) components, flat relations        |
-| [X]  | [#82](https://github.com/marmotz/kurotako/issues/82) | [82-e2e-examples-outputpkg-backend](tasks/82-e2e-examples-outputpkg-backend.md)   | NestJS `TasksModule` + `ZodValidationPipe`, consumes `@example/tasks`        |
-| [X]  | [#83](https://github.com/marmotz/kurotako/issues/83) | [83-e2e-examples-outputpkg-frontend](tasks/83-e2e-examples-outputpkg-frontend.md) | Angular list/create(reactive)/edit(signal) components, deep relations        |
+| [X]  | [#77](https://github.com/marmotz/kurotako/issues/77) | [77-e2e-examples-root-tooling](https://github.com/marmotz/kurotako/issues/77)             | `.gitignore` / `biome.json` exclusions for `examples/`, `examples/README.md` |
+| [X]  | [#78](https://github.com/marmotz/kurotako/issues/78) | [78-e2e-examples-outputdir-scaffold](https://github.com/marmotz/kurotako/issues/78) | `…-outputdir/` Bun workspace, Prisma schema, `tako.config.ts` (mode A)       |
+| [X]  | [#79](https://github.com/marmotz/kurotako/issues/79) | [79-e2e-examples-outputpkg-scaffold](https://github.com/marmotz/kurotako/issues/79) | `…-outputpkg/` Bun workspace, Prisma schema, `tako.config.ts` (mode B)       |
+| [X]  | [#80](https://github.com/marmotz/kurotako/issues/80) | [80-e2e-examples-outputdir-backend](https://github.com/marmotz/kurotako/issues/80)   | NestJS `TasksModule` + `ZodValidationPipe` (outputdir)                       |
+| [X]  | [#81](https://github.com/marmotz/kurotako/issues/81) | [81-e2e-examples-outputdir-frontend](https://github.com/marmotz/kurotako/issues/81) | Angular list/create(reactive)/edit(signal) components, flat relations        |
+| [X]  | [#82](https://github.com/marmotz/kurotako/issues/82) | [82-e2e-examples-outputpkg-backend](https://github.com/marmotz/kurotako/issues/82)   | NestJS `TasksModule` + `ZodValidationPipe`, consumes `@example/tasks`        |
+| [X]  | [#83](https://github.com/marmotz/kurotako/issues/83) | [83-e2e-examples-outputpkg-frontend](https://github.com/marmotz/kurotako/issues/83) | Angular list/create(reactive)/edit(signal) components, deep relations        |
 
 ## Running `tako` in a consumer monorepo
 
@@ -195,11 +195,11 @@ directory; plus a monorepo-aware `tako init`.
 
 | Done | Issue                                                | Task                                                                                                  | Description                                                                       |
 |------|------------------------------------------------------|------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
-| [X]  | [#89](https://github.com/marmotz/kurotako/issues/89) | [89-core-parse-context-anchor-dir](tasks/89-core-parse-context-anchor-dir.md)                         | core: `ParseContext.anchorDir`, `Parser.anchor` hook, `run()` wiring              |
-| [X]  | [#90](https://github.com/marmotz/kurotako/issues/90) | [90-cli-tako-init-monorepo](tasks/90-cli-tako-init-monorepo.md)                                       | `tako init --monorepo` + auto-detection + `CONFIG_TEMPLATE_MONOREPO`              |
-| [X]  | [#91](https://github.com/marmotz/kurotako/issues/91) | [91-config-parser-anchor-currying](tasks/91-config-parser-anchor-currying.md)                         | `@kurotako/config`: `TakoParser.anchor`, `defineParser`, currying in `load.ts`    |
-| [X]  | [#92](https://github.com/marmotz/kurotako/issues/92) | [92-parser-prisma-anchor-internals-resolution](tasks/92-parser-prisma-anchor-internals-resolution.md) | parser-prisma: `anchor` impl + resolve `@prisma/internals` from the schema dir    |
-| [X]  | [#93](https://github.com/marmotz/kurotako/issues/93) | [93-docs-monorepo-usage-and-example](tasks/93-docs-monorepo-usage-and-example.md)                     | docs "monorepo usage" page + move `@prisma/internals` into the example sub-project |
+| [X]  | [#89](https://github.com/marmotz/kurotako/issues/89) | [89-core-parse-context-anchor-dir](https://github.com/marmotz/kurotako/issues/89)                         | core: `ParseContext.anchorDir`, `Parser.anchor` hook, `run()` wiring              |
+| [X]  | [#90](https://github.com/marmotz/kurotako/issues/90) | [90-cli-tako-init-monorepo](https://github.com/marmotz/kurotako/issues/90)                                       | `tako init --monorepo` + auto-detection + `CONFIG_TEMPLATE_MONOREPO`              |
+| [X]  | [#91](https://github.com/marmotz/kurotako/issues/91) | [91-config-parser-anchor-currying](https://github.com/marmotz/kurotako/issues/91)                         | `@kurotako/config`: `TakoParser.anchor`, `defineParser`, currying in `load.ts`    |
+| [X]  | [#92](https://github.com/marmotz/kurotako/issues/92) | [92-parser-prisma-anchor-internals-resolution](https://github.com/marmotz/kurotako/issues/92) | parser-prisma: `anchor` impl + resolve `@prisma/internals` from the schema dir    |
+| [X]  | [#93](https://github.com/marmotz/kurotako/issues/93) | [93-docs-monorepo-usage-and-example](https://github.com/marmotz/kurotako/issues/93)                     | docs "monorepo usage" page + move `@prisma/internals` into the example sub-project |
 
 ## `kurotako` meta-package
 
@@ -211,8 +211,8 @@ directory; plus a monorepo-aware `tako init`.
 
 | Done | Issue                                                | Task                                                          | Description                                                                        |
 |------|------------------------------------------------------|--------------------------------------------------------------|-----------------------------------------------------------------------------------|
-| [X]  | [#86](https://github.com/marmotz/kurotako/issues/86) | [86-meta-package-kurotako](tasks/86-meta-package-kurotako.md) | `packages/kurotako` — bin re-exposes `tako` (own `--version`), barrel re-exports `defineConfig`; docs + CI smoke |
-| [X]  | [#94](https://github.com/marmotz/kurotako/issues/94) | [94-tako-init-kurotako-import-surface](tasks/94-tako-init-kurotako-import-surface.md) | `tako init` writes `import { defineConfig } from 'kurotako'`; `reference/*` docs follow (post-merge review follow-up, depends on #90) |
+| [X]  | [#86](https://github.com/marmotz/kurotako/issues/86) | [86-meta-package-kurotako](https://github.com/marmotz/kurotako/issues/86) | `packages/kurotako` — bin re-exposes `tako` (own `--version`), barrel re-exports `defineConfig`; docs + CI smoke |
+| [X]  | [#94](https://github.com/marmotz/kurotako/issues/94) | [94-tako-init-kurotako-import-surface](https://github.com/marmotz/kurotako/issues/94) | `tako init` writes `import { defineConfig } from 'kurotako'`; `reference/*` docs follow (post-merge review follow-up, depends on #90) |
 
 ## Docs reconciliation (post-MVP)
 
@@ -221,7 +221,7 @@ decisions that now contradict `docs/architecture.md`, `docs/vision.md` and `docs
 
 | Done | Issue                                                | Task                                                                        | Description                                                                                                                                                                    |
 |------|------------------------------------------------------|-----------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [X]  | [#60](https://github.com/marmotz/kurotako/issues/60) | [60-docs-reconciliation-post-mvp](tasks/60-docs-reconciliation-post-mvp.md) | Reconcile `architecture.md` (contracts, hard `zod` dep, output tree, `.ts` config, CLI set), `vision.md` (close the settled open questions), `ir.md` (close the 3 open points) |
+| [X]  | [#60](https://github.com/marmotz/kurotako/issues/60) | [60-docs-reconciliation-post-mvp](https://github.com/marmotz/kurotako/issues/60) | Reconcile `architecture.md` (contracts, hard `zod` dep, output tree, `.ts` config, CLI set), `vision.md` (close the settled open questions), `ir.md` (close the 3 open points) |
 
 ## First public release (0.1.0)
 
@@ -233,10 +233,10 @@ npm OIDC publish pipeline (`scripts/release-publish.sh`). Technical design:
 
 | Done | Issue | Task | Description |
 |------|-------|------|-------------|
-| [X] | [#98](https://github.com/marmotz/kurotako/issues/98) | [98-repo-hygiene-prose-and-community-files](tasks/98-repo-hygiene-prose-and-community-files.md) | Refresh README / AGENTS.md / CONTRIBUTING.md / vision.md; add SECURITY.md + issue/PR templates |
-| [X] | [#99](https://github.com/marmotz/kurotako/issues/99) | [99-package-metadata-and-readmes](tasks/99-package-metadata-and-readmes.md) | `description` / `keywords` / `repository` / `homepage` / `bugs` in the 8 `package.json`; per-package `README.md` |
-| [X] | [#100](https://github.com/marmotz/kurotako/issues/100) | [100-internal-deps-workspace-caret](tasks/100-internal-deps-workspace-caret.md) | `workspace:*` → `workspace:^` (27 sites, incl. peer deps); `.changeset` `baseBranch` → `develop` |
-| [X] | [#101](https://github.com/marmotz/kurotako/issues/101) | [101-npm-org-and-token](tasks/101-npm-org-and-token.md) | Create the `kurotako` npm org + automation token → repo secret `NPM_TOKEN` (manual) |
-| [X] | [#102](https://github.com/marmotz/kurotako/issues/102) | [102-release-workflow-enable](tasks/102-release-workflow-enable.md) | Enable `release.yml` (manual), fix build-before-version order, add npm provenance |
-| [X] | [#103](https://github.com/marmotz/kurotako/issues/103) | [103-consolidate-changesets-version-010](tasks/103-consolidate-changesets-version-010.md) | Replace 6 changesets with one; `changeset version` → 0.1.0; per-package + root CHANGELOG |
-| [X] | [#104](https://github.com/marmotz/kurotako/issues/104) | [104-publish-010-tag-release](tasks/104-publish-010-tag-release.md) | OIDC publish pipeline, manual first 0.1.0 publish, per-package tags + GitHub Releases, scratch-project smoke test |
+| [X] | [#98](https://github.com/marmotz/kurotako/issues/98) | [98-repo-hygiene-prose-and-community-files](https://github.com/marmotz/kurotako/issues/98) | Refresh README / AGENTS.md / CONTRIBUTING.md / vision.md; add SECURITY.md + issue/PR templates |
+| [X] | [#99](https://github.com/marmotz/kurotako/issues/99) | [99-package-metadata-and-readmes](https://github.com/marmotz/kurotako/issues/99) | `description` / `keywords` / `repository` / `homepage` / `bugs` in the 8 `package.json`; per-package `README.md` |
+| [X] | [#100](https://github.com/marmotz/kurotako/issues/100) | [100-internal-deps-workspace-caret](https://github.com/marmotz/kurotako/issues/100) | `workspace:*` → `workspace:^` (27 sites, incl. peer deps); `.changeset` `baseBranch` → `develop` |
+| [X] | [#101](https://github.com/marmotz/kurotako/issues/101) | [101-npm-org-and-token](https://github.com/marmotz/kurotako/issues/101) | Create the `kurotako` npm org + automation token → repo secret `NPM_TOKEN` (manual) |
+| [X] | [#102](https://github.com/marmotz/kurotako/issues/102) | [102-release-workflow-enable](https://github.com/marmotz/kurotako/issues/102) | Enable `release.yml` (manual), fix build-before-version order, add npm provenance |
+| [X] | [#103](https://github.com/marmotz/kurotako/issues/103) | [103-consolidate-changesets-version-010](https://github.com/marmotz/kurotako/issues/103) | Replace 6 changesets with one; `changeset version` → 0.1.0; per-package + root CHANGELOG |
+| [X] | [#104](https://github.com/marmotz/kurotako/issues/104) | [104-publish-010-tag-release](https://github.com/marmotz/kurotako/issues/104) | OIDC publish pipeline, manual first 0.1.0 publish, per-package tags + GitHub Releases, scratch-project smoke test |

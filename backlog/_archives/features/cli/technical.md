@@ -10,11 +10,11 @@ overview into a concrete command surface, a watch loop, and a reporter.
 
 ## Starting point
 
-- **No code exists.** [monorepo-bootstrap #6](../../tasks/6-package-skeletons.md)
+- **No code exists.** [monorepo-bootstrap #6](https://github.com/marmotz/kurotako/issues/6)
   scaffolds `packages/cli/` with `src/index.ts` (a `version` const + trivial test) and,
   specifically for this package, `src/bin/tako.ts` (shebang `#!/usr/bin/env node`),
   `"bin": { "tako": "./dist/bin/tako.js" }`, and a working `--version`
-  ([task 6](../../tasks/6-package-skeletons.md) step 3;
+  ([task 6](https://github.com/marmotz/kurotako/issues/6) step 3;
   [monorepo-bootstrap/technical.md §Package `package.json`](../monorepo-bootstrap/technical.md#package-packagejson-dual-esm--cjs)).
   This feature replaces the placeholder with the real command tree.
 - Toolchain (from [monorepo-bootstrap/technical.md](../monorepo-bootstrap/technical.md)):
@@ -299,13 +299,13 @@ try {
 `bin/tako.ts` needs the package version. tsup `define` (`__TAKO_VERSION__` replaced with
 `pkg.version` at build) keeps the bin dependency-free and avoids a runtime
 `readFile('package.json')` that breaks once bundled. The bootstrap skeleton's placeholder
-`version` const ([task 6](../../tasks/6-package-skeletons.md)) is replaced by this.
+`version` const ([task 6](https://github.com/marmotz/kurotako/issues/6)) is replaced by this.
 
 ## Consequences verified against the current repo / other features
 
 - **Nothing to migrate**: `packages/cli/src/` is the bootstrap placeholder. This feature
   rewrites it; `package.json` / `tsconfig.json` / `tsup.config.ts` / `vitest.config.ts`
-  from [#6](../../tasks/6-package-skeletons.md) are unchanged except: add `citty` +
+  from [#6](https://github.com/marmotz/kurotako/issues/6) are unchanged except: add `citty` +
   `chokidar` + `@kurotako/config` + `@kurotako/core` deps, add the `../config` project
   reference, add `src/bin/tako.ts` to the tsup `entry` (already anticipated —
   [monorepo-bootstrap/technical.md §tsup](../monorepo-bootstrap/technical.md) "cli adds
@@ -314,11 +314,11 @@ try {
   [above](#the-watchpaths-contract-addition)). Requires:
   - [config-system/technical.md](../config-system/technical.md) — add `watchPaths?` to
     `TakoParser<O>` in `types.ts` and curry it in `load.ts` (tasks
-    [#22](../../tasks/22-config-types-and-errors.md) /
-    [#25](../../tasks/25-config-load.md)).
+    [#22](https://github.com/marmotz/kurotako/issues/22) /
+    [#25](https://github.com/marmotz/kurotako/issues/25)).
   - [core-pipeline/technical.md](../core-pipeline/technical.md) — add the optional
     `watchPaths?(ctx: ParseContext)` member to `Parser` in `types.ts`; `run()` unchanged
-    (task [#15](../../tasks/15-core-types-and-contracts.md)).
+    (task [#15](https://github.com/marmotz/kurotako/issues/15)).
   - [parser-prisma/technical.md](../parser-prisma/technical.md) — `prismaParser`
     implements `watchPaths` (returns the resolved schema path(s)).
   All three are pure additions (optional member, no behaviour change to existing steps);
@@ -390,17 +390,17 @@ try {
 
 Task files under [`../../tasks/`](../../tasks/), GitHub issues on `marmotz/kurotako`.
 
-1. [#44 cli-scaffold-reporter-errors](../../tasks/44-cli-scaffold-reporter-errors.md) —
+1. [#44 cli-scaffold-reporter-errors](https://github.com/marmotz/kurotako/issues/44) —
    package wiring (`citty`, `chokidar`, `../config` ref, bin entry, `__TAKO_VERSION__`),
    `reporter.ts` (`ConsoleReporter implements Logger`), `errors.ts` (`renderError`,
    `ConfigExistsError`), `cli.ts` (citty tree + `sharedArgs` + top-level `TakoError`
    catch), `bin/tako.ts`, barrel (deps: #6, #15, #22).
-2. [#45 cli-init-command](../../tasks/45-cli-init-command.md) — `commands/init.ts`: write
+2. [#45 cli-init-command](https://github.com/marmotz/kurotako/issues/45) — `commands/init.ts`: write
    `CONFIG_TEMPLATE` into cwd, `--force`, refuse-if-exists (deps: #44, #22).
-3. [#46 cli-generate-validate-commands](../../tasks/46-cli-generate-validate-commands.md) —
+3. [#46 cli-generate-validate-commands](https://github.com/marmotz/kurotako/issues/46) —
    `commands/generate.ts` (`loadAndRun` helper, `--dry-run`) + `commands/validate.ts`
    (`run({ write: false })`) (deps: #44, #25, #21).
-4. [#47 cli-watch-mode](../../tasks/47-cli-watch-mode.md) — `watch.ts` `watchAndRun()`:
+4. [#47 cli-watch-mode](https://github.com/marmotz/kurotako/issues/47) — `watch.ts` `watchAndRun()`:
    chokidar loop, debounce + `AbortController` supersede, `watchPaths` union + reconcile,
    `SIGINT` shutdown; wire the `--watch` flag (deps: #46, #25, #21).
 

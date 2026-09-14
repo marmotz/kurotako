@@ -60,7 +60,7 @@ kurotako/
 `apps/docs` (`@kurotako/docs`, private, never published, outside `tsc -b`) is the
 documentation site — [docs-site/technical.md](../docs-site/technical.md). The scaffold
 tasks below are written for `packages/*` only; task
-[#54 apps-docs-workspace-accommodation](../../tasks/54-apps-docs-workspace-accommodation.md)
+[#54 apps-docs-workspace-accommodation](https://github.com/marmotz/kurotako/issues/54)
 folds the `apps/*` workspace into the root files once the site lands.
 
 The seven packages are scaffolded empty (a single exported `version` const + one trivial
@@ -73,7 +73,7 @@ required by [config-system](../config-system/technical.md); it references `../co
 
 - Root `package.json`:
   - `"private": true`
-  - `"workspaces": ["packages/*"]` — task [#54](../../tasks/54-apps-docs-workspace-accommodation.md)
+  - `"workspaces": ["packages/*"]` — task [#54](https://github.com/marmotz/kurotako/issues/54)
     later adds `"apps/*"` for the docs site
   - `"packageManager": "bun@<pinned>"` (Corepack-style pin; also documented in README)
   - `"engines": { "node": ">=24", "bun": ">=<pinned>" }`
@@ -402,11 +402,11 @@ fan-out).
   plumbing lives in `@kurotako/core`, so `packages/core/package.json` promotes `tsup` from
   a root devDependency to its own `dependencies` (loaded lazily, mode-B path only). No new
   package skeleton — the "dedicated `@kurotako/output` package" alternative was rejected;
-  the seven packages stay as listed. Task [#6](../../tasks/6-package-skeletons.md).
+  the seven packages stay as listed. Task [#6](https://github.com/marmotz/kurotako/issues/6).
 - **[docs-site/technical.md](../docs-site/technical.md)** adds an `apps/docs` workspace
   (Docusaurus, private, not published, outside `tsc -b`). The root-file amendments it
   forces are collected in task
-  [#54 apps-docs-workspace-accommodation](../../tasks/54-apps-docs-workspace-accommodation.md):
+  [#54 apps-docs-workspace-accommodation](https://github.com/marmotz/kurotako/issues/54):
   `workspaces` gains `"apps/*"`; `.gitignore` gains `apps/docs/build`,
   `apps/docs/.docusaurus`, `apps/docs/docs/api`; `biome.json` excludes those plus
   `apps/docs/versioned_docs`; `.changeset/config.json` `ignore` lists `@kurotako/docs`;
@@ -427,27 +427,27 @@ fan-out).
 
 Task files under [`../../tasks/`](../../tasks/), GitHub issues on `marmotz/kurotako`.
 
-1. [#1 root-workspace-scaffold](../../tasks/1-root-workspace-scaffold.md) — root
+1. [#1 root-workspace-scaffold](https://github.com/marmotz/kurotako/issues/1) — root
    `package.json`, Bun workspaces, `.gitignore`, `.node-version`, `.editorconfig`.
-2. [#2 shared-typescript-config](../../tasks/2-shared-typescript-config.md) —
+2. [#2 shared-typescript-config](https://github.com/marmotz/kurotako/issues/2) —
    `tsconfig.base.json` + solution `tsconfig.json`, `typecheck` script (dep: #1).
-3. [#3 tsup-build-preset](../../tasks/3-tsup-build-preset.md) — `tsup.config.base.ts`,
+3. [#3 tsup-build-preset](https://github.com/marmotz/kurotako/issues/3) — `tsup.config.base.ts`,
    `build` script (dep: #1).
-4. [#4 vitest-workspace](../../tasks/4-vitest-workspace.md) — `vitest.workspace.ts`,
+4. [#4 vitest-workspace](https://github.com/marmotz/kurotako/issues/4) — `vitest.workspace.ts`,
    coverage, `test` script (dep: #1).
-5. [#5 biome-lint-format](../../tasks/5-biome-lint-format.md) — `biome.json`,
+5. [#5 biome-lint-format](https://github.com/marmotz/kurotako/issues/5) — `biome.json`,
    `lint`/`format` scripts (dep: #1).
-6. [#6 package-skeletons](../../tasks/6-package-skeletons.md) — the 7 `packages/*`
+6. [#6 package-skeletons](https://github.com/marmotz/kurotako/issues/6) — the 7 `packages/*`
    skeletons (deps: #2, #3, #4).
-7. [#7 lefthook-git-hooks](../../tasks/7-lefthook-git-hooks.md) — `lefthook.yml`,
+7. [#7 lefthook-git-hooks](https://github.com/marmotz/kurotako/issues/7) — `lefthook.yml`,
    `prepare` script (deps: #2, #5).
-8. [#8 changesets-release](../../tasks/8-changesets-release.md) —
+8. [#8 changesets-release](https://github.com/marmotz/kurotako/issues/8) —
    `.changeset/config.json`, independent versioning (dep: #6).
-9. [#9 ci-workflow](../../tasks/9-ci-workflow.md) — `.github/workflows/ci.yml`
+9. [#9 ci-workflow](https://github.com/marmotz/kurotako/issues/9) — `.github/workflows/ci.yml`
    (deps: #6, #8).
-10. [#10 repo-meta-files](../../tasks/10-repo-meta-files.md) — `LICENSE`, `README`,
+10. [#10 repo-meta-files](https://github.com/marmotz/kurotako/issues/10) — `LICENSE`, `README`,
     `CONTRIBUTING`, `CODE_OF_CONDUCT` (dep: #1).
-11. [#54 apps-docs-workspace-accommodation](../../tasks/54-apps-docs-workspace-accommodation.md)
+11. [#54 apps-docs-workspace-accommodation](https://github.com/marmotz/kurotako/issues/54)
     — fold the `apps/*` workspace for the docs site into the root files: `workspaces`,
     `.gitignore`, `biome.json`, `.changeset/config.json` `ignore`, `CONTRIBUTING.md`
     (deps: #1, #5, #8, #10). Added for [docs-site](../docs-site/technical.md); does not

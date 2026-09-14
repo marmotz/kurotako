@@ -20,7 +20,7 @@ surfaces (typed reactive forms + Signal Forms) the overview settled on.
 
 ## Starting point
 
-- **No code exists.** [monorepo-bootstrap #6](../../tasks/6-package-skeletons.md) scaffolds
+- **No code exists.** [monorepo-bootstrap #6](https://github.com/marmotz/kurotako/issues/6) scaffolds
   `packages/gen-angular/` with a single `src/index.ts` exporting a `version` const and one
   trivial test. This feature replaces that placeholder with the real generator.
 - Toolchain (from [monorepo-bootstrap/technical.md](../monorepo-bootstrap/technical.md)):
@@ -131,7 +131,7 @@ packages/gen-angular/src/
   module specifiers reported in the Zod artifact.
 - `tsconfig.json` `references`: `[{ "path": "../ir" }, { "path": "../core" },
   { "path": "../config" }, { "path": "../gen-zod" }]` — a small pin for
-  [monorepo-bootstrap #6](../../tasks/6-package-skeletons.md) step 2 (doc-only until #6).
+  [monorepo-bootstrap #6](https://github.com/marmotz/kurotako/issues/6) step 2 (doc-only until #6).
 - `"sideEffects": false`.
 
 ## Public contract (`generator.ts` + `options.ts`)
@@ -536,7 +536,7 @@ Required by [drift-guard](../drift-guard/overview.md):
 ## Consequences verified against the repo / other features
 
 - Nothing to migrate: `packages/gen-angular/src/index.ts` is the bootstrap placeholder
-  ([task #6](../../tasks/6-package-skeletons.md)). This feature rewrites it;
+  ([task #6](https://github.com/marmotz/kurotako/issues/6)). This feature rewrites it;
   `package.json` gains `@kurotako/ir` (`workspace:*`), the `@kurotako/core` /
   `@kurotako/config` / `@kurotako/gen-zod` peers, and `valibot`. `tsconfig.json` gains the
   four `references`.
@@ -622,24 +622,24 @@ snapshots).
 
 Task files under [`../../tasks/`](../../tasks/), GitHub issues on `marmotz/kurotako`.
 
-1. [#38 gen-angular-scaffold](../../tasks/38-gen-angular-scaffold.md) — `package.json`
+1. [#38 gen-angular-scaffold](https://github.com/marmotz/kurotako/issues/38) — `package.json`
    deps, `tsconfig` refs, `src/options.ts` (`AngularGeneratorOptions`), `src/errors.ts`,
    `src/names.ts`, `src/zod-artifact.ts` (typed reader over `ctx.dependencies.zod`),
    `src/generator.ts` skeleton, barrel (deps: #6, #11, #15, #22, #32).
-2. [#39 gen-angular-controls-variants](../../tasks/39-gen-angular-controls-variants.md) —
+2. [#39 gen-angular-controls-variants](https://github.com/marmotz/kurotako/issues/39) —
    `src/render/controls.ts` (scalar → `FormControl<T>` map, nullable/list/`nonNullable`,
    control-tree interfaces) + variant field sets (`Create` / `Update`) derived from the IR
    to match `gen-zod` (deps: #38, #13).
-3. [#40 gen-angular-reactive-service](../../tasks/40-gen-angular-reactive-service.md) —
+3. [#40 gen-angular-reactive-service](https://github.com/marmotz/kurotako/issues/40) —
    `src/render/reactive.ts` (`@Injectable` factory, `FormGroup` builder) +
    `src/emit/runtime.ts` `zodValidator` (path-distributed `ValidatorFn`) (deps: #39, #37).
-4. [#41 gen-angular-signal-forms](../../tasks/41-gen-angular-signal-forms.md) —
+4. [#41 gen-angular-signal-forms](https://github.com/marmotz/kurotako/issues/41) —
    `src/render/signal.ts` (`schema<...>` + model factory) + `src/emit/runtime.ts`
    `zodTreeValidate` (root tree validator, no built-in rules) (deps: #39, #37).
-5. [#42 gen-angular-relations-deep](../../tasks/42-gen-angular-relations-deep.md) —
+5. [#42 gen-angular-relations-deep](https://github.com/marmotz/kurotako/issues/42) —
    `src/render/relations.ts` (`relations: 'deep'`: nested `FormGroup` / `FormArray`, lazy
    builders, cross-source degrade) + deep control-tree types (deps: #40, #41).
-6. [#43 gen-angular-emit-artifact-run](../../tasks/43-gen-angular-emit-artifact-run.md) —
+6. [#43 gen-angular-emit-artifact-run](https://github.com/marmotz/kurotako/issues/43) —
    `src/emit/entity.ts` + `barrel.ts`, `src/artifact.ts` (`GeneratorArtifact` +
    `AngularArtifactExtra`), `generate()` wiring over `ctx.ir.sources`, end-to-end +
    determinism tests (dep: #42).

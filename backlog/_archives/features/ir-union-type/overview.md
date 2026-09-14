@@ -86,4 +86,4 @@ its own) — and have every v1 generator handle the new shape.
 
 ## Blocks
 
-- [parser-openapi](../../../features/parser-openapi/overview.md) — hard, blocking dependency.
+- [parser-openapi](../parser-openapi/overview.md) — hard, blocking dependency.
