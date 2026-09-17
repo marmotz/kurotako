@@ -1,5 +1,15 @@
 # @kurotako/ir
 
+## 0.3.1
+
+### Patch Changes
+
+- 475fb0a: Add `defaultValueExpr(type, value)`, a shared helper rendering a field's
+  literal default (`field.default.value`) as a source-code expression: a
+  `bigint` scalar's default (always a numeric string on the IR) renders as an
+  unquoted bigint literal (`"0"` -> `0n`), every other type via plain
+  `JSON.stringify`.
+
 ## 0.3.0
 
 ### Minor Changes

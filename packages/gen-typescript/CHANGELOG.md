@@ -1,5 +1,15 @@
 # @kurotako/gen-typescript
 
+## 0.3.4
+
+### Patch Changes
+
+- 475fb0a: Render a `bigint` field's `@default` JSDoc tag as a bigint literal (`@default
+  0n`) instead of a quoted string (`@default "0"`), consistent with `gen-zod`
+  and `gen-angular`.
+- Updated dependencies [475fb0a]
+  - @kurotako/ir@0.3.1
+
 ## 0.3.3
 
 ### Patch Changes

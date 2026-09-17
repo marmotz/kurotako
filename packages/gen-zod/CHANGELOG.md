@@ -1,5 +1,15 @@
 # @kurotako/gen-zod
 
+## 0.3.5
+
+### Patch Changes
+
+- 475fb0a: Fix a `bigint` scalar field's literal default rendering as a quoted string
+  (`.default("0")`, causing TS2769 against `ZodBigInt`'s `default()`) instead
+  of an unquoted bigint literal (`.default(0n)`).
+- Updated dependencies [475fb0a]
+  - @kurotako/ir@0.3.1
+
 ## 0.3.4
 
 ### Patch Changes
