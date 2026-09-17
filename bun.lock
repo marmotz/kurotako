@@ -160,7 +160,7 @@
     },
     "packages/kurotako": {
       "name": "kurotako",
-      "version": "0.2.2",
+      "version": "0.2.3",
       "bin": {
         "tako": "./dist/bin/tako.js",
       },
