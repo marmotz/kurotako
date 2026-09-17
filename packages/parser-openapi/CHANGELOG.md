@@ -1,5 +1,11 @@
 # @kurotako/parser-openapi
 
+## 0.2.4
+
+### Patch Changes
+
+- 749afdf: Synthesize a name for an inline string enum found directly on an entity property (or on an array of that property), instead of falling back to `{ kind: 'unknown', hint: 'enum' }`.
+
 ## 0.2.3
 
 ### Patch Changes
