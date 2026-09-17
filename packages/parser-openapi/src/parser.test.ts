@@ -515,6 +515,113 @@ describe('openapiParser', () => {
     });
   });
 
+  it('synthesizes a name for an inline string enum on an entity property', async () => {
+    const cwd = await fixture(
+      'openapi.json',
+      document({
+        Room: {
+          type: 'object',
+          properties: {
+            viewType: { type: 'string', enum: ['sea', 'garden'] },
+          },
+        },
+      }),
+    );
+    const source = await openapiParser.parse(context(cwd), {
+      document: 'openapi.json',
+    });
+    expect(
+      source.enums.RoomViewType?.values.map((value) => value.name),
+    ).toEqual(['sea', 'garden']);
+    expect(source.entities.Room?.fields[0]?.type).toEqual({
+      kind: 'enum',
+      ref: 'RoomViewType',
+    });
+  });
+
+  it('names a synthetic inline enum from its title when present', async () => {
+    const cwd = await fixture(
+      'openapi.json',
+      document({
+        Room: {
+          type: 'object',
+          properties: {
+            viewType: {
+              title: 'Room View',
+              type: 'string',
+              enum: ['sea', 'garden'],
+            },
+          },
+        },
+      }),
+    );
+    const source = await openapiParser.parse(context(cwd), {
+      document: 'openapi.json',
+    });
+    expect(source.enums.RoomView?.values.map((value) => value.name)).toEqual([
+      'sea',
+      'garden',
+    ]);
+    expect(source.entities.Room?.fields[0]?.type).toEqual({
+      kind: 'enum',
+      ref: 'RoomView',
+    });
+  });
+
+  it('synthesizes an inline enum for an array of enum values', async () => {
+    const cwd = await fixture(
+      'openapi.json',
+      document({
+        Room: {
+          type: 'object',
+          properties: {
+            amenities: {
+              type: 'array',
+              items: { type: 'string', enum: ['wifi', 'parking'] },
+            },
+          },
+        },
+      }),
+    );
+    const source = await openapiParser.parse(context(cwd), {
+      document: 'openapi.json',
+    });
+    const amenities = source.entities.Room?.fields.find(
+      (field) => field.name === 'amenities',
+    );
+    expect(amenities?.list).toBe(true);
+    expect(amenities?.type).toEqual({
+      kind: 'enum',
+      ref: 'RoomAmenities',
+    });
+    expect(
+      source.enums.RoomAmenities?.values.map((value) => value.name),
+    ).toEqual(['wifi', 'parking']);
+  });
+
+  it('leaves a nested inline string enum outside a direct property as unknown', async () => {
+    const cwd = await fixture(
+      'openapi.json',
+      document({
+        Room: {
+          type: 'object',
+          properties: {
+            status: {
+              oneOf: [{ type: 'string', enum: ['open', 'closed'] }],
+            },
+          },
+        },
+      }),
+    );
+    const source = await openapiParser.parse(context(cwd), {
+      document: 'openapi.json',
+    });
+    expect(source.entities.Room?.fields[0]?.type).toEqual({
+      kind: 'union',
+      variants: [{ kind: 'unknown', hint: 'enum' }],
+    });
+  });
+
   it('disambiguates response payloads by status and media type, and watches the local file', async () => {
     const cwd = await fixture(
       'operations.json',
