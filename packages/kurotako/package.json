@@ -51,8 +51,8 @@
     "tako": "./dist/bin/tako.js"
   },
   "dependencies": {
-    "@kurotako/cli": "workspace:^",
-    "@kurotako/config": "workspace:^",
-    "@kurotako/gen-typescript": "workspace:^"
+    "@kurotako/cli": "workspace:*",
+    "@kurotako/config": "workspace:*",
+    "@kurotako/gen-typescript": "workspace:*"
   }
 }
