@@ -137,6 +137,13 @@ describe('initExpr', () => {
     expect(initExpr(field)).toBe('false');
   });
 
+  it('a bigint literal default seeds the control as a bigint, not a string', () => {
+    const field = scalarField('bigint', {
+      default: { kind: 'value', value: '0' },
+    });
+    expect(initExpr(field)).toBe('0n');
+  });
+
   it('an expr default falls through to the type zero (never null for a non-nullable field)', () => {
     const field = scalarField('datetime', {
       default: { kind: 'expr', expr: 'now()' },

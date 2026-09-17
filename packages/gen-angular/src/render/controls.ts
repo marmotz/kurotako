@@ -12,7 +12,7 @@ import type {
   ScalarType,
   SourceIR,
 } from '@kurotako/ir';
-import { resolveEnum } from '@kurotako/ir';
+import { defaultValueExpr, resolveEnum } from '@kurotako/ir';
 import type { Variant } from '../names.js';
 import { type RefTypeName, unionType } from './unions.js';
 
@@ -152,11 +152,11 @@ function zeroValue(field: Field, enumZero?: EnumZero): string {
 export function initExpr(field: Field, enumZero?: EnumZero): string {
   if (field.list || field.type.kind === 'array') {
     return field.default?.kind === 'value'
-      ? JSON.stringify(field.default.value)
+      ? defaultValueExpr(field.type, field.default.value)
       : '[]';
   }
   if (field.default?.kind === 'value') {
-    return JSON.stringify(field.default.value);
+    return defaultValueExpr(field.type, field.default.value);
   }
   if (field.nullable) {
     return 'null';

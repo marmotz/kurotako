@@ -79,6 +79,17 @@ describe('fieldExpr assembly', () => {
     });
   });
 
+  it('bigint literal default -> unquoted bigint literal', () => {
+    const f = field({
+      default: { kind: 'value', value: '0' },
+      type: { kind: 'scalar', scalar: 'bigint' },
+    });
+    expect(fieldExpr(f, { optional: true, variant: 'create' }, v4)).toEqual({
+      expr: 'z.bigint().optional().default(0n)',
+      comment: null,
+    });
+  });
+
   it('expr default -> never .default()', () => {
     const f = field({
       default: { kind: 'expr', expr: 'now()' },

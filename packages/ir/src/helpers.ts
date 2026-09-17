@@ -9,6 +9,7 @@ import type {
   Field,
   FieldType,
   IR,
+  JsonValue,
   Relation,
   ScalarType,
   SourceIR,
@@ -275,6 +276,21 @@ export type ScalarTsType =
  */
 export function isDbAssigned(field: Field): boolean {
   return field.default?.kind === 'expr';
+}
+
+/**
+ * A literal default value (`field.default.value`) as a source-code expression
+ * for the given field type. A `bigint` scalar's default is always a numeric
+ * string on the IR (Prisma's DMMF encodes `BigInt` that way, and `JsonValue`
+ * has no `bigint` member) — this renders it as an unquoted bigint literal
+ * (`"0"` -> `0n`) instead of re-quoting it via `JSON.stringify`. Every other
+ * type renders via plain `JSON.stringify`.
+ */
+export function defaultValueExpr(type: FieldType, value: JsonValue): string {
+  if (type.kind === 'scalar' && type.scalar === 'bigint') {
+    return `${value as string}n`;
+  }
+  return JSON.stringify(value);
 }
 
 /**

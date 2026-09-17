@@ -4,6 +4,7 @@
  * variant only — `.default(<json>)` for a literal default.
  */
 import type { Field } from '@kurotako/ir';
+import { defaultValueExpr } from '@kurotako/ir';
 import type { ZodDialect } from '../dialect.js';
 import type { VariantName } from '../names.js';
 import { applyConstraints } from './constraints.js';
@@ -50,7 +51,7 @@ export function fieldExpr(
     field.default !== undefined &&
     field.default.kind === 'value'
   ) {
-    expr += `.default(${JSON.stringify(field.default.value)})`;
+    expr += `.default(${defaultValueExpr(field.type, field.default.value)})`;
   }
 
   return { expr, comment: unknownHintComment(field.type) };

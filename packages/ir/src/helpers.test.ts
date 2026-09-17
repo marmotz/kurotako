@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   createFields,
+  defaultValueExpr,
   flattenUnion,
   getSource,
   isCreateOptional,
@@ -23,6 +24,7 @@ import type {
   Entity,
   EnumDef,
   Field,
+  FieldType,
   IR,
   Relation,
   ScalarType,
@@ -273,6 +275,25 @@ describe('shared-decision helpers', () => {
         },
       }),
     ).toBe('(string | number)[]');
+  });
+
+  it('defaultValueExpr: bigint scalar renders an unquoted bigint literal', () => {
+    const bigintType: FieldType = { kind: 'scalar', scalar: 'bigint' };
+    expect(defaultValueExpr(bigintType, '0')).toBe('0n');
+    expect(defaultValueExpr(bigintType, '-5')).toBe('-5n');
+    expect(defaultValueExpr(bigintType, '9223372036854775807')).toBe(
+      '9223372036854775807n',
+    );
+  });
+
+  it('defaultValueExpr: every other scalar renders via JSON.stringify', () => {
+    expect(defaultValueExpr({ kind: 'scalar', scalar: 'int' }, 7)).toBe('7');
+    expect(defaultValueExpr({ kind: 'scalar', scalar: 'boolean' }, false)).toBe(
+      'false',
+    );
+    expect(defaultValueExpr({ kind: 'scalar', scalar: 'string' }, 'x')).toBe(
+      '"x"',
+    );
   });
 });
 
