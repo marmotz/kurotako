@@ -1,5 +1,17 @@
 # @kurotako/gen-angular
 
+## 0.3.3
+
+### Patch Changes
+
+- 475fb0a: Fix a `bigint` `FormControl`'s literal default seeding as a quoted string
+  (`'0'`) instead of a bigint literal (`0n`), mismatching the control's
+  declared `FormControl<bigint>` type.
+- Updated dependencies [475fb0a]
+- Updated dependencies [475fb0a]
+  - @kurotako/gen-zod@0.3.5
+  - @kurotako/ir@0.3.1
+
 ## 0.3.2
 
 ### Patch Changes
