@@ -57,11 +57,23 @@ function resolveInstalledVersion(
 ): string | undefined {
   try {
     const require = createRequire(packageJsonPath);
-    const resolvedPath = require.resolve(`${name}/package.json`);
-    const pkg = JSON.parse(readFileSync(resolvedPath, 'utf8')) as {
-      version?: string;
-    };
-    return pkg.version;
+    // Packages only export their main entry point, not "./package.json"
+    // (blocked by their `exports` field), so walk the same node_modules
+    // lookup path Node would use and read the package.json directly instead
+    // of going through module resolution.
+    const searchPaths = require.resolve.paths(name) ?? [];
+    for (const modulesDir of searchPaths) {
+      const candidate = resolve(modulesDir, name, 'package.json');
+      if (existsSync(candidate)) {
+        const pkg = JSON.parse(readFileSync(candidate, 'utf8')) as {
+          version?: string;
+        };
+
+        return pkg.version;
+      }
+    }
+
+    return undefined;
   } catch {
     return undefined;
   }
