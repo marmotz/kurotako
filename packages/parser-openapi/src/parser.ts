@@ -198,6 +198,14 @@ function field(
   return entry;
 }
 
+/** A bare string enum: `{ type: 'string', enum: [...] }` without a `$ref`. */
+function isStringEnumSchema(schema: Schema): boolean {
+  return (
+    Array.isArray(schema.enum) &&
+    schema.enum.every((item) => typeof item === 'string')
+  );
+}
+
 function pointerName(ref: string): string | undefined {
   const match = /#\/components\/schemas\/([^/]+)$/.exec(ref);
   return match?.[1];
@@ -305,11 +313,7 @@ function mapSchema(
     }
     return { kind: 'unknown', hint: 'object' };
   }
-  if (
-    Array.isArray(schema.enum) &&
-    schema.enum.every((item) => typeof item === 'string')
-  )
-    return { kind: 'unknown', hint: 'enum' };
+  if (isStringEnumSchema(schema)) return { kind: 'unknown', hint: 'enum' };
   return scalar(
     typeof schema.type === 'string' ? schema.type : 'string',
     schema.format,
@@ -410,10 +414,26 @@ function buildSource(
           typeof inline.$ref !== 'string' &&
           (inline.type === 'object' || inline.properties !== undefined) &&
           inline.additionalProperties === undefined;
+        const synthesizeEnum =
+          typeof inline.$ref !== 'string' && isStringEnumSchema(inline);
         let type: FieldType;
         if (synthesizeInline) {
           addNamedSchema(inlineName, inline);
           type = { kind: 'ref', ref: inlineName };
+        } else if (synthesizeEnum) {
+          if (claim(inlineName, inline)) {
+            enums[inlineName] = {
+              name: inlineName,
+              values: (inline.enum as string[]).map((value) => ({
+                name: value,
+              })),
+            };
+            aliases[inlineName] = {
+              name: inlineName,
+              type: { kind: 'enum', ref: inlineName },
+            };
+          }
+          type = { kind: 'enum', ref: inlineName };
         } else {
           type = mapSchema(inline, names, resolveRef, external);
         }
@@ -452,14 +472,11 @@ function buildSource(
   };
   for (const [name, raw] of Object.entries(schemas)) {
     const schema = asSchema(raw);
-    if (
-      Array.isArray(schema.enum) &&
-      schema.enum.every((value): value is string => typeof value === 'string')
-    ) {
+    if (isStringEnumSchema(schema)) {
       claim(name, schema);
       enums[name] = {
         name,
-        values: schema.enum.map((value) => ({ name: value })),
+        values: (schema.enum as string[]).map((value) => ({ name: value })),
       };
       aliases[name] = { name, type: { kind: 'enum', ref: name } };
     } else {

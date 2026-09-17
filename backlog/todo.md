@@ -1,4 +1,4 @@
-<!-- backlog-sync 2026-09-17T00:00Z — GENERATED, do not hand-edit. Regenerate: skill backlog-sync -->
+<!-- backlog-sync 2026-09-17T18:00Z — GENERATED, do not hand-edit. Regenerate: skill backlog-sync -->
 
 # Backlog
 
@@ -12,6 +12,14 @@ _**Status**: see [technical.md](technical.md)_ — 2/2 tasks done
 | [x]  | [#172](https://github.com/marmotz/kurotako/issues/172) | tako outdated: on-demand check of installed @kurotako/* packages | #171 |
 
 ## Bugs
+
+### parser-openapi maps an inline string-enum property to `unknown`, not a union type  ·  [overview](bugs/openapi-inline-enum-unknown/overview.md)
+
+_**Status**: [technical design](technical.md)_ — 1/1 tasks done
+
+| Done | Issue | Title | Blocked by |
+|------|-------|-------|------------|
+| [x]  | [#183](https://github.com/marmotz/kurotako/issues/183) | parser-openapi: synthesize a name for inline string enums instead of falling back to unknown | — |
 
 ### gen-zod emits a string literal instead of a bigint literal for a BigInt field default  ·  [overview](bugs/zod-bigint-default-string/overview.md)
 
