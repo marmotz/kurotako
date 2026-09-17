@@ -1,5 +1,6 @@
 /** Field documentation and constraints -> an optional JSDoc block. */
 import type { Field } from '@kurotako/ir';
+import { defaultValueExpr } from '@kurotako/ir';
 
 /** Render documentation-only metadata in a stable, human-readable order. */
 export function jsDoc(field: Field): string {
@@ -22,7 +23,7 @@ export function jsDoc(field: Field): string {
   }
   if (constraints.unique) tags.push('@unique');
   if (field.default?.kind === 'value') {
-    tags.push(`@default ${JSON.stringify(field.default.value)}`);
+    tags.push(`@default ${defaultValueExpr(field.type, field.default.value)}`);
   }
   if (field.type.kind === 'unknown') {
     tags.push(

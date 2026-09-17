@@ -149,4 +149,16 @@ describe('fieldTsType and memberLine', () => {
     const entity = entityOf(source, 'Post');
     expect(jsDoc(fieldOf(entity, 1))).toBe('');
   });
+
+  it('renders a bigint literal default as a bigint literal, not a string', () => {
+    const source = createSourceIR({ namespace: 'types', parser: 'test' })
+      .addEntity('Counter', (entity) => {
+        entity.field('total', (field) =>
+          field.scalar('bigint').default({ kind: 'value', value: '0' }),
+        );
+      })
+      .build();
+    const entity = entityOf(source, 'Counter');
+    expect(jsDoc(fieldOf(entity, 0))).toContain('@default 0n');
+  });
 });
