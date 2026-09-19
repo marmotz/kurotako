@@ -1,5 +1,19 @@
 # @kurotako/parser-prisma
 
+## 0.2.5
+
+### Patch Changes
+
+- 37a4e84: Stop crashing when a Prisma 8 `contract.json` table carries an
+  expression-based index (`@@index(expression: "...", ...)`, no `columns` —
+  e.g. a GIN full-text index). The index now reads into the IR's `expression`
+  `IndexDef` variant instead of failing contract validation on the missing
+  `columns` key.
+- Updated dependencies [37a4e84]
+  - @kurotako/ir@0.5.0
+  - @kurotako/config@0.1.6
+  - @kurotako/core@0.2.3
+
 ## 0.2.4
 
 ### Patch Changes

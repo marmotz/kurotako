@@ -1,5 +1,15 @@
 # @kurotako/gen-angular
 
+## 0.3.5
+
+### Patch Changes
+
+- Updated dependencies [37a4e84]
+  - @kurotako/ir@0.5.0
+  - @kurotako/config@0.1.6
+  - @kurotako/core@0.2.3
+  - @kurotako/gen-zod@0.3.7
+
 ## 0.3.4
 
 ### Patch Changes
