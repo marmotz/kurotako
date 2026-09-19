@@ -1,4 +1,4 @@
-import { refCycleMembers } from '@kurotako/ir';
+import { createSourceIR, refCycleMembers } from '@kurotako/ir';
 import { describe, expect, it } from 'vitest';
 import { dialectFor } from '../dialect.js';
 import { geoSource } from '../testing/ir.js';
@@ -41,5 +41,19 @@ describe('emitAliases', () => {
       "import { GroupSchema, type GroupDto } from './Group.schema.js';",
     );
     expect(out).not.toContain("from './Scalar'");
+  });
+});
+
+describe('emitAliases: enum self-alias exclusion', () => {
+  it("excludes a named enum's own self-alias, emitting only genuine aliases", () => {
+    const source = createSourceIR({ namespace: 'shop', parser: 'test' })
+      .addEnum('Status', (enumeration) => enumeration.value('OPEN'))
+      .addTypeAlias('Status', (alias) => alias.enum('Status'))
+      .addTypeAlias('Contact', (alias) => alias.scalar('string'))
+      .build();
+
+    const out = emitAliases(source, dialectFor(4));
+    expect(out).toContain('export const ContactSchema = z.string();');
+    expect(out).not.toContain('Status');
   });
 });

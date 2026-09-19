@@ -8,6 +8,7 @@
  */
 import type { Logger } from '@kurotako/core';
 import type { EnumDef, SourceIR } from '@kurotako/ir';
+import { nonRedundantTypeAliases } from '@kurotako/ir';
 import { OpenApiGenInvalidSchemaNameError } from './errors.js';
 import type { OpenApiGeneratorOptions } from './options.js';
 import { renderEntity, renderTypeAlias } from './render/entity.js';
@@ -76,9 +77,9 @@ export function buildDocument(
   const names = [
     ...Object.keys(source.entities),
     ...enumsByName.keys(),
-    ...Object.keys(source.typeAliases ?? {}).filter(
-      (name) => !enumsByName.has(name) && source.entities[name] === undefined,
-    ),
+    ...nonRedundantTypeAliases(source)
+      .map((alias) => alias.name)
+      .filter((name) => source.entities[name] === undefined),
   ].sort((a, b) => a.localeCompare(b));
 
   for (const name of names) {

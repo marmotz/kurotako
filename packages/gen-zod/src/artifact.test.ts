@@ -1,4 +1,5 @@
 import type { EntitySymbols } from '@kurotako/core';
+import { createSourceIR } from '@kurotako/ir';
 import { describe, expect, it } from 'vitest';
 import { buildArtifact, type ZodArtifactExtra } from './artifact.js';
 import { blogSource, geoSource, irOf } from './testing/ir.js';
@@ -61,6 +62,24 @@ describe('buildArtifact', () => {
     }
     expect(shape.module).toBe('geo/zod/aliases');
     expect(shape.symbols).toEqual({ schema: 'ShapeSchema', type: 'Shape' });
+  });
+
+  it('does not create a phantom entity entry for a named enum self-alias, while its enum is still listed in extra', () => {
+    const source = createSourceIR({ namespace: 'shop', parser: 'test' })
+      .addEnum('Status', (enumeration) => enumeration.value('OPEN'))
+      .addTypeAlias('Status', (alias) => alias.enum('Status'))
+      .build();
+
+    const shopArtifact = buildArtifact(irOf(source), { zodVersion: 4 });
+    expect(shopArtifact.entities['shop.Status']).toBeUndefined();
+
+    const extra = shopArtifact.extra as ZodArtifactExtra;
+    expect(extra.perNamespace.shop?.enums.Status).toEqual({
+      constName: 'Status',
+      schemaName: 'StatusSchema',
+      typeName: 'Status',
+      module: 'shop/zod/enums',
+    });
   });
 
   it('peerDependencies.zod tracks zodVersion', () => {

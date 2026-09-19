@@ -1,12 +1,13 @@
 /** This generator's per-namespace barrel. */
 import { jsFile } from '@kurotako/core';
 import type { SourceIR } from '@kurotako/ir';
+import { nonRedundantTypeAliases } from '@kurotako/ir';
 
 /** Re-export every emitted shared and entity declaration module. */
 export function emitBarrel(
   source: SourceIR,
   emitsScalars: boolean,
-  emitsAliases = Object.keys(source.typeAliases ?? {}).length > 0,
+  emitsAliases = nonRedundantTypeAliases(source).length > 0,
 ): string {
   const lines: string[] = [];
   if (emitsScalars) lines.push(`export type * from '${jsFile('./scalars')}';`);

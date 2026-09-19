@@ -15,6 +15,7 @@
  */
 import { jsFile } from '@kurotako/core';
 import type { SourceIR, TypeAlias } from '@kurotako/ir';
+import { nonRedundantTypeAliases } from '@kurotako/ir';
 import type { ZodDialect } from '../dialect.js';
 import {
   aliasSchemaName,
@@ -71,7 +72,7 @@ export function emitAliases(
   dialect: ZodDialect,
   cyclicRefs: ReadonlySet<string> = new Set(),
 ): string {
-  const declared = Object.values(source.typeAliases ?? {});
+  const declared = nonRedundantTypeAliases(source);
   const aliases = orderAliases(declared, cyclicRefs);
 
   const aliasNames = new Set(declared.map((a) => a.name));

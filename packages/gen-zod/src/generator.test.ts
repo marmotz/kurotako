@@ -86,6 +86,22 @@ describe('zodGenerator.generate', () => {
     expect(group).toContain('child: Shape;');
   });
 
+  it('skips aliases.ts for a source whose only alias is a named enum self-alias', () => {
+    const source = createSourceIR({ namespace: 'shop', parser: 'test' })
+      .addEnum('Status', (enumeration) => enumeration.value('OPEN'))
+      .addTypeAlias('Status', (alias) => alias.enum('Status'))
+      .build();
+
+    const out = runGenerator(irOf(source), { zodVersion: 4 });
+    expect(out.files.map((f) => f.path)).not.toContain('shop/zod/aliases.ts');
+    expect(fileEndingWith(out.files, 'shop/zod/enums.ts')).toContain(
+      'export const StatusSchema = z.enum(Status);',
+    );
+    expect(fileEndingWith(out.files, 'shop/zod/index.ts')).not.toContain(
+      './aliases',
+    );
+  });
+
   it('is deterministic: same IR + options -> deep-equal GenOutput', () => {
     const a = runGenerator(irOf(blogSource()), { zodVersion: 4 });
     const b = runGenerator(irOf(blogSource()), { zodVersion: 4 });

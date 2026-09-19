@@ -55,6 +55,19 @@ export function resolveTypeAlias(
   return source.typeAliases?.[name];
 }
 
+/**
+ * `source.typeAliases` minus a parser's self-referencing enum alias entries
+ * (`{ kind: 'enum', ref: <own name> }`) — a resolution-metadata shim
+ * (`docs/ir.md` "Closed points" §3) rather than a second declaration of the
+ * enum. The check is shape-based, not name-based: a hand-written alias that
+ * merely shares a name with an unrelated enum (a genuine collision) is kept.
+ */
+export function nonRedundantTypeAliases(source: SourceIR): TypeAlias[] {
+  return Object.values(source.typeAliases ?? {}).filter(
+    (alias) => !(alias.type.kind === 'enum' && alias.type.ref === alias.name),
+  );
+}
+
 export function* iterTypeAliases(
   ir: IR,
 ): Iterable<{ namespace: string; alias: TypeAlias }> {

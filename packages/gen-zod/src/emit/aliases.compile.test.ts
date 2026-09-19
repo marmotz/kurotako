@@ -7,11 +7,41 @@
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { createSourceIR } from '@kurotako/ir';
 import * as ts from 'typescript';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runGenerator } from '../testing/helpers.js';
 import { geoSource, irOf } from '../testing/ir.js';
 import { ZOD_DTS } from '../testing/zod-stub.js';
+
+function typecheckDiagnostics(
+  rootDir: string,
+  namespace: string,
+  fileSuffixes: string[],
+): string {
+  const configFile = ts.readConfigFile(
+    path.join(rootDir, 'tsconfig.json'),
+    ts.sys.readFile,
+  );
+  const parsed = ts.parseJsonConfigFileContent(
+    configFile.config,
+    ts.sys,
+    rootDir,
+  );
+  const program = ts.createProgram({
+    rootNames: parsed.fileNames,
+    options: parsed.options,
+  });
+  const diagnostics = ts.getPreEmitDiagnostics(program).filter((d) => {
+    const f = d.file?.fileName ?? '';
+    return fileSuffixes.some((suffix) => f.includes(`/${namespace}/${suffix}`));
+  });
+  return ts.formatDiagnostics(diagnostics, {
+    getCanonicalFileName: (f) => f,
+    getCurrentDirectory: () => rootDir,
+    getNewLine: () => '\n',
+  });
+}
 
 let dir: string;
 
@@ -91,6 +121,77 @@ describe('emitAliases output compiles against real Zod shapes', () => {
         getCurrentDirectory: () => dir,
         getNewLine: () => '\n',
       }),
+    ).toBe('');
+  });
+
+  it('a named enum self-alias produces no duplicate-identifier error (no aliases.ts emitted)', async () => {
+    const source = createSourceIR({ namespace: 'shop', parser: 'test' })
+      .addEnum('Status', (enumeration) => enumeration.value('OPEN'))
+      .addTypeAlias('Status', (alias) => alias.enum('Status'))
+      .build();
+    const out = runGenerator(irOf(source), { zodVersion: 4 });
+    expect(out.files.map((f) => f.path)).not.toContain('shop/zod/aliases.ts');
+    for (const file of out.files) {
+      await write(file.path, file.content);
+    }
+    await write(
+      'tsconfig.json',
+      JSON.stringify({
+        compilerOptions: {
+          target: 'ES2022',
+          lib: ['ES2023'],
+          module: 'ESNext',
+          moduleResolution: 'bundler',
+          strict: true,
+          noUncheckedIndexedAccess: true,
+          verbatimModuleSyntax: true,
+          noEmit: true,
+          types: [],
+        },
+        include: ['shop'],
+      }),
+    );
+
+    expect(
+      typecheckDiagnostics(dir, 'shop', ['zod/enums.ts', 'zod/index.ts']),
+    ).toBe('');
+  });
+
+  it('a named enum self-alias coexisting with a genuine alias compiles cleanly', async () => {
+    const source = createSourceIR({ namespace: 'shop', parser: 'test' })
+      .addEnum('Status', (enumeration) => enumeration.value('OPEN'))
+      .addTypeAlias('Status', (alias) => alias.enum('Status'))
+      .addTypeAlias('Contact', (alias) => alias.scalar('string'))
+      .build();
+    const out = runGenerator(irOf(source), { zodVersion: 4 });
+    expect(out.files.map((f) => f.path)).toContain('shop/zod/aliases.ts');
+    for (const file of out.files) {
+      await write(file.path, file.content);
+    }
+    await write(
+      'tsconfig.json',
+      JSON.stringify({
+        compilerOptions: {
+          target: 'ES2022',
+          lib: ['ES2023'],
+          module: 'ESNext',
+          moduleResolution: 'bundler',
+          strict: true,
+          noUncheckedIndexedAccess: true,
+          verbatimModuleSyntax: true,
+          noEmit: true,
+          types: [],
+        },
+        include: ['shop'],
+      }),
+    );
+
+    expect(
+      typecheckDiagnostics(dir, 'shop', [
+        'zod/enums.ts',
+        'zod/aliases.ts',
+        'zod/index.ts',
+      ]),
     ).toBe('');
   });
 });

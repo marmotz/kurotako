@@ -7,7 +7,7 @@
  */
 import type { EntitySymbols, GeneratorArtifact } from '@kurotako/core';
 import type { IR } from '@kurotako/ir';
-import { iterEntities } from '@kurotako/ir';
+import { iterEntities, nonRedundantTypeAliases } from '@kurotako/ir';
 import { collectEnums } from './emit/enums.js';
 import {
   aliasModule,
@@ -98,7 +98,7 @@ export function buildArtifact(
     };
   }
   for (const [namespace, source] of Object.entries(ir.sources)) {
-    for (const alias of Object.values(source.typeAliases ?? {})) {
+    for (const alias of nonRedundantTypeAliases(source)) {
       entities[`${namespace}.${alias.name}`] = {
         module: aliasModule(namespace),
         symbols: {

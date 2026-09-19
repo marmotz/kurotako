@@ -333,6 +333,45 @@ describe('typescriptGenerator.generate', () => {
     expect(() => runGenerator(irOf(source))).not.toThrow();
   });
 
+  it("does not treat a named enum's own self-alias as a collision, and skips aliases.ts", () => {
+    const source = createSourceIR({ namespace: 'shop', parser: 'test' })
+      .addEnum('Status', (enumeration) => enumeration.value('OPEN'))
+      .addTypeAlias('Status', (alias) => alias.enum('Status'))
+      .build();
+
+    const output = runGenerator(irOf(source));
+    expect(output.files.map((file) => file.path)).not.toContain(
+      'shop/typescript/aliases.ts',
+    );
+    expect(fileEndingWith(output.files, 'enums.ts')).toContain(
+      'export const Status = ["OPEN"] as const;',
+    );
+  });
+
+  it('still rejects a hand-written alias that genuinely collides with an unrelated enum', () => {
+    const source = createSourceIR({ namespace: 'shop', parser: 'test' })
+      .addEnum('Status', (enumeration) => enumeration.value('OPEN'))
+      .addTypeAlias('Status', (alias) => alias.scalar('string'))
+      .build();
+
+    expect(() => runGenerator(irOf(source))).toThrow(
+      TypeScriptAliasPublicNameCollisionError,
+    );
+  });
+
+  it('emits aliases.ts with only the genuine alias when a self-aliased enum and a real alias coexist', () => {
+    const source = createSourceIR({ namespace: 'shop', parser: 'test' })
+      .addEnum('Status', (enumeration) => enumeration.value('OPEN'))
+      .addTypeAlias('Status', (alias) => alias.enum('Status'))
+      .addTypeAlias('Contact', (alias) => alias.scalar('string'))
+      .build();
+
+    const output = runGenerator(irOf(source));
+    const aliases = fileEndingWith(output.files, 'aliases.ts');
+    expect(aliases).toContain('export type Contact = string;');
+    expect(aliases).not.toContain('Status');
+  });
+
   it('degrades cross-source deep relations while retaining the FK field and debug log', () => {
     const source = createSourceIR({ namespace: 'shop', parser: 'test' })
       .addEntity('Order', (entity) => {
