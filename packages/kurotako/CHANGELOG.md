@@ -1,5 +1,13 @@
 # kurotako
 
+## 0.2.4
+
+### Patch Changes
+
+- Updated dependencies [a3d63ef]
+  - @kurotako/gen-typescript@0.3.5
+  - @kurotako/config@0.1.5
+
 ## 0.2.3
 
 ### Patch Changes

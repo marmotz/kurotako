@@ -1,5 +1,14 @@
 # @kurotako/ir
 
+## 0.4.0
+
+### Minor Changes
+
+- a3d63ef: Add `nonRedundantTypeAliases(source)`, filtering out a parser's
+  self-referencing enum alias entries (`{ kind: 'enum', ref: <own name> }`) —
+  resolution metadata, not a second declaration — so every consumer of
+  `source.typeAliases` shares one shape-based definition of this invariant.
+
 ## 0.3.1
 
 ### Patch Changes
