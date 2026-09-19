@@ -1,6 +1,7 @@
 /** `typescriptGenerator` — emits pure TypeScript declarations from the IR. */
 import { defineGenerator } from '@kurotako/config';
 import type { GenerateContext, GenOutput, VirtualFile } from '@kurotako/core';
+import { nonRedundantTypeAliases } from '@kurotako/ir';
 import { buildArtifact } from './artifact.js';
 import { emitAliases } from './emit/aliases.js';
 import { emitBarrel } from './emit/barrel.js';
@@ -110,7 +111,9 @@ function generatedPublicNames(
   return {
     enumNames,
     generatedTypeNames,
-    aliasNames: new Set(Object.keys(source.typeAliases ?? {})),
+    aliasNames: new Set(
+      nonRedundantTypeAliases(source).map((alias) => alias.name),
+    ),
   };
 }
 
@@ -166,7 +169,7 @@ export const typescriptGenerator = defineGenerator({
           content: emitFilters(source),
         });
       }
-      if (Object.keys(source.typeAliases ?? {}).length > 0) {
+      if (nonRedundantTypeAliases(source).length > 0) {
         files.push({
           path: `${prefix}/aliases.ts`,
           content: emitAliases(source),
@@ -183,7 +186,7 @@ export const typescriptGenerator = defineGenerator({
         content: emitBarrel(
           source,
           emitsScalars,
-          Object.keys(source.typeAliases ?? {}).length > 0,
+          nonRedundantTypeAliases(source).length > 0,
         ),
       });
     }

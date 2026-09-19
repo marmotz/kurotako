@@ -10,6 +10,7 @@ import {
   iterEntities,
   iterFields,
   iterTypeAliases,
+  nonRedundantTypeAliases,
   primaryKeyFields,
   refCycleMembers,
   resolveEntity,
@@ -357,6 +358,38 @@ describe('union type helpers', () => {
       { kind: 'scalar', scalar: 'string' },
       { kind: 'ref', ref: 'Address' },
     ]);
+  });
+
+  it('nonRedundantTypeAliases excludes an enum self-alias, keeps a same-named non-self alias and every other alias', () => {
+    const source: SourceIR = {
+      namespace: 'pg',
+      parser: 'test',
+      entities: {},
+      enums: { Status: { name: 'Status', values: [{ name: 'A' }] } },
+      typeAliases: {
+        Status: { name: 'Status', type: { kind: 'enum', ref: 'Status' } },
+        Contact: {
+          name: 'Contact',
+          type: { kind: 'scalar', scalar: 'string' },
+        },
+      },
+    };
+    expect(nonRedundantTypeAliases(source).map((a) => a.name)).toEqual([
+      'Contact',
+    ]);
+
+    const genuineCollision: SourceIR = {
+      namespace: 'pg',
+      parser: 'test',
+      entities: {},
+      enums: { Status: { name: 'Status', values: [{ name: 'A' }] } },
+      typeAliases: {
+        Status: { name: 'Status', type: { kind: 'scalar', scalar: 'string' } },
+      },
+    };
+    expect(
+      nonRedundantTypeAliases(genuineCollision).map((a) => a.name),
+    ).toEqual(['Status']);
   });
 
   it('refCycleMembers reports every entity / alias on a ref cycle, and nothing else', () => {

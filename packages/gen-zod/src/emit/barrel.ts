@@ -6,6 +6,7 @@
  */
 import { jsFile } from '@kurotako/core';
 import type { SourceIR } from '@kurotako/ir';
+import { nonRedundantTypeAliases } from '@kurotako/ir';
 
 export function emitBarrel(source: SourceIR): string {
   const lines = [`export * from '${jsFile('./enums')}';`];
@@ -14,7 +15,7 @@ export function emitBarrel(source: SourceIR): string {
   if (entities.length > 0) {
     lines.push(`export * from '${jsFile('./filters')}';`);
   }
-  if (Object.keys(source.typeAliases ?? {}).length > 0) {
+  if (nonRedundantTypeAliases(source).length > 0) {
     lines.push(`export * from '${jsFile('./aliases')}';`);
   }
   for (const entity of entities) {

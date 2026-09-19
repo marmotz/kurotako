@@ -8,6 +8,7 @@
  */
 import { defineGenerator } from '@kurotako/config';
 import type { GenerateContext, GenOutput, VirtualFile } from '@kurotako/core';
+import { nonRedundantTypeAliases } from '@kurotako/ir';
 import { buildArtifact } from './artifact.js';
 import { dialectFor } from './dialect.js';
 import { emitAliases } from './emit/aliases.js';
@@ -28,7 +29,7 @@ export const zodGenerator = defineGenerator({
     for (const [namespace, source] of Object.entries(ctx.ir.sources)) {
       const prefix = `${namespace}/zod`;
       const entities = Object.values(source.entities);
-      const aliases = Object.values(source.typeAliases ?? {});
+      const aliases = nonRedundantTypeAliases(source);
       const cyclicRefs = new Set<string>();
       for (const key of ctx.cycles) {
         const dot = key.indexOf('.');

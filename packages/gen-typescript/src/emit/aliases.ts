@@ -1,12 +1,13 @@
 /** Source type aliases -> the shared aliases.ts declaration module. */
 import { jsFile } from '@kurotako/core';
 import type { SourceIR } from '@kurotako/ir';
+import { nonRedundantTypeAliases } from '@kurotako/ir';
 import { typeName } from '../names.js';
 import { collectTypeDependencies, renderFieldType } from '../render/scalars.js';
 
 /** Emit source aliases and imports for their external entity/enum dependencies. */
 export function emitAliases(source: SourceIR): string {
-  const aliases = Object.values(source.typeAliases ?? {});
+  const aliases = nonRedundantTypeAliases(source);
   const enums = new Set<string>();
   const entityRefs = new Set<string>();
   let usesJsonValue = false;
