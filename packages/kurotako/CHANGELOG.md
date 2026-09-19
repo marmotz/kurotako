@@ -1,5 +1,12 @@
 # kurotako
 
+## 0.2.5
+
+### Patch Changes
+
+- @kurotako/config@0.1.6
+  - @kurotako/gen-typescript@0.3.6
+
 ## 0.2.4
 
 ### Patch Changes
