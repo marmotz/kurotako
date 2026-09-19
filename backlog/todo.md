@@ -1,4 +1,4 @@
-<!-- backlog-sync 2026-09-17T20:03Z — GENERATED, do not hand-edit. Regenerate: skill backlog-sync -->
+<!-- backlog-sync 2026-09-19T00:00Z — GENERATED, do not hand-edit. Regenerate: skill backlog-sync -->
 
 # Backlog
 
@@ -20,6 +20,15 @@ _**Status**: [technical design](technical.md)_ — 1/1 tasks done
 | Done | Issue | Title | Blocked by |
 |------|-------|-------|------------|
 | [x]  | [#183](https://github.com/marmotz/kurotako/issues/183) | parser-openapi: synthesize a name for inline string enums instead of falling back to unknown | — |
+
+### parser-prisma rejects a Prisma 8 expression index as an invalid contract  ·  [overview](bugs/parser-prisma-expression-index-unsupported/overview.md)
+
+_**Status**: [technical design](technical.md)_ — 2/2 tasks done
+
+| Done | Issue | Title | Blocked by |
+|------|-------|-------|------------|
+| [x]  | [#192](https://github.com/marmotz/kurotako/issues/192) | ir: model an expression-based index as a discriminated IndexDef union | — |
+| [x]  | [#193](https://github.com/marmotz/kurotako/issues/193) | parser-prisma: accept a Prisma 8 expression index in contract.json | #192 |
 
 ### gen-typescript rejects every named enum as colliding with its own self-alias  ·  [overview](bugs/typescript-enum-self-alias-collision/overview.md)
 

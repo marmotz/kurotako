@@ -62,7 +62,7 @@ function makeIr(): IR {
               },
             ],
             primaryKey: ['id'],
-            indexes: [{ fields: ['email'] }],
+            indexes: [{ kind: 'columns', fields: ['email'] }],
             uniques: [],
           },
           Post: {
@@ -309,6 +309,15 @@ describe('validateIR — one failing fixture per IrIssueCode', () => {
     const ir = makeIr();
     entityOf(pgOf(ir), 'User').primaryKey = ['nope'];
     expect(codesOf(ir)).toContain('unresolved_field_ref');
+  });
+
+  it('an expression index is not checked for field refs', () => {
+    const ir = makeIr();
+    entityOf(pgOf(ir), 'User').indexes.push({
+      kind: 'expression',
+      expression: 'lower(email)',
+    });
+    expect(codesOf(ir)).not.toContain('unresolved_field_ref');
   });
 
   it('unresolved_relation_target', () => {

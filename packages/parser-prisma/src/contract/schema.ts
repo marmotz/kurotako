@@ -75,11 +75,18 @@ const table = v.looseObject({
   ),
   indexes: v.optional(
     v.array(
-      v.looseObject({
-        columns: v.array(v.string()),
-        name: v.optional(v.string()),
-        type: v.optional(v.string()),
-      }),
+      v.union([
+        v.looseObject({
+          expression: v.string(),
+          name: v.optional(v.string()),
+          type: v.optional(v.string()),
+        }),
+        v.looseObject({
+          columns: v.array(v.string()),
+          name: v.optional(v.string()),
+          type: v.optional(v.string()),
+        }),
+      ]),
     ),
   ),
   foreignKeys: v.optional(

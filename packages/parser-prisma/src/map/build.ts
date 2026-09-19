@@ -197,7 +197,11 @@ export function buildSourceIR(
         if (type) {
           opts.type = type;
         }
-        eb.index(index.fields, opts);
+        if (index.kind === 'expression') {
+          eb.indexExpression(index.expression, opts);
+        } else {
+          eb.index(index.fields, opts);
+        }
       }
       if (entity.doc !== undefined) {
         eb.doc(entity.doc);

@@ -132,6 +132,47 @@ describe('createSourceIR — happy path', () => {
   });
 });
 
+describe('createSourceIR — indexes', () => {
+  it('index() builds a columns IndexDef', () => {
+    const built = createSourceIR({ namespace: 'pg', parser: 'prisma' })
+      .addEntity('User', (e) => {
+        e.field('email', (f) => f.scalar('string'));
+        e.index(['email'], { name: 'user_email_idx', type: 'btree' });
+      })
+      .build();
+
+    expect(built.entities.User?.indexes).toEqual([
+      {
+        kind: 'columns',
+        fields: ['email'],
+        name: 'user_email_idx',
+        type: 'btree',
+      },
+    ]);
+  });
+
+  it('indexExpression() builds an expression IndexDef', () => {
+    const built = createSourceIR({ namespace: 'pg', parser: 'prisma' })
+      .addEntity('User', (e) => {
+        e.field('email', (f) => f.scalar('string'));
+        e.indexExpression('lower(email)', {
+          name: 'user_email_lower_idx',
+          type: 'gin',
+        });
+      })
+      .build();
+
+    expect(built.entities.User?.indexes).toEqual([
+      {
+        kind: 'expression',
+        expression: 'lower(email)',
+        name: 'user_email_lower_idx',
+        type: 'gin',
+      },
+    ]);
+  });
+});
+
 describe('createSourceIR — incremental throws', () => {
   const base = () => createSourceIR({ namespace: 'pg', parser: 'prisma' });
 

@@ -1011,6 +1011,13 @@
                   "prefix": "post_title_idx",
                   "type": "btree",
                   "unique": false
+                },
+                {
+                  "expression": "to_tsvector('simple', coalesce(title, '') || ' ' || coalesce(content, ''))",
+                  "name": "post_search_fts_9c1a2b3d",
+                  "prefix": "post_search_fts",
+                  "type": "gin",
+                  "unique": false
                 }
               ],
               "primaryKey": {

@@ -40,12 +40,20 @@ describe('readContract', () => {
 
     const post = model.entities.find((entity) => entity.name === 'Post');
     expect(post?.indexes).toContainEqual({
+      kind: 'columns',
       fields: ['authorId'],
       name: 'post_authorId_idx_e47547ed',
     });
     expect(post?.indexes).toContainEqual(
       expect.objectContaining({ fields: ['authorId', 'published'] }),
     );
+    expect(post?.indexes).toContainEqual({
+      kind: 'expression',
+      expression:
+        "to_tsvector('simple', coalesce(title, '') || ' ' || coalesce(content, ''))",
+      name: 'post_search_fts_9c1a2b3d',
+      type: 'gin',
+    });
     expect(
       post?.relationEdges.find((edge) => edge.fieldName === 'author'),
     ).toMatchObject({ fromFields: ['authorId'], toFields: ['id'] });

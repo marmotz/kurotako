@@ -96,7 +96,10 @@ function readIndexes(
   return all
     .filter((idx) => idx.model === modelName && idx.type === 'normal')
     .map((idx) => {
-      const entry: PrismaIndex = { fields: idx.fields.map((f) => f.name) };
+      const entry: PrismaIndex = {
+        kind: 'columns',
+        fields: idx.fields.map((f) => f.name),
+      };
       if (idx.name) {
         entry.name = idx.name;
       }

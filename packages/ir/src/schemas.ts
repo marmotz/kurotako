@@ -181,11 +181,20 @@ export const EnumDefSchema = v.object({
 
 // --- indexes -----------------------------------------------------------
 
-export const IndexDefSchema = v.object({
-  fields: v.array(v.string()),
-  name: v.optional(v.string()),
-  type: v.optional(IndexTypeSchema),
-});
+export const IndexDefSchema = v.variant('kind', [
+  v.object({
+    kind: v.literal('columns'),
+    fields: v.array(v.string()),
+    name: v.optional(v.string()),
+    type: v.optional(IndexTypeSchema),
+  }),
+  v.object({
+    kind: v.literal('expression'),
+    expression: v.string(),
+    name: v.optional(v.string()),
+    type: v.optional(IndexTypeSchema),
+  }),
+]);
 
 export const CompositeUniqueSchema = v.object({
   fields: v.array(v.string()),

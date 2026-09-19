@@ -109,6 +109,10 @@ export interface EntityBuilder {
   localEnum(name: string, def: (e: EnumBuilder) => void): this;
   primaryKey(...fields: string[]): this;
   index(fields: string[], opts?: { name?: string; type?: IndexType }): this;
+  indexExpression(
+    expression: string,
+    opts?: { name?: string; type?: IndexType },
+  ): this;
   unique(fields: string[], opts?: { name?: string }): this;
   doc(text: string): this;
   dbName(name: string): this;
@@ -622,7 +626,22 @@ class EntityBuilderImpl implements EntityBuilder {
   }
 
   index(fields: string[], opts?: { name?: string; type?: IndexType }): this {
-    const idx: IndexDef = { fields };
+    const idx: IndexDef = { kind: 'columns', fields };
+    if (opts?.name !== undefined) {
+      idx.name = opts.name;
+    }
+    if (opts?.type !== undefined) {
+      idx.type = opts.type;
+    }
+    this.#indexes.push(idx);
+    return this;
+  }
+
+  indexExpression(
+    expression: string,
+    opts?: { name?: string; type?: IndexType },
+  ): this {
+    const idx: IndexDef = { kind: 'expression', expression };
     if (opts?.name !== undefined) {
       idx.name = opts.name;
     }
