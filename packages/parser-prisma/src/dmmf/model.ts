@@ -56,11 +56,9 @@ export interface PrismaUnique {
   name?: string;
 }
 
-export interface PrismaIndex {
-  fields: string[];
-  name?: string;
-  type?: string;
-}
+export type PrismaIndex =
+  | { kind: 'columns'; fields: string[]; name?: string; type?: string }
+  | { kind: 'expression'; expression: string; name?: string; type?: string };
 
 export interface PrismaEntity {
   name: string;

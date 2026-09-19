@@ -400,6 +400,7 @@ function checkSource(
       }
     }
     entity.indexes.forEach((idx, i) => {
+      if (idx.kind !== 'columns') return;
       for (const f of idx.fields) {
         if (!hasField(f)) {
           pushIssue(

@@ -46,6 +46,11 @@ model Post {
 
   @@index([authorId, published], name: "post_author_published_idx")
   @@index([title], type: "btree", name: "post_title_idx")
+  @@index(
+    expression: "to_tsvector('simple', coalesce(title, '') || ' ' || coalesce(content, ''))",
+    type: "gin",
+    name: "post_search_fts"
+  )
   @@map("post")
 }
 

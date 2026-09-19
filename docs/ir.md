@@ -42,7 +42,7 @@ interface Entity {
   relations: Relation[]
   enums?: Record<string, EnumDef>            // entity-local enums; resolved before source-level
   primaryKey?: string[]                      // field name(s); composite when > 1
-  indexes: IndexDef[]                        // { fields, name?, type? }
+  indexes: IndexDef[]                        // { kind: 'columns', fields, name?, type? } | { kind: 'expression', expression, name?, type? }
   uniques: CompositeUnique[]                 // { fields, name? } — composite @@unique
   doc?: string
   dbName?: string                            // @@map

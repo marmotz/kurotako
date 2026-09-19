@@ -81,6 +81,8 @@ describe('toPrismaModel', () => {
         @@index([name])
       }
     `);
-    expect(model.entities[0]?.indexes).toEqual([{ fields: ['name'] }]);
+    expect(model.entities[0]?.indexes).toEqual([
+      { kind: 'columns', fields: ['name'] },
+    ]);
   });
 });

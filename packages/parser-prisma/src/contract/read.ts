@@ -281,15 +281,28 @@ export function readContract(
           }),
         ),
         indexes: (Array.isArray(table.indexes) ? table.indexes : []).map(
-          (entry) => ({
-            fields: toFieldNames(strings(record(entry).columns), columnToField),
-            ...(typeof record(entry).name === 'string'
-              ? { name: String(record(entry).name) }
-              : {}),
-            ...(typeof record(entry).type === 'string'
-              ? { type: String(record(entry).type) }
-              : {}),
-          }),
+          (raw) => {
+            const entry = record(raw);
+            const common = {
+              ...(typeof entry.name === 'string'
+                ? { name: String(entry.name) }
+                : {}),
+              ...(typeof entry.type === 'string'
+                ? { type: String(entry.type) }
+                : {}),
+            };
+            return typeof entry.expression === 'string'
+              ? {
+                  kind: 'expression' as const,
+                  expression: entry.expression,
+                  ...common,
+                }
+              : {
+                  kind: 'columns' as const,
+                  fields: toFieldNames(strings(entry.columns), columnToField),
+                  ...common,
+                };
+          },
         ),
       };
       entities.push(entity);

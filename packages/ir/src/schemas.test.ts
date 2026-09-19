@@ -1,6 +1,11 @@
 import * as v from 'valibot';
 import { describe, expect, it } from 'vitest';
-import { FieldTypeSchema, SourceIrSchema, TypeAliasSchema } from './schemas.js';
+import {
+  FieldTypeSchema,
+  IndexDefSchema,
+  SourceIrSchema,
+  TypeAliasSchema,
+} from './schemas.js';
 import type { FieldType, SourceIR } from './types.js';
 
 /** `parse` then a JSON round-trip must be stable. */
@@ -103,6 +108,32 @@ describe('FieldTypeSchema — ref / union / map', () => {
     if (type.kind === 'union') {
       expect(type.variants).toHaveLength(2);
     }
+  });
+});
+
+describe('IndexDefSchema — columns / expression', () => {
+  it('accepts a columns index', () => {
+    roundTrips(IndexDefSchema, {
+      kind: 'columns',
+      fields: ['email'],
+      name: 'user_email_idx',
+      type: 'btree',
+    });
+  });
+
+  it('accepts an expression index', () => {
+    roundTrips(IndexDefSchema, {
+      kind: 'expression',
+      expression: 'lower(email)',
+      name: 'user_email_lower_idx',
+      type: 'gin',
+    });
+  });
+
+  it('rejects an unknown kind', () => {
+    expect(() =>
+      v.parse(IndexDefSchema, { kind: 'bogus', fields: ['email'] }),
+    ).toThrow();
   });
 });
 
