@@ -1,5 +1,14 @@
 # @kurotako/gen-openapi
 
+## 0.2.2
+
+### Patch Changes
+
+- Updated dependencies [a3d63ef]
+  - @kurotako/ir@0.4.0
+  - @kurotako/config@0.1.5
+  - @kurotako/core@0.2.2
+
 ## 0.2.1
 
 ### Patch Changes

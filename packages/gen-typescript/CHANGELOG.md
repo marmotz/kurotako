@@ -1,5 +1,18 @@
 # @kurotako/gen-typescript
 
+## 0.3.5
+
+### Patch Changes
+
+- a3d63ef: Fix `TypeScriptAliasPublicNameCollisionError` thrown for every named enum: a
+  parser's self-referencing alias entry for an enum (resolution metadata, not
+  a second declaration) is no longer treated as a collision, and is no longer
+  emitted into `aliases.ts`.
+- Updated dependencies [a3d63ef]
+  - @kurotako/ir@0.4.0
+  - @kurotako/config@0.1.5
+  - @kurotako/core@0.2.2
+
 ## 0.3.4
 
 ### Patch Changes
