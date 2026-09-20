@@ -1,6 +1,6 @@
 {
   "name": "@kurotako/gen-react-tanstack",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "kurotako generator that emits React + TanStack Form hooks from the intermediate representation.",
   "keywords": [
     "kurotako",

@@ -1,5 +1,26 @@
 # @kurotako/gen-zod
 
+## 0.4.0
+
+### Minor Changes
+
+- f58eccc: `zodGenerator` now derives its output prefix and every module specifier it publishes
+  (`artifact.entities[*].module`, `extra.perNamespace[*]`, enum modules) from
+  `ctx.segment` instead of a hardcoded `zod`. As a top-level generator the segment is
+  still `zod`, so the output is unchanged; when another generator runs it as a private
+  dependency the whole sub-tree and its specifiers move under that generator's segment
+  (for example `<ns>/angular/zod/...`). The `names.ts` module helpers and `buildArtifact`
+  take the segment as an extra argument.
+
+### Patch Changes
+
+- Updated dependencies [f58eccc]
+- Updated dependencies [f58eccc]
+- Updated dependencies [0ea85b1]
+  - @kurotako/config@0.2.0
+  - @kurotako/core@0.3.0
+  - @kurotako/ir@0.6.0
+
 ## 0.3.7
 
 ### Patch Changes

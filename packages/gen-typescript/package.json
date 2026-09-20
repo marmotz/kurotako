@@ -1,6 +1,6 @@
 {
   "name": "@kurotako/gen-typescript",
-  "version": "0.3.6",
+  "version": "0.4.0",
   "description": "kurotako generator that emits TypeScript type declarations from the intermediate representation.",
   "keywords": [
     "kurotako",
