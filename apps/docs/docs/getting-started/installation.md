@@ -64,7 +64,7 @@ use (see the [API reference](../api/)).
 | Package                    | Output                                                   |
 |----------------------------|----------------------------------------------------------|
 | `@kurotako/gen-zod`        | Zod schemas                                              |
-| `@kurotako/gen-angular`    | Angular types and typed `FormGroup`s (needs `gen-zod`)   |
+| `@kurotako/gen-angular`    | Angular types and typed `FormGroup`s (embeds its own Zod)|
 | `@kurotako/gen-typescript` | pure TypeScript type declarations, no runtime dependency |
 | `@kurotako/gen-openapi`    | one OpenAPI 3.0/3.1 document per namespace               |
 
@@ -88,8 +88,8 @@ Every parser and generator is a separate package. To add one:
 2. Import its exported parser or generator in `tako.config.ts`.
 3. For a parser, add an entry under `sources` (its key is the
    [namespace](../concepts/namespaces.md)). For a generator, add an entry to the
-   `generators` array — order does not matter, `core` resolves the
-   [dependency graph](../concepts/dependency-graph.md).
+   `generators` array — entries run in the order listed, and a generator that needs
+   another one declares it as a [private dependency](../concepts/dependency-graph.md).
 
 Everything available is listed in the [catalog](../reference/catalog.md).
 

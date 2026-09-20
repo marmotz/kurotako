@@ -63,11 +63,11 @@ function entitySymbols(name: string): Record<string, string> {
 }
 
 /** Build the consumable metadata independently of file emission. */
-export function buildArtifact(ir: IR): GeneratorArtifact {
+export function buildArtifact(ir: IR, segment: string): GeneratorArtifact {
   const entities: Record<string, EntitySymbols> = {};
   for (const { namespace, entity } of iterEntities(ir)) {
     entities[`${namespace}.${entity.name}`] = {
-      module: entityModule(namespace, entity.name),
+      module: entityModule(namespace, segment, entity.name),
       symbols: entitySymbols(entity.name),
     };
   }
@@ -79,13 +79,13 @@ export function buildArtifact(ir: IR): GeneratorArtifact {
       enums[definition.name] = {
         constName: enumConst(definition.name),
         typeName: enumTypeName(definition.name),
-        module: enumsModule(namespace),
+        module: enumsModule(namespace, segment),
       };
     }
     perNamespace[namespace] = {
-      barrelModule: barrelModule(namespace),
-      filtersModule: filtersModule(namespace),
-      scalarsModule: scalarsModule(namespace),
+      barrelModule: barrelModule(namespace, segment),
+      filtersModule: filtersModule(namespace, segment),
+      scalarsModule: scalarsModule(namespace, segment),
       enums,
     };
   }

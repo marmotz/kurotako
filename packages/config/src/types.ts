@@ -49,10 +49,16 @@ export interface TakoParser<O = void> {
  */
 export interface TakoGenerator<O = void> {
   name: string;
-  /** Hard dependency: absent from the config => error. Constrains order. */
-  dependsOn?: string[];
-  /** Optional dependency: used if present, else ignored. Constrains order. */
-  optionalDependsOn?: string[];
+  /**
+   * Private generator dependencies: descriptors of generators that run for this
+   * one alone, before it, into `<namespace>/<segment>/<dependency name>/`, and
+   * whose artifact arrives as `ctx.dependencies[<dependency name>]`. The function
+   * form receives this generator's validated options, so a dependent can derive
+   * the dependency's options from its own. Resolved and curried by `load.ts`.
+   */
+  dependsOn?:
+    | readonly GeneratorDependency[]
+    | ((options: O) => readonly GeneratorDependency[]);
   optionsSchema?: v.GenericSchema<unknown, O>;
   generate(ctx: GenerateContext, options: O): GenOutput | Promise<GenOutput>;
 }
@@ -109,6 +115,36 @@ export type GeneratorEntry<D = TakoGenerator<any>> = {
   namespaces?: string[];
 } & OptionsMember<D>;
 
+/**
+ * A private generator dependency: a `GeneratorEntry` without `namespaces` (a
+ * private instance always covers its dependent's namespaces). Options are
+ * type-checked against the dependency's own `optionsSchema`.
+ */
+export type GeneratorDependency<D = TakoGenerator<any>> = {
+  use: D;
+} & OptionsMember<D>;
+
+/** Structural bound of a `dependsOn` descriptor list (see `DependencyList`). */
+export type DependencyShape = readonly { use: unknown; options?: unknown }[];
+
+/**
+ * Checks every descriptor of a `dependsOn` list: its `options` is validated
+ * against its own `use.optionsSchema` (same homomorphic-mapped-type trick as
+ * `defineConfig`).
+ */
+export type DependencyList<D extends DependencyShape> = D & {
+  [K in keyof D]: GeneratorDependency<D[K]['use']>;
+};
+
+export interface GeneratorDriverBase<S> {
+  name: string;
+  optionsSchema?: S;
+  generate(
+    ctx: GenerateContext,
+    options: DriverOptions<S>,
+  ): GenOutput | Promise<GenOutput>;
+}
+
 /** Loose entry the base `TakoConfig` uses so `defineConfig`'s generic binds. */
 export interface AnySourceEntry {
   use: TakoParser<any>;
@@ -145,7 +181,7 @@ export interface TakoHooks {
 export interface TakoConfig {
   /** Key === namespace (ADR-0003). */
   sources: Record<string, AnySourceEntry>;
-  /** Array; order irrelevant (core resolves the DAG). */
+  /** Array; run in declaration order. */
   generators: readonly AnyGeneratorEntry[];
   /** Required — no implicit single-output default. */
   outputs: readonly OutputOption[];

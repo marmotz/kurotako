@@ -21,7 +21,7 @@ export class AngularGenError extends Error {
 
 /**
  * The Zod artifact has no entry (or no `role` symbol) for `${ns}.${entity}`.
- * `dependsOn: ['zod']` guarantees the dependency ran, but a role can still be
+ * The private `zod` dependency always runs, but a role can still be
  * absent if the consumed `gen-zod` version predates it.
  */
 export class MissingZodSymbolError extends AngularGenError {

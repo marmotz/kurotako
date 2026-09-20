@@ -392,4 +392,14 @@ describe('typescriptGenerator.generate', () => {
     expect(deep).not.toContain('customer:');
     expect(debug).toHaveBeenCalled();
   });
+
+  it('emits under the context segment when it is not the default', () => {
+    const output = runGenerator(irOf(blogSource()), noopLogger, 'a/typescript');
+    expect(
+      output.files.every((file) => file.path.startsWith('blog/a/typescript/')),
+    ).toBe(true);
+    expect(output.artifact.entities['blog.User']?.module).toBe(
+      'blog/a/typescript/User.type',
+    );
+  });
 });

@@ -157,7 +157,7 @@ export const typescriptGenerator = defineGenerator({
     const files: VirtualFile[] = [];
     for (const [namespace, source] of Object.entries(ctx.ir.sources)) {
       validateSourceEmission(source, ctx.cycles);
-      const prefix = `${namespace}/typescript`;
+      const prefix = `${namespace}/${ctx.segment}`;
       const emitsScalars = sourceUsesJsonValue(source);
       if (emitsScalars) {
         files.push({ path: `${prefix}/scalars.ts`, content: emitScalars() });
@@ -190,6 +190,6 @@ export const typescriptGenerator = defineGenerator({
         ),
       });
     }
-    return { files, artifact: buildArtifact(ctx.ir) };
+    return { files, artifact: buildArtifact(ctx.ir, ctx.segment) };
   },
 });

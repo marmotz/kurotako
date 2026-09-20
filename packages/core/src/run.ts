@@ -1,6 +1,6 @@
 /**
  * `run()` — the single public entry point. Sequential, fail-fast: parse ->
- * merge -> order -> generate -> collect -> write -> afterEmit. `opts.signal` is
+ * merge -> generate (declaration order) -> collect -> write -> afterEmit. `opts.signal` is
  * checked at each step boundary; `opts.write === false` runs everything but
  * skips the Writer (basis of `--dry-run`). `opts.plan === true` also stops
  * before emission but calls `Writer.plan()` per output and returns the planned
@@ -11,17 +11,26 @@
  * the output-modes feature; they are not part of the core-pipeline tasks.
  */
 
+import path from 'node:path';
+import type { IR } from '@kurotako/ir';
 import { refCycleMembers } from '@kurotako/ir';
 import type { GeneratorTree } from './collect.js';
 import { mergeTrees } from './collect.js';
-import { DriverError, HookError } from './errors.js';
+import {
+  DriverError,
+  HookError,
+  OutputPeerConflictError,
+  SegmentViolationError,
+} from './errors.js';
 import { filterIR } from './filter.js';
-import { generatorOrder } from './graph.js';
 import { childLogger, noopLogger } from './logger.js';
 import type { MergeEntry } from './merge.js';
 import { mergeSources } from './merge.js';
 import type {
+  Generator,
   GeneratorArtifact,
+  GenOutput,
+  Logger,
   OutputConfig,
   PlannedFile,
   ResolvedConfig,
@@ -79,9 +88,10 @@ export async function run(
     }
   }
 
-  // 3. Order.
+  // 3. Order — declaration order. Generators no longer constrain each other:
+  // a dependency is a private instance run for its dependent alone (step 4).
   checkSignal();
-  const order = generatorOrder(config.generators);
+  const order = Object.keys(config.generators);
 
   // 4. Generate.
   const artifacts: Record<string, GeneratorArtifact> = {};
@@ -94,34 +104,16 @@ export async function run(
     }
     const { generator } = cfg;
     const view = filterIR(ir, cfg.namespaces);
-
-    const declared = [
-      ...(generator.dependsOn ?? []),
-      ...(generator.optionalDependsOn ?? []),
-    ];
-    const dependencies: Record<string, GeneratorArtifact> = {};
-    for (const dep of declared) {
-      const artifact = artifacts[dep];
-      if (artifact) {
-        dependencies[dep] = artifact;
-      }
-    }
-
-    try {
-      const out = await generator.generate({
-        ir: view,
-        dependencies,
-        cycles,
-        logger: childLogger(logger, { generator: name }),
-      });
-      artifacts[name] = out.artifact;
-      perGenerator.push({ generator: name, files: out.files });
-    } catch (error) {
-      if (error instanceof DriverError) {
-        throw error;
-      }
-      throw new DriverError('generator', generator.name, { cause: error });
-    }
+    const out = await runGenerator(generator, {
+      segment: generator.name,
+      view,
+      cycles,
+      logger: childLogger(logger, { generator: name }),
+      loggerBase: logger,
+      checkSignal,
+    });
+    artifacts[name] = out.artifact;
+    perGenerator.push({ generator: name, files: out.files });
   }
 
   // 5. Collect.
@@ -221,4 +213,145 @@ export async function run(
   }
 
   return { ir, order, files, artifacts, written };
+}
+
+interface GeneratorRunEnv {
+  /** `generator.name` at the top level, `<parent segment>/<name>` when private. */
+  segment: string;
+  /** Namespace-filtered IR, shared by a generator and all its private instances. */
+  view: IR;
+  cycles: Set<string>;
+  logger: Logger;
+  /** Un-tagged logger, the base for private instances' own child loggers. */
+  loggerBase: Logger;
+  checkSignal: () => void;
+  /** Set for a private instance: the generator that owns it. */
+  dependencyOf?: string;
+}
+
+/**
+ * Run `generator` after each of its private dependencies (recursively). Every
+ * private instance gets the same namespace-filtered view as its dependent and the
+ * nested segment `<segment>/<dep.name>`; its files are appended to the dependent's
+ * own, its artifact is handed over as `ctx.dependencies[dep.name]`, and its peers
+ * are merged into the dependent's artifact.
+ */
+async function runGenerator(
+  generator: Generator,
+  env: GeneratorRunEnv,
+): Promise<GenOutput> {
+  const { segment, view } = env;
+  const dependencies: Record<string, GeneratorArtifact> = {};
+  const privateFiles: VirtualFile[] = [];
+  const privateArtifacts: [string, GeneratorArtifact][] = [];
+
+  for (const dep of generator.dependsOn ?? []) {
+    env.checkSignal();
+    const out = await runGenerator(dep, {
+      ...env,
+      segment: `${segment}/${dep.name}`,
+      logger: childLogger(env.loggerBase, {
+        generator: dep.name,
+        dependencyOf: generator.name,
+      }),
+      dependencyOf: generator.name,
+    });
+    dependencies[dep.name] = out.artifact;
+    privateFiles.push(...out.files);
+    privateArtifacts.push([dep.name, out.artifact]);
+  }
+
+  let out: GenOutput;
+  try {
+    out = await generator.generate({
+      ir: view,
+      dependencies,
+      cycles: env.cycles,
+      segment,
+      logger: env.logger,
+    });
+  } catch (error) {
+    if (error instanceof DriverError) {
+      throw error;
+    }
+    throw new DriverError('generator', generator.name, {
+      cause: error,
+      dependencyOf: env.dependencyOf,
+    });
+  }
+
+  if (env.dependencyOf !== undefined) {
+    assertInSegment(generator.name, out.files, view, segment);
+  }
+
+  return {
+    files: [...out.files, ...privateFiles],
+    artifact: mergePeers(generator.name, out.artifact, privateArtifacts),
+  };
+}
+
+/**
+ * A private instance must emit under `<namespace>/<segment>/` for a namespace of
+ * its view; anything else would land outside its dependent's sub-tree.
+ */
+function assertInSegment(
+  name: string,
+  files: VirtualFile[],
+  view: IR,
+  segment: string,
+): void {
+  const namespaces = Object.keys(view.sources);
+  for (const file of files) {
+    const normalized = path.posix.normalize(file.path.replace(/\\/g, '/'));
+    if (!namespaces.some((ns) => normalized.startsWith(`${ns}/${segment}/`))) {
+      throw new SegmentViolationError(
+        name,
+        file.path,
+        `<namespace>/${segment}/`,
+      );
+    }
+  }
+}
+
+/**
+ * Union of the dependent's own `peerDependencies` with each private dependency's.
+ * Identical ranges de-duplicate; the same package with two ranges throws
+ * `OutputPeerConflictError` naming the two owners.
+ */
+function mergePeers(
+  dependent: string,
+  artifact: GeneratorArtifact,
+  privateArtifacts: [string, GeneratorArtifact][],
+): GeneratorArtifact {
+  if (privateArtifacts.every(([, a]) => a.peerDependencies === undefined)) {
+    return artifact;
+  }
+  const merged = new Map<string, { range: string; owner: string }>();
+  const sources: [string, GeneratorArtifact][] = [
+    [dependent, artifact],
+    ...privateArtifacts,
+  ];
+  for (const [owner, source] of sources) {
+    for (const [pkg, range] of Object.entries(source.peerDependencies ?? {})) {
+      const existing = merged.get(pkg);
+      if (existing && existing.range !== range) {
+        throw new OutputPeerConflictError(
+          undefined,
+          pkg,
+          [existing.range, range],
+          [existing.owner, owner],
+          dependent,
+        );
+      }
+      if (!existing) {
+        merged.set(pkg, { range, owner });
+      }
+    }
+  }
+  return {
+    ...artifact,
+    peerDependencies: Object.fromEntries(
+      [...merged].map(([pkg, { range }]) => [pkg, range]),
+    ),
+  };
 }

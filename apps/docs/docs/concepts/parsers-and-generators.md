@@ -37,25 +37,24 @@ files to watch without understanding the parser's options.
 
 ## Generators
 
-A **generator** consumes the merged IR — and, optionally, the artifacts produced by other
-generators — and emits files:
+A **generator** consumes the merged IR — and, optionally, the artifacts of its private
+dependencies — and emits files:
 
 - `@kurotako/gen-zod` emits Zod schemas from the IR.
 - `@kurotako/gen-angular` emits TypeScript types, typed `FormGroup`s and `Validators`
-  aligned on the schema constraints. It declares `dependsOn: ['zod']` and reads the Zod
-  generator's artifact.
+  aligned on the schema constraints. It embeds its own private copy of the Zod generator
+  and reads its artifact; you need no `zod` entry.
 - `@kurotako/gen-typescript` emits pure TypeScript type declarations from the IR, with no
   runtime dependency on generated code and no dependency on another generator.
 - `@kurotako/gen-openapi` emits one OpenAPI 3.0/3.1 document per namespace from the IR.
 
-Generator entries live in the `generators` array. Order in the array is irrelevant —
-`core` computes the run order from the declared
-[dependencies](dependency-graph.md):
+Generator entries live in the `generators` array and run in that order. A generator that
+needs another generator declares it as a
+[private dependency](dependency-graph.md), so this is enough:
 
 ```ts
 generators: [
-  { use: zodGenerator },
-  { use: angularGenerator }, // dependsOn: ['zod'] — runs after zod regardless of array order
+  { use: angularGenerator }, // runs its own private Zod copy, output in <ns>/angular/zod/
 ]
 ```
 
@@ -67,12 +66,13 @@ A generator entry can restrict its IR view to a subset of namespaces with
 ```text
 sources ──parse──▶ SourceIR per namespace ──merge──▶ IR
                                                       │
-                             topological order  ┌─────┴─────┐
-                                                ▼           ▼
-                                             gen-zod ──▶ gen-angular
-                                                │           │
-                                                ▼           ▼
-                                              files       files ──▶ writer ──▶ disk
+                                          ┌─────────┴─────────┐
+                                          ▼                   ▼
+                                  gen-angular             gen-openapi
+                          (private gen-zod first)               │
+                                          │                     ▼
+                                          ▼                   files
+                                        files ──▶ writer ──▶ disk
 ```
 
 Each step fails fast: the first error stops the run. `tako validate` runs the whole

@@ -11,8 +11,13 @@
   target. See [ir.md](ir.md).
 - **partial IR**: the portion of IR produced by a single parser (one `SourceIR`).
 - **global IR**: the merge of all the partial IRs, keyed by namespace.
-- **`dependsOn`**: a generator's declaration of the other generators whose artifacts it consumes. The core derives a
-  topological order from it.
+- **`dependsOn`**: a generator's declaration of the private generator instances it needs (descriptors `{ use, options? }`).
+  The core runs each one for that generator alone, before it, into a nested sub-tree; there is no ordering between
+  config entries.
+- **segment**: the sub-tree under `<namespace>/` a generator emits into and builds its module specifiers from
+  (`ctx.segment`): its name at the top level, `<parent>/<dependency>` for a private instance.
+- **private instance**: a generator dependency run by core for its dependent only; its files live in the dependent's
+  sub-tree and its artifact is not exposed at the top level.
 - **artifact**: what a generator exposes to its dependents (generated files, exported symbols, manifest). Exact shape:
   not frozen.
 - **mode A / mode B**: output strategies — a directory inside the project (A, default) vs an npm package per source (B).

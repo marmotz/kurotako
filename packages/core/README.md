@@ -1,7 +1,7 @@
 # @kurotako/core
 
 The pipeline core for [kurotako](https://kurotako.marmotz.dev/): the parser/generator
-contracts, the generator dependency DAG and its topological ordering, and the `run()`
+contracts, private generator dependencies (run in declaration order), and the `run()`
 entry the CLI drives.
 
 You only depend on this package directly for programmatic use. Normal `tako` usage pulls

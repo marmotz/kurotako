@@ -34,9 +34,9 @@ kurotako models code generation as a pipeline of two kinds of component:
 - **Generators** consume the merged IR — plus the artifacts of the generators they
   depend on — and emit code (Zod schemas, Angular types and `FormGroup`s, …).
 
-There is no fixed middle stage. Generators declare their dependencies and
-[core computes a topological order](concepts/dependency-graph.md); parsers and
-generators are wired by a dependency DAG.
+There is no fixed middle stage and no dependency graph: generators run in declaration
+order, and a generator that needs another one declares it as a
+[private dependency](concepts/dependency-graph.md).
 
 ```text
 schema.prisma ──▶ parser-prisma ──▶  IR  ──▶ gen-zod ──────▶ Zod schemas
@@ -54,7 +54,7 @@ schema.prisma ──▶ parser-prisma ──▶  IR  ──▶ gen-zod ───
 4. `@kurotako/cli` — the `tako` binary orchestrating the pipeline against a real project.
 
 Supporting packages: `@kurotako/ir` (shared types and schemas), `@kurotako/core`
-(orchestration, DAG resolution, IR merge) and `@kurotako/config` (the `tako.config.ts`
+(orchestration, private generator dependencies, IR merge) and `@kurotako/config` (the `tako.config.ts`
 loader).
 
 ## Next steps

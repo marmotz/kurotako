@@ -11,10 +11,15 @@
  *
  * See `backlog/features/driver-options-ergonomics/technical.md` §3.2.
  */
-import type { GenerateContext, GenOutput, ParseContext } from '@kurotako/core';
+import type { ParseContext } from '@kurotako/core';
 import type { SourceIR } from '@kurotako/ir';
 import type * as v from 'valibot';
-import type { DriverOptions } from './types.js';
+import type {
+  DependencyList,
+  DependencyShape,
+  DriverOptions,
+  GeneratorDriverBase,
+} from './types.js';
 
 export function defineParser<
   const S extends v.GenericSchema<unknown, unknown> | undefined = undefined,
@@ -44,19 +49,30 @@ export function defineParser<
   return driver;
 }
 
+/**
+ * Private generator dependencies are declared as descriptors (a config entry
+ * without `namespaces`): `dependsOn: [{ use: zodGenerator, options: { … } }]`. The
+ * function form, `dependsOn: (options) => [ … ]`, receives this generator's
+ * validated options (schema Output), so the dependency's options can derive from
+ * them. Each descriptor's `options` is checked against the dependency's schema.
+ *
+ * The two forms are separate overloads: with a single union-typed `dependsOn`,
+ * TypeScript does not infer the descriptor list from the function's return.
+ */
 export function defineGenerator<
   const S extends v.GenericSchema<unknown, unknown> | undefined = undefined,
->(driver: {
-  name: string;
-  /** Hard dependency: absent from the config => error. Constrains order. */
-  dependsOn?: string[];
-  /** Optional dependency: used if present, else ignored. Constrains order. */
-  optionalDependsOn?: string[];
-  optionsSchema?: S;
-  generate(
-    ctx: GenerateContext,
-    options: DriverOptions<S>,
-  ): GenOutput | Promise<GenOutput>;
-}): typeof driver {
+  const D extends DependencyShape = readonly [],
+>(
+  driver: GeneratorDriverBase<S> & { dependsOn?: DependencyList<D> },
+): typeof driver;
+export function defineGenerator<
+  const S extends v.GenericSchema<unknown, unknown> | undefined = undefined,
+  const D extends DependencyShape = readonly [],
+>(
+  driver: GeneratorDriverBase<S> & {
+    dependsOn?: (options: DriverOptions<S>) => DependencyList<D>;
+  },
+): typeof driver;
+export function defineGenerator(driver: unknown): unknown {
   return driver;
 }

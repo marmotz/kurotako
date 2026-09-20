@@ -17,6 +17,38 @@ describe('zodGenerator.generate', () => {
     ]);
   });
 
+  it('emits under the context segment when it is not the default', () => {
+    const out = runGenerator(
+      irOf(blogSource()),
+      { zodVersion: 4 },
+      noopLogger,
+      'angular/zod',
+    );
+    expect(out.files.map((f) => f.path)).toEqual([
+      'blog/angular/zod/enums.ts',
+      'blog/angular/zod/filters.ts',
+      'blog/angular/zod/User.schema.ts',
+      'blog/angular/zod/Post.schema.ts',
+      'blog/angular/zod/index.ts',
+    ]);
+    expect(out.artifact.entities['blog.User']?.module).toBe(
+      'blog/angular/zod/User.schema',
+    );
+  });
+
+  it('a non-default segment only changes paths and modules, not file contents', () => {
+    const base = runGenerator(irOf(blogSource()), { zodVersion: 4 });
+    const nested = runGenerator(
+      irOf(blogSource()),
+      { zodVersion: 4 },
+      noopLogger,
+      'angular/zod',
+    );
+    expect(nested.files.map((f) => f.content)).toEqual(
+      base.files.map((f) => f.content),
+    );
+  });
+
   it('zodVersion 3 vs 4 changes the leaf builders end to end', () => {
     const user4 = fileEndingWith(
       runGenerator(irOf(blogSource()), { zodVersion: 4 }).files,

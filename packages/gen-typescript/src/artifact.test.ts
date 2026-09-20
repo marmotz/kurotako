@@ -4,7 +4,7 @@ import { blogSource, irOf } from './testing/ir.js';
 
 describe('buildArtifact', () => {
   it('publishes the complete entity symbol matrix and namespace metadata', () => {
-    const artifact = buildArtifact(irOf(blogSource()));
+    const artifact = buildArtifact(irOf(blogSource()), 'typescript');
     expect(artifact.entities['blog.User']).toEqual({
       module: 'blog/typescript/User.type',
       symbols: {
@@ -38,6 +38,30 @@ describe('buildArtifact', () => {
           },
         },
       },
+    });
+  });
+});
+
+describe('buildArtifact with a non-default segment', () => {
+  it('re-roots every module under the segment, symbols unchanged', () => {
+    const base = buildArtifact(irOf(blogSource()), 'typescript');
+    const nested = buildArtifact(irOf(blogSource()), 'a/typescript');
+    expect(nested.entities['blog.User']?.module).toBe(
+      'blog/a/typescript/User.type',
+    );
+    expect(nested.entities['blog.User']?.symbols).toEqual(
+      base.entities['blog.User']?.symbols,
+    );
+    const extra = nested.extra as {
+      perNamespace: Record<
+        string,
+        { barrelModule: string; filtersModule: string; scalarsModule: string }
+      >;
+    };
+    expect(extra.perNamespace.blog).toMatchObject({
+      barrelModule: 'blog/a/typescript',
+      filtersModule: 'blog/a/typescript/filters',
+      scalarsModule: 'blog/a/typescript/scalars',
     });
   });
 });

@@ -16,13 +16,13 @@ describe('zod-artifact reader', () => {
   });
 
   it('resolves the entity module', () => {
-    expect(zodModule(zod, 'blog', 'User')).toBe('blog/zod/User.schema');
+    expect(zodModule(zod, 'blog', 'User')).toBe('blog/angular/zod/User.schema');
   });
 
   it('resolves an enum ref via extra.perNamespace', () => {
     expect(zodEnum(zod, 'blog', 'Role')).toEqual({
       typeName: 'Role',
-      module: 'blog/zod/enums',
+      module: 'blog/angular/zod/enums',
     });
   });
 

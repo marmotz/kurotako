@@ -5,7 +5,7 @@ One install for the [`tako`](https://kurotako.marmotz.dev/docs/reference/cli) CL
 
 kurotako is a modular framework for synchronizing TypeScript schemas from the data model
 down to frontend forms, through a validation layer: one `parser` input, N `generator`
-outputs, wired by a dependency graph.
+outputs, wired by private generator dependencies.
 
 ## Install
 

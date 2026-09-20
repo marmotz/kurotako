@@ -86,9 +86,11 @@ export default defineConfig({
 - **`sources`** — one entry per schema. The key (`db`) is the
   [namespace](../concepts/namespaces.md): it isolates entities and names the output
   subtree, but never changes generated identifiers.
-- **`generators`** — a set, not a sequence. `angularGenerator` declares
-  `dependsOn: ['zod']`, so `core` runs `zod` first and hands it the artifact — you never
-  order the array yourself. See the [dependency graph](../concepts/dependency-graph.md).
+- **`generators`** — run in the order listed. `zodGenerator` emits the Zod schemas your
+  own code imports (step 6). `angularGenerator` does not need that entry: it declares a
+  private dependency on the Zod generator, so `core` runs its own copy first, into
+  `<namespace>/angular/zod/`, and hands it the artifact. See
+  [Generator dependencies](../concepts/dependency-graph.md).
 - **`outputs`** — a required array of destinations. Each entry has a `mode`:
   - **`mode: 'dir'`** (the default, used here) writes a plain directory tree under `dir`.
   - **`mode: 'package'`** writes one installable npm package per namespace and

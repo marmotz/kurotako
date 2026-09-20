@@ -4,9 +4,15 @@ import path from 'node:path';
 import type { SourceIR } from '@kurotako/ir';
 import { createSourceIR } from '@kurotako/ir';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DriverError, OutputCollisionError } from './errors.js';
+import {
+  DriverError,
+  OutputCollisionError,
+  OutputPeerConflictError,
+  SegmentViolationError,
+} from './errors.js';
 import { run } from './run.js';
 import type {
+  GenerateContext,
   Generator,
   GeneratorArtifact,
   Parser,
@@ -28,24 +34,35 @@ function parser(namespace: string): Parser {
 function generator(
   name: string,
   opts?: {
-    dependsOn?: string[];
-    optionalDependsOn?: string[];
-    onGenerate?: (deps: Record<string, GeneratorArtifact>) => void;
+    dependsOn?: Generator[];
+    onGenerate?: (
+      deps: Record<string, GeneratorArtifact>,
+      ctx: GenerateContext,
+    ) => void;
     throws?: boolean;
+    peers?: Record<string, string>;
+    /** Extra path, relative to the output root, emitted next to the index. */
+    extraFile?: string;
   },
 ): Generator {
   return {
     name,
     dependsOn: opts?.dependsOn,
-    optionalDependsOn: opts?.optionalDependsOn,
-    generate: ({ dependencies }) => {
+    generate: (ctx) => {
       if (opts?.throws) {
         throw new Error('kaboom');
       }
-      opts?.onGenerate?.(dependencies);
+      opts?.onGenerate?.(ctx.dependencies, ctx);
+      const files = Object.keys(ctx.ir.sources).map((namespace) => ({
+        path: `${namespace}/${ctx.segment}/index.ts`,
+        content: `// ${ctx.segment}\n`,
+      }));
+      if (opts?.extraFile) {
+        files.push({ path: opts.extraFile, content: '// extra\n' });
+      }
       return {
-        files: [{ path: `pg/${name}/index.ts`, content: `// ${name}\n` }],
-        artifact: { entities: {} },
+        files,
+        artifact: { entities: {}, peerDependencies: opts?.peers },
       };
     },
   };
@@ -169,25 +186,352 @@ describe('run', () => {
     );
   });
 
-  it('dependencies holds only declared, present deps', async () => {
-    const seen: Record<string, string[]> = {};
+  it('runs generators in declaration order', async () => {
     const cfg = config({
       generators: {
+        angular: { generator: generator('angular') },
         zod: { generator: generator('zod') },
-        angular: {
-          generator: generator('angular', {
-            dependsOn: ['zod'],
-            optionalDependsOn: ['prisma-dmmf'],
-            onGenerate: (deps) => {
-              seen.angular = Object.keys(deps);
-            },
-          }),
-        },
       },
     });
     const result = await run(cfg, { write: false });
-    expect(result.order).toEqual(['zod', 'angular']);
-    expect(seen.angular).toEqual(['zod']);
+    expect(result.order).toEqual(['angular', 'zod']);
+  });
+
+  describe('private generator dependencies', () => {
+    it('runs the dependency first, with segment <name>/<dep> and the dependent namespaces', async () => {
+      const calls: string[] = [];
+      const seen: { segment: string; namespaces: string[] }[] = [];
+      const zod = generator('zod', {
+        onGenerate: (_deps, ctx) => {
+          calls.push('zod');
+          seen.push({
+            segment: ctx.segment,
+            namespaces: Object.keys(ctx.ir.sources),
+          });
+        },
+      });
+      const angular = generator('angular', {
+        dependsOn: [zod],
+        onGenerate: (deps, ctx) => {
+          calls.push('angular');
+          seen.push({
+            segment: ctx.segment,
+            namespaces: Object.keys(ctx.ir.sources),
+          });
+          expect(Object.keys(deps)).toEqual(['zod']);
+        },
+      });
+      await run(
+        config({
+          generators: { angular: { generator: angular } },
+        }),
+        { write: false },
+      );
+      expect(calls).toEqual(['zod', 'angular']);
+      expect(seen).toEqual([
+        { segment: 'angular/zod', namespaces: ['pg'] },
+        { segment: 'angular', namespaces: ['pg'] },
+      ]);
+    });
+
+    it('a private instance covers exactly its dependent namespaces', async () => {
+      const namespaces: string[][] = [];
+      const zod = generator('zod', {
+        onGenerate: (_deps, ctx) => {
+          namespaces.push(Object.keys(ctx.ir.sources));
+        },
+      });
+      await run(
+        config({
+          sources: {
+            pg: { parser: parser('pg') },
+            api: { parser: parser('api') },
+          },
+          generators: {
+            angular: {
+              generator: generator('angular', { dependsOn: [zod] }),
+              namespaces: ['api'],
+            },
+          },
+        }),
+        { write: false },
+      );
+      expect(namespaces).toEqual([['api']]);
+    });
+
+    it('exposes the dependency artifact under its driver name', async () => {
+      const zod: Generator = {
+        name: 'zod',
+        generate: (ctx) => ({
+          files: [{ path: `pg/${ctx.segment}/index.ts`, content: '// zod\n' }],
+          artifact: { entities: {}, extra: { marker: 42 } },
+        }),
+      };
+      let extra: unknown;
+      const angular = generator('angular', {
+        dependsOn: [zod],
+        onGenerate: (deps) => {
+          extra = deps.zod?.extra;
+        },
+      });
+      await run(config({ generators: { angular: { generator: angular } } }), {
+        write: false,
+      });
+      expect(extra).toEqual({ marker: 42 });
+    });
+
+    it('attributes private files to the dependent and keeps them under outputs[].generators', async () => {
+      const cfg = config({
+        generators: {
+          angular: {
+            generator: generator('angular', {
+              dependsOn: [generator('zod')],
+            }),
+          },
+          typescript: { generator: generator('typescript') },
+        },
+        outputs: [{ dir, generators: ['angular'] }],
+      });
+      const result = await run(cfg, { write: false, plan: true });
+      expect(
+        result.plan
+          ?.map((f) => path.relative(dir, f.path))
+          .filter((p) => p !== '.gitattributes'),
+      ).toEqual([
+        'pg/angular/index.ts',
+        'pg/angular/zod/index.ts',
+        'pg/index.ts',
+      ]);
+    });
+
+    it('keeps private artifacts out of RunResult.artifacts', async () => {
+      const result = await run(
+        config({
+          generators: {
+            angular: {
+              generator: generator('angular', {
+                dependsOn: [generator('zod')],
+              }),
+            },
+          },
+        }),
+        { write: false },
+      );
+      expect(Object.keys(result.artifacts)).toEqual(['angular']);
+      expect(result.order).toEqual(['angular']);
+    });
+
+    it('does not re-export the private sub-tree from the root barrel and coexists with a user zod', async () => {
+      const warn = vi.fn();
+      const logger = { debug() {}, info() {}, warn, error() {} };
+      const result = await run(
+        config({
+          generators: {
+            angular: {
+              generator: generator('angular', {
+                dependsOn: [generator('zod')],
+              }),
+            },
+            zod: { generator: generator('zod') },
+          },
+        }),
+        { write: false, logger },
+      );
+      expect(result.files.map((f) => f.path)).toEqual([
+        'pg/angular/index.ts',
+        'pg/angular/zod/index.ts',
+        'pg/index.ts',
+        'pg/zod/index.ts',
+      ]);
+      const barrel = result.files.find((f) => f.path === 'pg/index.ts');
+      expect(barrel?.content).toBe(
+        "// Generated by tako. Do not edit.\nexport * from './angular/index.js';\nexport * from './zod/index.js';\n",
+      );
+      expect(warn).not.toHaveBeenCalled();
+    });
+
+    it('nests segments through a chain of dependencies (a/b/c)', async () => {
+      const segments: string[] = [];
+      const record = (_deps: unknown, ctx: GenerateContext) => {
+        segments.push(ctx.segment);
+      };
+      const c = generator('c', { onGenerate: record });
+      const b = generator('b', { dependsOn: [c], onGenerate: record });
+      const a = generator('a', { dependsOn: [b], onGenerate: record });
+      const result = await run(
+        config({ generators: { a: { generator: a } } }),
+        {
+          write: false,
+        },
+      );
+      expect(segments).toEqual(['a/b/c', 'a/b', 'a']);
+      expect(result.files.map((f) => f.path)).toEqual([
+        'pg/a/b/c/index.ts',
+        'pg/a/b/index.ts',
+        'pg/a/index.ts',
+        'pg/index.ts',
+      ]);
+    });
+
+    it('gives each dependent its own copy when two generators depend on the same driver', async () => {
+      const result = await run(
+        config({
+          generators: {
+            a: { generator: generator('a', { dependsOn: [generator('zod')] }) },
+            b: { generator: generator('b', { dependsOn: [generator('zod')] }) },
+          },
+        }),
+        { write: false },
+      );
+      expect(result.files.map((f) => f.path)).toEqual([
+        'pg/a/index.ts',
+        'pg/a/zod/index.ts',
+        'pg/b/index.ts',
+        'pg/b/zod/index.ts',
+        'pg/index.ts',
+      ]);
+    });
+
+    it('merges private peerDependencies into the dependent artifact', async () => {
+      const result = await run(
+        config({
+          generators: {
+            angular: {
+              generator: generator('angular', {
+                peers: { '@angular/core': '^22', zod: '^4' },
+                dependsOn: [generator('zod', { peers: { zod: '^4' } })],
+              }),
+            },
+          },
+        }),
+        { write: false },
+      );
+      expect(result.artifacts.angular?.peerDependencies).toEqual({
+        '@angular/core': '^22',
+        zod: '^4',
+      });
+    });
+
+    it('takes the private peers when the dependent declares none', async () => {
+      const result = await run(
+        config({
+          generators: {
+            angular: {
+              generator: generator('angular', {
+                dependsOn: [generator('zod', { peers: { zod: '^4' } })],
+              }),
+            },
+          },
+        }),
+        { write: false },
+      );
+      expect(result.artifacts.angular?.peerDependencies).toEqual({ zod: '^4' });
+    });
+
+    it('throws OutputPeerConflictError naming the dependent on a range conflict', async () => {
+      const cfg = config({
+        generators: {
+          angular: {
+            generator: generator('angular', {
+              peers: { zod: '^3' },
+              dependsOn: [generator('zod', { peers: { zod: '^4' } })],
+            }),
+          },
+        },
+      });
+      const error = await run(cfg, { write: false }).catch((e) => e);
+      expect(error).toBeInstanceOf(OutputPeerConflictError);
+      expect(error).toMatchObject({
+        package: 'zod',
+        ranges: ['^3', '^4'],
+        generators: ['angular', 'zod'],
+        dependent: 'angular',
+      });
+      expect(error.message).toContain("generator 'angular'");
+    });
+
+    it('throws SegmentViolationError when a private instance emits outside its segment', async () => {
+      const stray: Generator = {
+        name: 'zod',
+        generate: () => ({
+          files: [{ path: 'pg/zod/index.ts', content: '// hardcoded\n' }],
+          artifact: { entities: {} },
+        }),
+      };
+      const cfg = config({
+        generators: {
+          angular: { generator: generator('angular', { dependsOn: [stray] }) },
+        },
+      });
+      const error = await run(cfg, { write: false }).catch((e) => e);
+      expect(error).toBeInstanceOf(SegmentViolationError);
+      expect(error).toMatchObject({
+        code: 'segment_violation',
+        generator: 'zod',
+        path: 'pg/zod/index.ts',
+        expected: '<namespace>/angular/zod/',
+      });
+    });
+
+    it('does not apply the segment guard to top-level generators', async () => {
+      const cfg = config({
+        generators: {
+          zod: {
+            generator: generator('zod', { extraFile: 'pg/elsewhere/x.ts' }),
+          },
+        },
+      });
+      await expect(run(cfg, { write: false })).resolves.toBeDefined();
+    });
+
+    it('wraps a private failure in a DriverError naming the dependency and its dependent', async () => {
+      const cfg = config({
+        generators: {
+          angular: {
+            generator: generator('angular', {
+              dependsOn: [generator('zod', { throws: true })],
+            }),
+          },
+        },
+      });
+      const error = await run(cfg, { write: false }).catch((e) => e);
+      expect(error).toBeInstanceOf(DriverError);
+      expect(error).toMatchObject({
+        role: 'generator',
+        driverName: 'zod',
+        dependencyOf: 'angular',
+      });
+      expect(error.message).toContain("dependency of 'angular'");
+    });
+
+    it('tags a private instance logger with its dependent', async () => {
+      const info = vi.fn();
+      const zod: Generator = {
+        name: 'zod',
+        generate: (ctx) => {
+          ctx.logger.info('hello');
+          return {
+            files: [{ path: `pg/${ctx.segment}/index.ts`, content: '//\n' }],
+            artifact: { entities: {} },
+          };
+        },
+      };
+      await run(
+        config({
+          generators: {
+            angular: { generator: generator('angular', { dependsOn: [zod] }) },
+          },
+        }),
+        {
+          write: false,
+          logger: { debug() {}, info, warn() {}, error() {} },
+        },
+      );
+      expect(info).toHaveBeenCalledWith('hello', {
+        generator: 'zod',
+        dependencyOf: 'angular',
+      });
+    });
   });
 
   it('rejects before parsing when opts.signal is already aborted', async () => {
@@ -235,7 +579,7 @@ describe('run', () => {
     const cfg = config({
       generators: {
         zod: { generator: generator('zod') },
-        angular: { generator: generator('angular', { dependsOn: ['zod'] }) },
+        angular: { generator: generator('angular') },
       },
     });
     const result = await run(cfg, { write: false });
@@ -440,6 +784,24 @@ describe('run', () => {
       );
       expect(arg).toHaveBeenCalledWith(dir);
     });
+  });
+
+  it('passes the generator name as the context segment', async () => {
+    let seen: string | undefined;
+    const gen: Generator = {
+      name: 'zod',
+      generate: (ctx) => {
+        seen = ctx.segment;
+        return {
+          files: [{ path: 'pg/zod/index.ts', content: '// zod\n' }],
+          artifact: { entities: {} },
+        };
+      },
+    };
+    await run(config({ generators: { zod: { generator: gen } } }), {
+      write: false,
+    });
+    expect(seen).toBe('zod');
   });
 
   it('exposes ref-cycle members to the generator context, namespace-qualified', async () => {

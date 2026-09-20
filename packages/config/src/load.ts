@@ -8,6 +8,7 @@
  */
 import { isAbsolute, resolve } from 'node:path';
 import type {
+  Generator,
   GeneratorConfig,
   OutputConfig,
   ResolvedConfig,
@@ -19,8 +20,11 @@ import {
   type ConfigIssue,
   ConfigLoadError,
   ConfigShapeError,
+  DependencyCycleError,
   DriverOptionsError,
+  DuplicateDependencyError,
   DuplicateGeneratorError,
+  LegacyDependencyError,
   NoDefaultExportError,
   UnknownGeneratorError,
   UnknownNamespaceError,
@@ -28,6 +32,7 @@ import {
 import { resolveConfigFile } from './resolve.js';
 import { normalizeIssues, TakoConfigSchema } from './schema.js';
 import type {
+  GeneratorDependency,
   GeneratorEntry,
   SourceEntry,
   TakoGenerator,
@@ -170,21 +175,14 @@ export async function loadConfig(opts?: {
 
   const generators: Record<string, GeneratorConfig> = {};
   for (const entry of generatorEntries) {
-    const use = entry.use as unknown as TakoGenerator<unknown>;
-    const parsedOptions = parseDriverOptions(
-      'generator',
-      use.name,
-      use.optionsSchema,
+    const { generator, options } = curryGenerator(
+      entry.use as unknown as TakoGenerator<unknown>,
       entry.options,
+      [],
     );
-    generators[use.name] = {
-      generator: {
-        name: use.name,
-        dependsOn: use.dependsOn,
-        optionalDependsOn: use.optionalDependsOn,
-        generate: (ctx) => use.generate(ctx, parsedOptions),
-      },
-      options: parsedOptions,
+    generators[generator.name] = {
+      generator,
+      options,
       namespaces: entry.namespaces,
     };
   }
@@ -219,6 +217,120 @@ export async function loadConfig(opts?: {
   return { config: resolved, configFile, rootDir };
 }
 
+/**
+ * Validate a generator's options, resolve its private dependencies (the function
+ * form of `dependsOn` is called with the validated options) and curry the whole
+ * chain into a core `Generator`. Used for top-level entries and, recursively, for
+ * dependency descriptors. `ancestry` is the chain of driver names above `use`;
+ * `via` names the direct dependent for error messages.
+ */
+function curryGenerator(
+  use: TakoGenerator<unknown>,
+  options: unknown,
+  ancestry: string[],
+  via?: string,
+): { generator: Generator; options: unknown } {
+  if (ancestry.includes(use.name)) {
+    throw new DependencyCycleError([...ancestry, use.name]);
+  }
+  if (
+    (use as { optionalDependsOn?: unknown }).optionalDependsOn !== undefined
+  ) {
+    throw new LegacyDependencyError(use.name, "'optionalDependsOn'");
+  }
+  const parsedOptions = parseDriverOptions(
+    'generator',
+    use.name,
+    use.optionsSchema,
+    options,
+    undefined,
+    via,
+  );
+
+  const chain = [...ancestry, use.name];
+  const seen = new Set<string>();
+  const dependsOn = resolveDependencies(use, parsedOptions).map(
+    (dependency) => {
+      const name = dependency.use.name;
+      if (seen.has(name)) {
+        throw new DuplicateDependencyError(use.name, name);
+      }
+      seen.add(name);
+      return curryGenerator(
+        dependency.use as unknown as TakoGenerator<unknown>,
+        dependency.options,
+        chain,
+        use.name,
+      ).generator;
+    },
+  );
+
+  const generator: Generator = {
+    name: use.name,
+    generate: (ctx) => use.generate(ctx, parsedOptions),
+  };
+  if (dependsOn.length > 0) {
+    generator.dependsOn = dependsOn;
+  }
+  return { generator, options: parsedOptions };
+}
+
+/** The descriptors `use.dependsOn` yields for `options`, shape-checked. */
+function resolveDependencies(
+  use: TakoGenerator<unknown>,
+  options: unknown,
+): GeneratorDependency[] {
+  const path = `generators.${use.name}.dependsOn`;
+  let declared: unknown = use.dependsOn;
+  if (typeof declared === 'function') {
+    try {
+      declared = (declared as (options: unknown) => unknown)(options);
+    } catch (cause) {
+      const detail = cause instanceof Error ? cause.message : String(cause);
+      throw new ConfigShapeError([
+        { path, message: `dependsOn() threw: ${detail}` },
+      ]);
+    }
+  }
+  if (declared === undefined) {
+    return [];
+  }
+  if (!Array.isArray(declared)) {
+    throw new ConfigShapeError([
+      {
+        path,
+        message: 'dependsOn must be an array of { use, options? } descriptors',
+      },
+    ]);
+  }
+  return declared.map((entry: unknown, index) => {
+    if (typeof entry === 'string') {
+      throw new LegacyDependencyError(
+        use.name,
+        `the name-based dependency '${entry}' in dependsOn`,
+      );
+    }
+    const dependency = entry as {
+      use?: { name?: unknown; generate?: unknown };
+    };
+    if (
+      typeof entry !== 'object' ||
+      entry === null ||
+      typeof dependency.use?.name !== 'string' ||
+      typeof dependency.use.generate !== 'function'
+    ) {
+      throw new ConfigShapeError([
+        {
+          path: `${path}.${index}`,
+          message:
+            'expected a { use: <generator driver>, options? } descriptor',
+        },
+      ]);
+    }
+    return entry as GeneratorDependency;
+  });
+}
+
 function absolutize(p: string, rootDir: string): string {
   return isAbsolute(p) ? p : resolve(rootDir, p);
 }
@@ -229,6 +341,7 @@ function parseDriverOptions(
   schema: v.GenericSchema<unknown, unknown> | undefined,
   options: unknown,
   namespace?: string,
+  via?: string,
 ): unknown {
   if (schema) {
     // Every `optionsSchema` is an object schema (`v.object` / `v.strictObject`).
@@ -243,6 +356,7 @@ function parseDriverOptions(
         name,
         normalizeIssues(result.issues),
         namespace,
+        via,
       );
     }
     return result.output;
@@ -261,6 +375,7 @@ function parseDriverOptions(
         },
       ],
       namespace,
+      via,
     );
   }
   return options;

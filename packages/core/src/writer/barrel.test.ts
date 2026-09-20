@@ -90,6 +90,37 @@ describe('synthesizeRootBarrels', () => {
     });
   });
 
+  it('excludes a private sub-tree nested under a generator and warns about nothing next to a user zod', () => {
+    const log = logger();
+    const barrels = synthesizeRootBarrels(
+      [
+        {
+          path: 'pg/angular/index.ts',
+          content: "export * from './form';\n",
+        },
+        { path: 'pg/angular/form.ts', content: 'export const Form = {}\n' },
+        // Private Zod copy owned by angular: not exported from angular/index.ts.
+        {
+          path: 'pg/angular/zod/index.ts',
+          content: "export * from './User';\n",
+        },
+        { path: 'pg/angular/zod/User.ts', content: 'export const User = {}\n' },
+        { path: 'pg/zod/index.ts', content: "export * from './User';\n" },
+        { path: 'pg/zod/User.ts', content: 'export const User = {}\n' },
+      ],
+      undefined,
+      log,
+    );
+    expect(barrels).toEqual([
+      {
+        path: 'pg/index.ts',
+        content:
+          "export * from './angular/index.js';\nexport * from './zod/index.js';\n",
+      },
+    ]);
+    expect(log.warn).not.toHaveBeenCalled();
+  });
+
   function manyCollisions(names: string[]): VirtualFile[] {
     const gen = (g: string, decl: (n: string) => string): VirtualFile[] => [
       {

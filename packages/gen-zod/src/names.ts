@@ -2,8 +2,8 @@
  * Deterministic identifier and module-specifier helpers.
  *
  * Identifiers are never namespace-prefixed (ADR-0004); the namespace only drives
- * the output location. The `zod/` sub-tree segment on every module specifier is
- * the output-modes amendment (one sub-tree per generator).
+ * the output location. The sub-tree segment on every module specifier comes from
+ * `GenerateContext.segment` (one sub-tree per generator, nested when private).
  */
 
 /** PascalCase variant token embedded in a schema/type identifier. */
@@ -99,27 +99,37 @@ export function refSchemaName(name: string): string {
 
 // --- module specifiers (POSIX, extension-less) -------------------------------
 
-/** `${ns}/zod/${entity}.schema`. */
-export function entityModule(namespace: string, entity: string): string {
-  return `${namespace}/zod/${entity}.schema`;
+/*
+ * `segment` is `GenerateContext.segment`: `zod` when the generator runs as a
+ * top-level entry, `angular/zod` when it runs as a private dependency of
+ * `gen-angular`.
+ */
+
+/** `${ns}/${segment}/${entity}.schema`. */
+export function entityModule(
+  namespace: string,
+  segment: string,
+  entity: string,
+): string {
+  return `${namespace}/${segment}/${entity}.schema`;
 }
 
-/** `${ns}/zod/enums`. */
-export function enumsModule(namespace: string): string {
-  return `${namespace}/zod/enums`;
+/** `${ns}/${segment}/enums`. */
+export function enumsModule(namespace: string, segment: string): string {
+  return `${namespace}/${segment}/enums`;
 }
 
-/** `${ns}/zod/filters`. */
-export function filtersModule(namespace: string): string {
-  return `${namespace}/zod/filters`;
+/** `${ns}/${segment}/filters`. */
+export function filtersModule(namespace: string, segment: string): string {
+  return `${namespace}/${segment}/filters`;
 }
 
-/** `${ns}/zod/aliases`. */
-export function aliasModule(namespace: string): string {
-  return `${namespace}/zod/aliases`;
+/** `${ns}/${segment}/aliases`. */
+export function aliasModule(namespace: string, segment: string): string {
+  return `${namespace}/${segment}/aliases`;
 }
 
-/** `${ns}/zod` — this generator's own barrel. */
-export function barrelModule(namespace: string): string {
-  return `${namespace}/zod`;
+/** `${ns}/${segment}` — this generator's own barrel. */
+export function barrelModule(namespace: string, segment: string): string {
+  return `${namespace}/${segment}`;
 }

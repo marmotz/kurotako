@@ -42,23 +42,27 @@ function zodEntitySymbols(entity: string): Record<string, string> {
   };
 }
 
-/** A fake `gen-zod` artifact for `ir`, matching its real naming convention. */
+/**
+ * A fake `gen-zod` artifact for `ir`, matching its real naming convention and the
+ * segment `gen-angular` runs it under: a private dependency, so `angular/zod`.
+ */
 export function fakeZodArtifact(
   ir: IR,
   opts?: { zodVersion?: 3 | 4 },
 ): GeneratorArtifact {
+  const zod = 'angular/zod';
   const entities: Record<string, EntitySymbols> = {};
   const perNamespace: ZodArtifactExtra['perNamespace'] = {};
 
   for (const { namespace, entity } of iterEntities(ir)) {
     entities[`${namespace}.${entity.name}`] = {
-      module: `${namespace}/zod/${entity.name}.schema`,
+      module: `${namespace}/${zod}/${entity.name}.schema`,
       symbols: zodEntitySymbols(entity.name),
     };
   }
   for (const { namespace, alias } of iterTypeAliases(ir)) {
     entities[`${namespace}.${alias.name}`] = {
-      module: `${namespace}/zod/aliases`,
+      module: `${namespace}/${zod}/aliases`,
       symbols: { schema: `${alias.name}Schema`, type: alias.name },
     };
   }
@@ -70,13 +74,13 @@ export function fakeZodArtifact(
         constName: def.name,
         schemaName: `${def.name}Schema`,
         typeName: def.name,
-        module: `${namespace}/zod/enums`,
+        module: `${namespace}/${zod}/enums`,
       };
     }
     perNamespace[namespace] = {
-      enumsModule: `${namespace}/zod/enums`,
-      filtersModule: `${namespace}/zod/filters`,
-      barrelModule: `${namespace}/zod`,
+      enumsModule: `${namespace}/${zod}/enums`,
+      filtersModule: `${namespace}/${zod}/filters`,
+      barrelModule: `${namespace}/${zod}`,
       enums,
     };
   }
@@ -108,7 +112,7 @@ export function runGenerator(
     }
   }
   const out = angularGenerator.generate(
-    { ir, dependencies: { zod }, cycles, logger },
+    { ir, dependencies: { zod }, cycles, segment: 'angular', logger },
     options,
   );
   if (out instanceof Promise) {

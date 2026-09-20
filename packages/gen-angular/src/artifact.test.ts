@@ -11,6 +11,7 @@ describe('buildArtifact', () => {
     const artifact = buildArtifact(ir, zod, {
       forms: ['reactive', 'signal'],
       relations: 'flat',
+      zodVersion: 4,
     });
     expect(Object.keys(artifact.entities)).toEqual(['blog.User', 'blog.Post']);
     expect(artifact.entities['blog.User']?.module).toBe(
@@ -22,6 +23,7 @@ describe('buildArtifact', () => {
     const artifact = buildArtifact(ir, zod, {
       forms: ['reactive', 'signal'],
       relations: 'flat',
+      zodVersion: 4,
     });
     const symbols = artifact.entities['blog.User']?.symbols ?? {};
     expect(symbols).toMatchObject({
@@ -43,6 +45,7 @@ describe('buildArtifact', () => {
     const artifact = buildArtifact(ir, zod, {
       forms: ['reactive'],
       relations: 'deep',
+      zodVersion: 4,
     });
     const symbols = artifact.entities['blog.User']?.symbols ?? {};
     expect(symbols.createDeepControls).toBe('UserCreateDeepFormControls');
@@ -53,6 +56,7 @@ describe('buildArtifact', () => {
     const artifact = buildArtifact(ir, zod, {
       forms: ['signal'],
       relations: 'deep',
+      zodVersion: 4,
     });
     expect(artifact.extra).toMatchObject({
       forms: ['signal'],
@@ -65,6 +69,7 @@ describe('buildArtifact', () => {
     const withSignal = buildArtifact(ir, zod, {
       forms: ['signal'],
       relations: 'flat',
+      zodVersion: 4,
     });
     expect(withSignal.peerDependencies).toEqual({
       '@angular/core': '>=22',
@@ -74,6 +79,7 @@ describe('buildArtifact', () => {
     const reactiveOnly = buildArtifact(ir, zod, {
       forms: ['reactive'],
       relations: 'flat',
+      zodVersion: 4,
     });
     expect(reactiveOnly.peerDependencies).toEqual({
       '@angular/core': '>=17',
@@ -86,6 +92,7 @@ describe('buildArtifact', () => {
     const artifact = buildArtifact(unionIr, fakeZodArtifact(unionIr), {
       forms: ['reactive'],
       relations: 'flat',
+      zodVersion: 4,
     });
     expect(artifact.entities['pay.Metadata']).toBeUndefined();
     expect(artifact.entities['pay.Invoice']?.module).toBe(
@@ -97,6 +104,7 @@ describe('buildArtifact', () => {
     const artifact = buildArtifact(ir, zod, {
       forms: ['reactive'],
       relations: 'flat',
+      zodVersion: 4,
     });
     const extra = artifact.extra as { perNamespace: Record<string, unknown> };
     expect(extra.perNamespace.blog).toEqual({

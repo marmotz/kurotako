@@ -1,13 +1,15 @@
 /**
  * `angularGenerator` — the `@kurotako/gen-angular` driver.
  *
- * Hard `dependsOn: ['zod']`: core rejects a config that enables `angular`
- * without `zod`, and the topological order guarantees `ctx.dependencies.zod` is
- * always present here. `generate` is synchronous and pure: same IR + same Zod
- * artifact + same options -> deep-equal `GenOutput` (drift-guard requirement).
+ * Private dependency on `zodGenerator`: core runs a copy of it for this generator
+ * alone, before it, into `<ns>/angular/zod/`, and hands its artifact over as
+ * `ctx.dependencies.zod`. The user needs no `zod` entry in the config. `generate`
+ * is synchronous and pure: same IR + same Zod artifact + same options ->
+ * deep-equal `GenOutput` (drift-guard requirement).
  */
 import { defineGenerator } from '@kurotako/config';
 import type { GenerateContext, GenOutput, VirtualFile } from '@kurotako/core';
+import { zodGenerator } from '@kurotako/gen-zod';
 import { buildArtifact } from './artifact.js';
 import { emitBarrel } from './emit/barrel.js';
 import { emitEntity } from './emit/entity.js';
@@ -16,14 +18,16 @@ import { AngularGeneratorOptions } from './options.js';
 
 export const angularGenerator = defineGenerator({
   name: 'angular',
-  dependsOn: ['zod'],
+  dependsOn: (options) => [
+    { use: zodGenerator, options: { zodVersion: options.zodVersion } },
+  ],
   optionsSchema: AngularGeneratorOptions,
 
   generate(ctx: GenerateContext, options): GenOutput {
     const zod = ctx.dependencies.zod;
     if (zod === undefined) {
       throw new Error(
-        "gen-angular: 'zod' dependency artifact is missing at runtime despite dependsOn: ['zod']",
+        "gen-angular: the private 'zod' dependency artifact is missing at runtime despite dependsOn",
       );
     }
 

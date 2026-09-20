@@ -9,11 +9,13 @@ const noopLogger = { debug() {}, info() {}, warn() {}, error() {} };
 function run(
   ir: IR,
   options: Parameters<typeof openapiGenerator.generate>[1],
+  segment = 'openapi',
 ): GenOutput {
   const ctx: GenerateContext = {
     ir,
     dependencies: {},
     cycles: new Set(),
+    segment,
     logger: noopLogger,
   };
   const out = openapiGenerator.generate(ctx, options);
@@ -30,6 +32,16 @@ const jsonOptions = {
 };
 
 describe('openapiGenerator.generate', () => {
+  it('emits under the context segment when it is not the default', () => {
+    const out = run(irOf(blogSource()), jsonOptions, 'a/openapi');
+    expect(out.files.map((f) => f.path)).toEqual([
+      'blog/a/openapi/openapi.json',
+    ]);
+    for (const entity of Object.values(out.artifact.entities)) {
+      expect(entity.module).toBe('blog/a/openapi/openapi.json');
+    }
+  });
+
   it('emits one openapi.json file per namespace', () => {
     const out = run(irOf(blogSource(), geoSource()), jsonOptions);
     expect(out.files.map((f) => f.path)).toEqual([

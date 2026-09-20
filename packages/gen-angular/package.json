@@ -48,18 +48,17 @@
     "access": "public"
   },
   "dependencies": {
+    "@kurotako/gen-zod": "workspace:^",
     "@kurotako/ir": "workspace:^",
     "valibot": "1.4.2"
   },
   "peerDependencies": {
     "@kurotako/config": "workspace:^",
-    "@kurotako/core": "workspace:^",
-    "@kurotako/gen-zod": "workspace:^"
+    "@kurotako/core": "workspace:^"
   },
   "devDependencies": {
     "@kurotako/config": "workspace:^",
     "@kurotako/core": "workspace:^",
-    "@kurotako/gen-zod": "workspace:^",
     "typescript": "5.9.3"
   }
 }

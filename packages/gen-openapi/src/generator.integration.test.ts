@@ -69,6 +69,7 @@ describe('openapiGenerator — integration', () => {
           },
           dependencies: {},
           cycles: new Set(),
+          segment: 'openapi',
           logger: { debug() {}, info() {}, warn() {}, error() {} },
         },
         { openapiVersion, format: 'json', version: '1.0.0' },

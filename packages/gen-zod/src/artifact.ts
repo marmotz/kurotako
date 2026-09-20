@@ -89,18 +89,19 @@ function entitySymbols(entity: string): Record<string, string> {
 export function buildArtifact(
   ir: IR,
   opts: ZodGeneratorOptions,
+  segment: string,
 ): GeneratorArtifact {
   const entities: Record<string, EntitySymbols> = {};
   for (const { namespace, entity } of iterEntities(ir)) {
     entities[`${namespace}.${entity.name}`] = {
-      module: entityModule(namespace, entity.name),
+      module: entityModule(namespace, segment, entity.name),
       symbols: entitySymbols(entity.name),
     };
   }
   for (const [namespace, source] of Object.entries(ir.sources)) {
     for (const alias of nonRedundantTypeAliases(source)) {
       entities[`${namespace}.${alias.name}`] = {
-        module: aliasModule(namespace),
+        module: aliasModule(namespace, segment),
         symbols: {
           schema: aliasSchemaName(alias.name),
           type: aliasTypeName(alias.name),
@@ -117,13 +118,13 @@ export function buildArtifact(
         constName: enumConst(def.name),
         schemaName: enumSchemaName(def.name),
         typeName: enumTypeName(def.name),
-        module: enumsModule(namespace),
+        module: enumsModule(namespace, segment),
       };
     }
     perNamespace[namespace] = {
-      enumsModule: enumsModule(namespace),
-      filtersModule: filtersModule(namespace),
-      barrelModule: barrelModule(namespace),
+      enumsModule: enumsModule(namespace, segment),
+      filtersModule: filtersModule(namespace, segment),
+      barrelModule: barrelModule(namespace, segment),
       enums,
     };
   }

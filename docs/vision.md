@@ -14,7 +14,7 @@ Do not position this as "yet another Prisma → Zod generator": that ground is o
 Differentiators:
 
 1. **Pipeline architecture with interchangeable drivers**, not a plugin locked onto a single stack. One `parser` input,
-   N `generator` outputs connected by a dependency graph.
+   N `generator` outputs wired by private generator dependencies.
 2. **Angular as an output from the very first generator**: a blind spot of the current ecosystem, which targets React
    almost exclusively.
 3. **Multiple sources**: several `parsers` active in parallel (e.g. Prisma for PostgreSQL
@@ -28,7 +28,7 @@ Differentiators:
    (`zodValidator(schema)` on the group), not re-derived as Angular `Validators`.
 4. `cli`: `tako` binary orchestrating the pipeline against a real project.
 
-Supporting pieces: `@kurotako/ir` (shared types), `@kurotako/core` (orchestration, DAG resolution, IR merge by
+Supporting pieces: `@kurotako/ir` (shared types), `@kurotako/core` (orchestration, private generator dependencies, IR merge by
 namespace), config system, output modes.
 
 ## Out of scope for v1
@@ -49,7 +49,8 @@ namespace), config system, output modes.
   **`@kurotako/*`**, CLI binary **`tako`**. The octopus metaphor (a central body, semi-autonomous
   arms each acting on their own) mirrors the target architecture (a `core` + independent
   `generators`).
-- No "middle" stage: generators form a DAG via `dependsOn`, the core computes the topological order.
+- No "middle" stage, no generator DAG: generators run in declaration order and a generator that needs another one
+  declares it as a private dependency (`dependsOn: [{ use, options? }]`), run by core as an instance owned by the dependent.
 - Several parsers active simultaneously, each config key is a namespace, the same parser package can be instantiated
   several times.
 - IR keyed `(namespace, entity)`, no merging of homonyms, generated identifiers are deterministic (never prefixed), the
@@ -71,7 +72,7 @@ The cross-cutting questions raised during the design phase were all settled; eac
 2. **IR `ScalarType` set** — closed union (`string`, `boolean`, `int`, `bigint`, `float`, `decimal`, `date`,
    `datetime`, `uuid`, `bytes`, `json`) with an `unknown` escape hatch. `decimal` / `bigint` / `json` / `bytes` are
    named scalars only; runtime representation is each generator's call. See [ir.md](ir.md).
-3. **`dependsOn` contract** — a structured `GeneratorArtifact` (`{ entities, peerDependencies?, extra? }`); dependents
+3. **`dependsOn` contract** — a private generator descriptor, whose output is a structured `GeneratorArtifact` (`{ entities, peerDependencies?, extra? }`); dependents
    read exported symbol names, never raw file paths. See [architecture.md](architecture.md#artifact-handle-generatorartifact).
 4. **v1 relations** — modelled in full: logical relation + cardinality + `optional` + owning side + back-relation +
    explicit FK field(s) + `references` + `onDelete` / `onUpdate`. Implicit m2m is expanded to an explicit join entity.

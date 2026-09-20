@@ -3,14 +3,15 @@
 The Angular generator for [kurotako](https://kurotako.marmotz.dev/): emits Angular types
 and typed `FormGroup`s from kurotako's intermediate representation.
 
-Depends on `@kurotako/gen-zod`: it declares `dependsOn: ['zod']`, so `core` always runs
-the Zod generator first. List both in `generators`.
+Embeds `@kurotako/gen-zod` as a private dependency: `core` runs its own copy of the Zod
+generator for it, into `<namespace>/angular/zod/`, so you do not list `zodGenerator` in
+`generators`. Set the Zod flavor with the `zodVersion` option (default `4`).
 
 ## Install
 
 ```bash
-npm install -D @kurotako/gen-angular @kurotako/gen-zod
-# bun add -d @kurotako/gen-angular @kurotako/gen-zod
+npm install -D @kurotako/gen-angular
+# bun add -d @kurotako/gen-angular
 ```
 
 Needs **Node.js >= 24**; runs unmodified on Node and Bun.
@@ -19,12 +20,11 @@ Needs **Node.js >= 24**; runs unmodified on Node and Bun.
 
 ```ts title="tako.config.ts"
 import { defineConfig } from 'kurotako';
-import { zodGenerator } from '@kurotako/gen-zod';
 import { angularGenerator } from '@kurotako/gen-angular';
 
 export default defineConfig({
   sources: {/* ... */},
-  generators: [{ use: zodGenerator }, { use: angularGenerator }],
+  generators: [{ use: angularGenerator }],
   outputs: [{ dir: './generated/kurotako' }],
 });
 ```

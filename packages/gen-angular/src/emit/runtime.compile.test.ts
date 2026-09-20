@@ -228,11 +228,17 @@ async function generate(
     }
   }
   const zodOut = await zodGenerator.generate(
-    { ir, dependencies: {}, cycles, logger: noopLogger },
+    { ir, dependencies: {}, cycles, segment: 'zod', logger: noopLogger },
     { zodVersion: 4 },
   );
   const angularOut = await angularGenerator.generate(
-    { ir, dependencies: { zod: zodOut.artifact }, cycles, logger: noopLogger },
+    {
+      ir,
+      dependencies: { zod: zodOut.artifact },
+      cycles,
+      segment: 'angular',
+      logger: noopLogger,
+    },
     options,
   );
   return [...zodOut.files, ...angularOut.files];
@@ -243,6 +249,7 @@ describe('generated output compiles against real @angular/forms/signals shapes',
     const files = await generate({
       forms: ['reactive', 'signal'],
       relations: 'flat',
+      zodVersion: 4,
     });
     const diagnostics = await typecheck(files);
     expect(formatDiagnostics(diagnostics)).toBe('');
@@ -252,20 +259,25 @@ describe('generated output compiles against real @angular/forms/signals shapes',
     const files = await generate({
       forms: ['reactive', 'signal'],
       relations: 'deep',
+      zodVersion: 4,
     });
     const diagnostics = await typecheck(files);
     expect(formatDiagnostics(diagnostics)).toBe('');
   });
 
   it('relations: deep, forms: [signal] only', async () => {
-    const files = await generate({ forms: ['signal'], relations: 'deep' });
+    const files = await generate({
+      forms: ['signal'],
+      relations: 'deep',
+      zodVersion: 4,
+    });
     const diagnostics = await typecheck(files);
     expect(formatDiagnostics(diagnostics)).toBe('');
   });
 
   it('union type: discriminated sub-FormGroup + free-control fallback, forms: [reactive, signal]', async () => {
     const files = await generate(
-      { forms: ['reactive', 'signal'], relations: 'flat' },
+      { forms: ['reactive', 'signal'], relations: 'flat', zodVersion: 4 },
       unionIr(),
     );
     const diagnostics = await typecheck(files);
@@ -274,7 +286,7 @@ describe('generated output compiles against real @angular/forms/signals shapes',
 
   it('union type: discriminated sub-FormGroup, relations: deep', async () => {
     const files = await generate(
-      { forms: ['reactive'], relations: 'deep' },
+      { forms: ['reactive'], relations: 'deep', zodVersion: 4 },
       unionIr(),
     );
     const diagnostics = await typecheck(files);

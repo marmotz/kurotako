@@ -44,7 +44,7 @@ Writes a commented `tako.config.ts`.
 ## `tako generate`
 
 Runs the full pipeline: `loadConfig` → parse each source → merge and validate the IR →
-resolve the generator DAG → run every generator → write the files → run `hooks.afterEmit`.
+run every generator (private dependencies first) → write the files → run `hooks.afterEmit`.
 
 | Flag | Effect |
 |---|---|
@@ -56,7 +56,7 @@ Fail-fast: the first error stops the run (except under `--watch`, which keeps go
 ## `tako validate`
 
 The same checks as `generate` up to — but not including — emission. Exercises parsing,
-IR validation, the generator DAG and every `generate()` call, then stops before the
+IR validation and every `generate()` call, then stops before the
 writer. Prints `config and schema are valid` and exits `0`, or exits `1` on the first
 `TakoError`. This is the CI-facing verb.
 

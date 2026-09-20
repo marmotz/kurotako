@@ -25,11 +25,11 @@ export const openapiGenerator = defineGenerator({
     for (const [namespace, source] of Object.entries(ctx.ir.sources)) {
       const document = buildDocument(source, options, namespace, ctx.logger);
       files.push({
-        path: `${namespace}/openapi/openapi.${ext}`,
+        path: `${namespace}/${ctx.segment}/openapi.${ext}`,
         content: serialize(document, options.format),
       });
     }
 
-    return { files, artifact: buildArtifact(ctx.ir, options) };
+    return { files, artifact: buildArtifact(ctx.ir, options, ctx.segment) };
   },
 });

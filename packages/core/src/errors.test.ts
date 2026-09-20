@@ -1,10 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DependencyCycleError,
   DriverError,
   DuplicateNamespaceError,
   HookError,
-  InvalidDependencyError,
   InvalidOutputPathError,
   IrValidationError,
   MissingPackageWorkspaceFilesError,
@@ -14,8 +12,8 @@ import {
   OutputPeerConflictError,
   PackageBuildError,
   PackageInstallError,
+  SegmentViolationError,
   TakoError,
-  UnknownDependencyError,
   UnsupportedOutputModeError,
 } from './errors.js';
 
@@ -25,10 +23,15 @@ describe('errors', () => {
       [new NamespaceMismatchError('pg', 'sqlite'), 'namespace_mismatch'],
       [new IrValidationError([], 'pg'), 'ir_invalid'],
       [new DuplicateNamespaceError('pg'), 'duplicate_namespace'],
-      [new UnknownDependencyError('angular', 'zod'), 'unknown_dependency'],
-      [new InvalidDependencyError('angular', 'zod'), 'invalid_dependency'],
-      [new DependencyCycleError(['a', 'b', 'a']), 'dependency_cycle'],
       [new OutputCollisionError('x', ['a', 'b']), 'output_collision'],
+      [
+        new SegmentViolationError(
+          'zod',
+          'pg/zod/x.ts',
+          '<namespace>/angular/zod/',
+        ),
+        'segment_violation',
+      ],
       [new InvalidOutputPathError('../x', 'a'), 'invalid_output_path'],
       [
         new OutputNotGeneratedError('/pkgs/kurotako-pg'),
@@ -54,6 +57,29 @@ describe('errors', () => {
       expect(error.code).toBe(code);
       expect(error.name).toBe(error.constructor.name);
     }
+  });
+
+  it('DriverError names the dependent of a private instance', () => {
+    const error = new DriverError('generator', 'zod', {
+      dependencyOf: 'angular',
+    });
+    expect(error.dependencyOf).toBe('angular');
+    expect(error.message).toBe(
+      "generator 'zod' (dependency of 'angular') threw during generate",
+    );
+  });
+
+  it('OutputPeerConflictError names the dependent when merging private peers', () => {
+    const error = new OutputPeerConflictError(
+      undefined,
+      'zod',
+      ['^3', '^4'],
+      ['angular', 'zod'],
+      'angular',
+    );
+    expect(error.message).toBe(
+      "generators [angular, zod] declare peer 'zod' with conflicting ranges [^3, ^4] (merged into the peers of generator 'angular')",
+    );
   });
 
   it('MissingPackageWorkspaceFilesError embeds ready-to-paste file content per missing item', () => {

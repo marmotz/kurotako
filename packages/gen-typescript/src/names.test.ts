@@ -57,10 +57,26 @@ describe('name constants and module helpers', () => {
   });
 
   it('uses the typescript output sub-tree in every module specifier', () => {
-    expect(entityModule('blog', 'User')).toBe('blog/typescript/User.type');
-    expect(enumsModule('blog')).toBe('blog/typescript/enums');
-    expect(filtersModule('blog')).toBe('blog/typescript/filters');
-    expect(scalarsModule('blog')).toBe('blog/typescript/scalars');
-    expect(barrelModule('blog')).toBe('blog/typescript');
+    expect(entityModule('blog', 'typescript', 'User')).toBe(
+      'blog/typescript/User.type',
+    );
+    expect(enumsModule('blog', 'typescript')).toBe('blog/typescript/enums');
+    expect(filtersModule('blog', 'typescript')).toBe('blog/typescript/filters');
+    expect(scalarsModule('blog', 'typescript')).toBe('blog/typescript/scalars');
+    expect(barrelModule('blog', 'typescript')).toBe('blog/typescript');
+  });
+
+  it('honors a nested segment in every module specifier', () => {
+    expect(entityModule('blog', 'a/typescript', 'User')).toBe(
+      'blog/a/typescript/User.type',
+    );
+    expect(enumsModule('blog', 'a/typescript')).toBe('blog/a/typescript/enums');
+    expect(filtersModule('blog', 'a/typescript')).toBe(
+      'blog/a/typescript/filters',
+    );
+    expect(scalarsModule('blog', 'a/typescript')).toBe(
+      'blog/a/typescript/scalars',
+    );
+    expect(barrelModule('blog', 'a/typescript')).toBe('blog/a/typescript');
   });
 });

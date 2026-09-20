@@ -6,8 +6,9 @@ The package mirrors [`gen-angular`](../../_archives/features/generator-angular/t
 
 ## Current state (verified)
 
-- `gen-angular` is the template: `defineGenerator({ name, dependsOn: ['zod'], optionsSchema,
-  generate })`, one `<Entity>.form.ts` per entity, a per-namespace runtime file, a sub-tree
+- `gen-angular` is the template: `defineGenerator({ name, dependsOn: [{ use: zodGenerator, … }],
+  optionsSchema, generate })` (private Zod dependency, see
+  [implicit-generator-dependencies](../implicit-generator-dependencies/technical.md)), one `<Entity>.form.ts` per entity, a per-namespace runtime file, a sub-tree
   barrel, and `buildArtifact` ([generator.ts:17](../../../packages/gen-angular/src/generator.ts),
   [artifact.ts](../../../packages/gen-angular/src/artifact.ts)). It reads the Zod artifact through a
   typed reader ([zod-artifact.ts](../../../packages/gen-angular/src/zod-artifact.ts)) and emits
@@ -18,13 +19,12 @@ The package mirrors [`gen-angular`](../../_archives/features/generator-angular/t
   ([gen-zod artifact.ts:66](../../../packages/gen-zod/src/artifact.ts)); the plain schema covers every
   entity field ([variants.ts:31](../../../packages/gen-zod/src/render/variants.ts)). Type names are
   `${Entity}Dto`, so an OpenAPI entity `LoginDto` yields `LoginDtoSchema` / `LoginDtoDto`.
-- The dependency name is a static array: `TakoGenerator.dependsOn?: string[]`
-  ([config/types.ts:53](../../../packages/config/src/types.ts)), copied as is at
-  [load.ts:183](../../../packages/config/src/load.ts); core requires an entry with that exact name
-  ([graph.ts:43](../../../packages/core/src/graph.ts)) and passes artifacts keyed by dependency name
-  ([run.ts:98](../../../packages/core/src/run.ts)). A renamed Zod entry (Ekoz registers `zod-api`, see
-  [its tako.config.ts](https://github.com/marmotz/ekoz/blob/develop/tako.config.ts)) therefore breaks a
-  hard-coded `['zod']`.
+- Private generator dependencies (issue #204): a generator declares `dependsOn` descriptors
+  `{ use, options? }` (or a function of its validated options); core runs the private instance first,
+  into `<namespace>/<segment>/<dep>/`, and passes its artifact as `ctx.dependencies[<dep name>]`.
+  `gen-angular` is the reference (`dependsOn: (options) => [{ use: zodGenerator, options: { zodVersion } }]`).
+  `gen-zod` honors `ctx.segment`, so the Zod artifact's `module` values point at
+  `<ns>/react-tanstack/zod/...`.
 - The initial-value logic (`zeroValue` / `initExpr`) lives in `gen-angular`
   ([controls.ts:105,152](../../../packages/gen-angular/src/render/controls.ts)), while the shared
   decisions (`createFields`, `updateFields`, `defaultValueExpr`) already live in `@kurotako/ir`
@@ -37,24 +37,17 @@ The package mirrors [`gen-angular`](../../_archives/features/generator-angular/t
 
 ## Scope decisions
 
-- **Implicit generator dependencies are out of scope.** Letting a generator instantiate its own
-  dependency (`gen-react-tanstack` pulling `gen-zod` without a user-declared entry) reverses the locked
-  "hard `dependsOn`, absent => reject" rule and raises unresolved questions (naming, merging with an
-  explicit entry, output segment). It becomes the separate feature
-  [implicit-generator-dependencies](../implicit-generator-dependencies/overview.md). This feature ships
-  with the minimal mechanism below and drops it when that feature lands.
-- **The renamed-segment mismatch stays on the Ekoz side.** Ekoz's `zod-api` wrapper rewrites emitted
-  file paths but not the artifact's `module` values, so imports to `api/zod/...` would not resolve.
-  The wrapper must also rewrite `artifact.entities[*].module` and
-  `artifact.extra.perNamespace[*].{enumsModule,filtersModule,barrelModule}` (and `enums[*].module`). This
-  generator consumes the artifact as published. A configurable per-instance segment belongs to
-  `implicit-generator-dependencies`.
+- **The Zod dependency is private.** `gen-react-tanstack` depends on `gen-zod` through the descriptor
+  mechanism of [implicit-generator-dependencies](../implicit-generator-dependencies/technical.md): the
+  user declares no `zod` entry, there is no `zod` option naming an entry, and the Ekoz `zod-api`
+  wrapper (renamed entry, rewritten segment) is out of the picture. The forms import the private copy
+  under `<namespace>/react-tanstack/zod/`.
 
 ## Package
 
 `packages/gen-react-tanstack`, `@kurotako/gen-react-tanstack`, generator `name: 'react-tanstack'`, output
 sub-tree `<namespace>/react-tanstack/`. Layout copied from `gen-angular` (`package.json` with
-`@kurotako/{config,core,gen-zod}` as workspace peers and `@kurotako/ir`, `valibot` as dependencies,
+`@kurotako/{config,core}` as workspace peers and `@kurotako/gen-zod`, `@kurotako/ir`, `valibot` as dependencies,
 `tsup.config.ts` re-exporting `basePreset`, `tsconfig.json` with references `ir`, `core`, `config`,
 `gen-zod`, `vitest.config.ts`). Registered in the root `tsconfig.json` references; the root
 `vitest.config.ts` already globs `packages/*/vitest.config.ts` and `release-publish.sh` globs
@@ -68,7 +61,7 @@ src/
   generator.ts        reactTanstackGenerator
   options.ts          ReactTanstackGeneratorOptions (Valibot)
   names.ts            identifiers + module specifiers
-  zod-artifact.ts     typed reader over the Zod artifact (dependency name from options)
+  zod-artifact.ts     typed reader over the private Zod artifact (ctx.dependencies.zod)
   artifact.ts         buildArtifact
   errors.ts           ReactTanstackGenError + subclasses
   emit/entity.ts      one <Entity>.form.ts
@@ -78,33 +71,13 @@ src/
   testing/            IR fixtures, helpers
 ```
 
-## Config and core change: dependency name from options
-
-Minimal, no change to `@kurotako/core`:
-
-- `defineGenerator` and `TakoGenerator` accept `dependsOn` and `optionalDependsOn` as
-  `string[] | ((options: DriverOptions<S>) => string[])`
-  ([define-driver.ts:52](../../../packages/config/src/define-driver.ts),
-  [types.ts:53](../../../packages/config/src/types.ts)).
-- `load.ts` resolves the function against the already-validated options when it builds the curried
-  `Generator` ([load.ts:180](../../../packages/config/src/load.ts)); core keeps seeing `string[]`. A
-  function that throws or returns a non-array is wrapped in `DriverOptionsError`-style config error.
-- `gen-react-tanstack` declares `dependsOn: (options) => [options.zod]` and reads
-  `ctx.dependencies[options.zod]`. Default `zod: 'zod'`, so a plain config needs nothing extra.
-- Tests: `config/src/define.test.ts`, `load.test.ts`, `define.test-d.ts` (type-level: the function
-  receives the schema Output; static arrays still typecheck). `gen-angular` is untouched.
-- Changeset: `@kurotako/config` minor (new public API).
-
-Alternatives rejected: a fixed `'zod'` (breaks the Ekoz requirement); a role/`provides` mechanism in
-core (larger core contract change, superseded by implicit dependencies).
-
 ## Options
 
 `ReactTanstackGeneratorOptions` (Valibot `v.object`, like `gen-angular`):
 
 | Option | Type | Default | Meaning |
 |---|---|---|---|
-| `zod` | `string` | `'zod'` | Name of the `generators` entry that provides the Zod artifact. |
+| `zodVersion` | `3 \| 4` | `4` | Zod API flavor of the private Zod copy (forwarded to `gen-zod`). |
 | `include` | `string[]` | all entities | Entity names to emit hooks for, applied to every namespace the generator covers. |
 | `variants` | `('full' \| 'create' \| 'update')[]` | `['full']` | Which Zod variant a hook is built on (`full` is the request-body shape; `create` / `update` reuse `createFields` / `updateFields`). At least one. |
 | `relations` | `'flat' \| 'deep'` | `'flat'` | `flat`: scalar and enum fields only; `deep`: nested objects (to-one) and arrays (to-many), driven by the Zod `*Deep*` roles. |
@@ -236,8 +209,8 @@ Behaviour and consequences:
 ## Zod artifact reader
 
 `zod-artifact.ts` mirrors `gen-angular`'s reader, with the dependency read from
-`ctx.dependencies[options.zod]` (missing => `MissingZodDependencyError`,
-`react_tanstack_missing_zod_dependency`, message names the option). Roles consumed:
+`ctx.dependencies.zod` (missing => `MissingZodDependencyError`,
+`react_tanstack_missing_zod_dependency`). Roles consumed:
 `schema`/`type`, `createSchema`/`createType`, `updateSchema`/`updateType` and, in deep mode,
 `deepSchema`/`deepType`, `createDeepSchema`/`createDeepType`, `updateDeepSchema`/`updateDeepType`.
 Absent role => `MissingZodSymbolError` (same wording as `gen-angular`).
@@ -247,10 +220,10 @@ Absent role => `MissingZodSymbolError` (same wording as `gen-angular`).
 `buildArtifact`: `entities['<ns>.<Entity>'] = { module: '<ns>/react-tanstack/<Entity>.form', symbols }`
 with roles `hook`, `options`, `api`, `defaultValues` for `full` and `createHook`, `createOptions`, … for
 the other variants, restricted to included entities and selected variants.
-`peerDependencies: { '@tanstack/react-form': <range> }` (the Zod artifact already carries `zod`); the
+`peerDependencies: { '@tanstack/react-form': <range> }` (core merges the private Zod artifact's `zod` peer); the
 floor is pinned at implementation as the lowest release exporting `revalidateLogic`, the `onDynamic`
 validator and `StandardSchemaV1` (`react` is covered by TanStack's own peer). `extra`:
-`{ variants, relations, zod, zodVersion, perNamespace: { runtimeModule, barrelModule } }`.
+`{ variants, relations, zodVersion, perNamespace: { runtimeModule, barrelModule } }`.
 
 ## Determinism and output rules
 
@@ -264,7 +237,7 @@ handled by core's synthesized barrel (`use…Form` names cannot collide with Zod
 Per the project rule, every implementation ships with tests.
 
 - Unit (vitest, `src/**/*.test.ts`): `options`, `names`, `zod-artifact`, `artifact`, `emit/barrel`,
-  `render/*`, `generator` (golden strings for flat / deep, each variant, `include`, renamed `zod`,
+  `render/*`, `generator` (golden strings for flat / deep, each variant, `include`, non-default `zodVersion`,
   cross-source degrade, cycle degrade, determinism run twice).
 - Compile test (`emit/*.compile.test.ts`, pattern of `gen-angular`'s `runtime.compile.test.ts`): run
   `zodGenerator` + `reactTanstackGenerator` on a fixture IR, write the output to a temp dir with the
@@ -274,12 +247,13 @@ Per the project rule, every implementation ships with tests.
 - Behaviour test: `@testing-library/react` `renderHook` (jsdom) on a compiled fixture: invalid submit
   surfaces the Zod issue on the matching field, a call-site refined schema replaces the generated one,
   validation runs on submit first and on change afterwards, `setErrorMap` server errors appear on a field.
-- Config: tests listed in "Config and core change". Docs: `apps/docs` build passes.
+- Docs: `apps/docs` build passes. The private dependency itself is tested by the
+  implicit-generator-dependencies feature.
 
 ## Documentation and registration
 
 - Package `README.md`; `apps/docs`: `reference/catalog.md` entry (name `react-tanstack`, depends on the
-  Zod entry, options table), a React quickstart under `getting-started/`, mentions in
+  private Zod dependency, options table), a React quickstart under `getting-started/`, mentions in
   `concepts/dependency-graph.md`, `concepts/parsers-and-generators.md`, `reference/tako-config.md`,
   `intro.md`, `installation.md`; TypeDoc picks the package up through the docs config (verify entry
   points at implementation).
@@ -288,18 +262,17 @@ Per the project rule, every implementation ships with tests.
 - Example: `examples/openapi-react-tanstack` (OpenAPI source, Vite + React), following the existing
   `nestjs11-openapi-angular22-*` examples.
 - Changesets: new package `@kurotako/gen-react-tanstack` (minor, first publish is manual per the release
-  pipeline notes), `@kurotako/config` minor, `@kurotako/ir` minor, `@kurotako/gen-angular` patch.
+  pipeline notes), `@kurotako/ir` minor, `@kurotako/gen-angular` patch.
 
 ## Ekoz wiring (informative, lives in the Ekoz repo)
 
 ```ts
 generators: [
   { use: zodGenerator, namespaces: ['db'] },
-  { use: zodApiGenerator, namespaces: ['api'] },          // rewrites paths AND artifact modules
   { use: reactTanstackGenerator, namespaces: ['api'],
-    options: { zod: 'zod-api', include: ['LoginDto', 'RegisterDto'] } },
+    options: { include: ['LoginDto', 'RegisterDto'] } },   // private Zod copy, no `zod` option
 ],
-outputs: [{ dir: './apps/client-web/src/generated', generators: ['zod-api', 'react-tanstack'] }],
+outputs: [{ dir: './apps/client-web/src/generated', generators: ['react-tanstack'] }],
 ```
 
 The Ekoz `auth` technical design still cites the former name `gen-react`; it must be updated there.
@@ -308,14 +281,13 @@ The Ekoz `auth` technical design still cites the former name `gen-react`; it mus
 
 - Server-error mapping helper: left to the consumer (docs only).
 - Arbitrary `useForm` option passthrough: revisit once the generic surface is measured on real usage.
-- Per-instance output segment and implicit dependencies:
-  [implicit-generator-dependencies](../implicit-generator-dependencies/overview.md).
 
 ## Implementation task breakdown
 
 - [#196 — ir: extract the shared form initial-value helper from gen-angular](https://github.com/marmotz/kurotako/issues/196)
-- [#197 — config: allow dependsOn to be computed from the generator options](https://github.com/marmotz/kurotako/issues/197)
-- [#198 — gen-react-tanstack: package scaffold, options and Zod dependency wiring](https://github.com/marmotz/kurotako/issues/198) (depends on #197)
+- ~~#197 — config: allow dependsOn to be computed from the generator options~~ absorbed by
+  [#204](https://github.com/marmotz/kurotako/issues/204) (function-form `dependsOn` descriptors)
+- [#198 — gen-react-tanstack: package scaffold, options and Zod dependency wiring](https://github.com/marmotz/kurotako/issues/198) (depends on #204)
 - [#199 — gen-react-tanstack: emit the runtime helper and flat entity hooks](https://github.com/marmotz/kurotako/issues/199) (depends on #196, #198)
 - [#200 — gen-react-tanstack: relations 'deep' mode](https://github.com/marmotz/kurotako/issues/200) (depends on #199)
 - [#201 — gen-react-tanstack: documentation site and repo docs](https://github.com/marmotz/kurotako/issues/201) (depends on #200)
