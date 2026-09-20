@@ -1,5 +1,15 @@
 # kurotako
 
+## 0.2.6
+
+### Patch Changes
+
+- Updated dependencies [f58eccc]
+- Updated dependencies [f58eccc]
+  - @kurotako/config@0.2.0
+  - @kurotako/gen-typescript@0.4.0
+  - @kurotako/cli@0.2.2
+
 ## 0.2.5
 
 ### Patch Changes

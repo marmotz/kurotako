@@ -1,5 +1,25 @@
 # @kurotako/gen-typescript
 
+## 0.4.0
+
+### Minor Changes
+
+- f58eccc: `typescriptGenerator` now derives its output prefix and every module specifier it
+  publishes (`artifact.entities[*].module`, `extra.perNamespace[*]`, enum modules) from
+  `ctx.segment` instead of a hardcoded `typescript`, so it can run as a private
+  dependency of another generator. As a top-level generator the segment is still
+  `typescript` and the output is unchanged. The `names.ts` module helpers and
+  `buildArtifact` take the segment as an extra argument.
+
+### Patch Changes
+
+- Updated dependencies [f58eccc]
+- Updated dependencies [f58eccc]
+- Updated dependencies [0ea85b1]
+  - @kurotako/config@0.2.0
+  - @kurotako/core@0.3.0
+  - @kurotako/ir@0.6.0
+
 ## 0.3.6
 
 ### Patch Changes

@@ -1,5 +1,23 @@
 # @kurotako/gen-openapi
 
+## 0.3.0
+
+### Minor Changes
+
+- f58eccc: `openapiGenerator` now emits `<namespace>/<segment>/openapi.<ext>` and publishes the
+  same module in its artifact from `ctx.segment` instead of a hardcoded `openapi`, so it
+  can run as a private dependency of another generator. As a top-level generator the
+  segment is still `openapi` and the output is unchanged.
+
+### Patch Changes
+
+- Updated dependencies [f58eccc]
+- Updated dependencies [f58eccc]
+- Updated dependencies [0ea85b1]
+  - @kurotako/config@0.2.0
+  - @kurotako/core@0.3.0
+  - @kurotako/ir@0.6.0
+
 ## 0.2.3
 
 ### Patch Changes
