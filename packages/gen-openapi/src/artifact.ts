@@ -14,13 +14,14 @@ import { schemaRef } from './render/schema.js';
 export function buildArtifact(
   ir: IR,
   options: OpenApiGeneratorOptions,
+  segment: string,
 ): GeneratorArtifact {
   const ext = options.format === 'yaml' ? 'yaml' : 'json';
   const entities: Record<string, EntitySymbols> = {};
 
   for (const { namespace, entity } of iterEntities(ir)) {
     entities[`${namespace}.${entity.name}`] = {
-      module: `${namespace}/openapi/openapi.${ext}`,
+      module: `${namespace}/${segment}/openapi.${ext}`,
       symbols: { schema: schemaRef(entity.name) },
     };
   }

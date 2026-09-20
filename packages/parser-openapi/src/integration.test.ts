@@ -63,14 +63,14 @@ describe('openapiParser pipeline integration', () => {
     const ir: IR = { irVersion: IR_VERSION, sources: { api: source } };
     const cycles = new Set<string>();
     for (const member of refCycleMembers(source)) cycles.add(`api.${member}`);
-    const baseCtx: Omit<GenerateContext, 'dependencies'> = {
+    const baseCtx: Omit<GenerateContext, 'dependencies' | 'segment'> = {
       ir,
       cycles,
       logger: noopLogger,
     };
 
     const zod = zodGenerator.generate(
-      { ...baseCtx, dependencies: {} },
+      { ...baseCtx, dependencies: {}, segment: 'zod' },
       { zodVersion: 4 },
     );
     if (zod instanceof Promise) throw new Error('zod generate must be sync');
@@ -81,7 +81,11 @@ describe('openapiParser pipeline integration', () => {
       '.catchall(z.string())',
     );
 
-    const ts = typescriptGenerator.generate({ ...baseCtx, dependencies: {} });
+    const ts = typescriptGenerator.generate({
+      ...baseCtx,
+      dependencies: {},
+      segment: 'typescript',
+    });
     if (ts instanceof Promise)
       throw new Error('typescript generate must be sync');
     const tsEntity = fileEndingWith(
@@ -92,8 +96,8 @@ describe('openapiParser pipeline integration', () => {
     expect(tsEntity).toContain('[key: string]: string');
 
     const angular = angularGenerator.generate(
-      { ...baseCtx, dependencies: { zod: zod.artifact } },
-      { forms: ['reactive', 'signal'], relations: 'flat' },
+      { ...baseCtx, dependencies: { zod: zod.artifact }, segment: 'angular' },
+      { forms: ['reactive', 'signal'], relations: 'flat', zodVersion: 4 },
     );
     if (angular instanceof Promise)
       throw new Error('angular generate must be sync');

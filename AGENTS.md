@@ -35,7 +35,8 @@ must reference those docs, not duplicate them.
 ## Decisions already locked (see docs/vision.md "Decisions already made")
 
 - Name `kurotako`, scope `@kurotako/*`, binary `tako`.
-- No "middle" stage; generators form a DAG via `dependsOn`, core computes topological order.
+- No "middle" stage, no generator DAG: generators run in declaration order; a generator needing another one declares
+  it as a private dependency (`dependsOn` descriptors), run by core as an instance owned by the dependent.
 - Multiple parsers active at once; each config key is a namespace; one parser package can be instantiated several times.
 - IR keyed `(namespace, entity)`; homonyms never merged; generated identifiers are deterministic and never prefixed; namespace only drives output location.
 - Two output modes: A directory (default), B npm package per source.

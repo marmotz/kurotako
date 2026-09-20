@@ -6,7 +6,7 @@ way of a validation layer.
 ## Contents
 
 - [Vision and positioning](vision.md) — the problem, the differentiator, the MVP scope.
-- [Architecture](architecture.md) — parsers, generators, IR, dependency DAG, output modes.
+- [Architecture](architecture.md) — parsers, generators, private dependencies, IR, output modes.
 - [Intermediate representation (IR)](ir.md) — the IR format.
 - [Glossary](glossary.md) — the project's vocabulary.
 

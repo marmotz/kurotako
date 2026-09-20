@@ -1,5 +1,9 @@
+import type { Generator, ResolvedConfig } from '@kurotako/core';
+import { run } from '@kurotako/core';
+import { zodGenerator } from '@kurotako/gen-zod';
 import { createSourceIR } from '@kurotako/ir';
 import { describe, expect, it } from 'vitest';
+import { angularGenerator } from './generator.js';
 import {
   fakeZodArtifact,
   fileEndingWith,
@@ -13,6 +17,7 @@ describe('angularGenerator.generate', () => {
     const out = runGenerator(ir, fakeZodArtifact(ir), {
       forms: ['reactive', 'signal'],
       relations: 'flat',
+      zodVersion: 4,
     });
     expect(out.files.map((f) => f.path)).toEqual([
       'blog/angular/zod-forms.runtime.ts',
@@ -27,6 +32,7 @@ describe('angularGenerator.generate', () => {
     const out = runGenerator(ir, fakeZodArtifact(ir), {
       forms: [],
       relations: 'flat',
+      zodVersion: 4,
     });
     expect(out.files.some((f) => f.path.endsWith('zod-forms.runtime.ts'))).toBe(
       false,
@@ -38,6 +44,7 @@ describe('angularGenerator.generate', () => {
     const out = runGenerator(ir, fakeZodArtifact(ir), {
       forms: ['reactive'],
       relations: 'flat',
+      zodVersion: 4,
     });
     const user = fileEndingWith(out.files, 'User.form.ts');
     expect(user).not.toContain('@angular/forms/signals');
@@ -51,6 +58,7 @@ describe('angularGenerator.generate', () => {
     const out = runGenerator(ir, fakeZodArtifact(ir), {
       forms: ['signal'],
       relations: 'flat',
+      zodVersion: 4,
     });
     const user = fileEndingWith(out.files, 'User.form.ts');
     expect(user).not.toContain('@Injectable');
@@ -63,6 +71,7 @@ describe('angularGenerator.generate', () => {
     const out = runGenerator(ir, fakeZodArtifact(ir), {
       forms: ['signal'],
       relations: 'flat',
+      zodVersion: 4,
     });
     const user = fileEndingWith(out.files, 'User.form.ts');
     expect(user).toContain(
@@ -79,6 +88,7 @@ describe('angularGenerator.generate', () => {
     const out = runGenerator(ir, fakeZodArtifact(ir), {
       forms: ['reactive'],
       relations: 'flat',
+      zodVersion: 4,
     });
     const post = fileEndingWith(out.files, 'Post.form.ts');
     expect(post).not.toContain('author:');
@@ -90,6 +100,7 @@ describe('angularGenerator.generate', () => {
     const out = runGenerator(ir, fakeZodArtifact(ir), {
       forms: ['reactive'],
       relations: 'deep',
+      zodVersion: 4,
     });
     const user = fileEndingWith(out.files, 'User.form.ts');
     const post = fileEndingWith(out.files, 'Post.form.ts');
@@ -107,6 +118,7 @@ describe('angularGenerator.generate', () => {
     const out = runGenerator(ir, fakeZodArtifact(ir), {
       forms: ['reactive'],
       relations: 'flat',
+      zodVersion: 4,
     });
     const user = fileEndingWith(out.files, 'User.form.ts');
     expect(user).toContain('validators: [zodValidator(UserCreateSchema)]');
@@ -119,10 +131,13 @@ describe('angularGenerator.generate', () => {
     const out = runGenerator(ir, fakeZodArtifact(ir), {
       forms: ['reactive'],
       relations: 'flat',
+      zodVersion: 4,
     });
     const user = fileEndingWith(out.files, 'User.form.ts');
     expect(user).toContain('role: FormControl<Role>');
-    expect(user).toContain("import type { Role } from 'blog/zod/enums';");
+    expect(user).toContain(
+      "import type { Role } from 'blog/angular/zod/enums';",
+    );
   });
 
   it('a required enum field with no literal default seeds a real member, never a bare undefined (would break FormControl<T> under nonNullable: true)', () => {
@@ -142,6 +157,7 @@ describe('angularGenerator.generate', () => {
     const out = runGenerator(ir, zod, {
       forms: ['reactive'],
       relations: 'flat',
+      zodVersion: 4,
     });
     const aiModel = fileEndingWith(out.files, 'AiModel.form.ts');
     expect(aiModel).not.toContain('?? undefined');
@@ -154,6 +170,7 @@ describe('angularGenerator.generate', () => {
     const out = runGenerator(ir, fakeZodArtifact(ir), {
       forms: ['reactive', 'signal'],
       relations: 'flat',
+      zodVersion: 4,
     });
     const user = fileEndingWith(out.files, 'User.form.ts');
     const importLines = user.split('\n').filter((l) => l.startsWith('import '));
@@ -167,6 +184,7 @@ describe('angularGenerator.generate', () => {
     const out = runGenerator(ir, fakeZodArtifact(ir), {
       forms: ['reactive'],
       relations: 'flat',
+      zodVersion: 4,
     });
     const barrel = fileEndingWith(out.files, 'index.ts');
     expect(barrel).toContain("export * from './zod-forms.runtime.js';");
@@ -180,10 +198,12 @@ describe('angularGenerator.generate', () => {
     const a = runGenerator(ir, zod, {
       forms: ['reactive', 'signal'],
       relations: 'deep',
+      zodVersion: 4,
     });
     const b = runGenerator(ir, zod, {
       forms: ['reactive', 'signal'],
       relations: 'deep',
+      zodVersion: 4,
     });
     expect(a).toEqual(b);
   });
@@ -194,6 +214,7 @@ describe('angularGenerator.generate', () => {
       const out = runGenerator(ir, fakeZodArtifact(ir), {
         forms: ['reactive'],
         relations: 'flat',
+        zodVersion: 4,
       });
       const invoice = fileEndingWith(out.files, 'Invoice.form.ts');
       expect(invoice).toContain(
@@ -218,7 +239,7 @@ describe('angularGenerator.generate', () => {
       const out = runGenerator(
         ir,
         fakeZodArtifact(ir),
-        { forms: ['reactive'], relations: 'flat' },
+        { forms: ['reactive'], relations: 'flat', zodVersion: 4 },
         { debug() {}, info() {}, warn: (m) => warnings.push(m), error() {} },
       );
       const invoice = fileEndingWith(out.files, 'Invoice.form.ts');
@@ -253,7 +274,7 @@ describe('angularGenerator.generate', () => {
       const out = runGenerator(
         ir,
         fakeZodArtifact(ir),
-        { forms: ['reactive'], relations: 'flat' },
+        { forms: ['reactive'], relations: 'flat', zodVersion: 4 },
         { debug() {}, info() {}, warn: (m) => warnings.push(m), error() {} },
       );
       const doc = fileEndingWith(out.files, 'Doc.form.ts');
@@ -268,6 +289,7 @@ describe('angularGenerator.generate', () => {
     const out = runGenerator(ir, fakeZodArtifact(ir), {
       forms: ['reactive'],
       relations: 'flat',
+      zodVersion: 4,
     });
     const user = fileEndingWith(out.files, 'User.form.ts');
     const interfaceBody = user.slice(
@@ -278,5 +300,108 @@ describe('angularGenerator.generate', () => {
       interfaceBody.indexOf(`${n}:`),
     );
     expect(order).toEqual([...order].sort((x, y) => x - y));
+  });
+});
+
+/**
+ * End to end through core: what `@kurotako/config` does to a config entry
+ * (curry the options, resolve the private `zod` descriptor) is reproduced by hand
+ * so the test needs no config file.
+ */
+describe('angularGenerator with its private zod dependency', () => {
+  const angularOptions = {
+    forms: ['reactive' as const],
+    relations: 'flat' as const,
+    zodVersion: 4 as const,
+  };
+  const privateZod: Generator = {
+    name: 'zod',
+    generate: (ctx) => zodGenerator.generate(ctx, { zodVersion: 4 }),
+  };
+  const angular: Generator = {
+    name: 'angular',
+    dependsOn: [privateZod],
+    generate: (ctx) => angularGenerator.generate(ctx, angularOptions),
+  };
+
+  function config(generators: ResolvedConfig['generators']): ResolvedConfig {
+    return {
+      rootDir: '/unused',
+      sources: {
+        blog: { parser: { name: 'fake', parse: () => blogSource() } },
+      },
+      generators,
+      outputs: [{ dir: '/unused' }],
+    };
+  }
+
+  /** Every `blog/angular/zod/...` specifier the angular files import. */
+  function privateZodImports(files: { path: string; content: string }[]) {
+    const specifiers = new Set<string>();
+    for (const file of files) {
+      if (
+        !file.path.startsWith('blog/angular/') ||
+        file.path.includes('/zod/')
+      ) {
+        continue;
+      }
+      for (const m of file.content.matchAll(/from '(blog\/[^']+)'/g)) {
+        // Skip angular's own files (`blog/angular/zod-forms.runtime`, ...).
+        if (m[1] && !/^blog\/angular\/(?!zod\/)/.test(m[1]))
+          specifiers.add(m[1]);
+      }
+    }
+    return [...specifiers];
+  }
+
+  it('with no zod entry, emits the Zod tree under <ns>/angular/zod/ and only imports from it', async () => {
+    const result = await run(config({ angular: { generator: angular } }), {
+      write: false,
+    });
+    const paths = result.files.map((f) => f.path);
+    expect(paths).toContain('blog/angular/zod/User.schema.ts');
+    expect(paths).toContain('blog/angular/zod/enums.ts');
+    expect(paths).toContain('blog/angular/User.form.ts');
+    expect(paths.some((p) => p.startsWith('blog/zod/'))).toBe(false);
+
+    const specifiers = privateZodImports(result.files);
+    expect(specifiers.length).toBeGreaterThan(0);
+    for (const specifier of specifiers) {
+      expect(specifier.startsWith('blog/angular/zod/')).toBe(true);
+      expect(
+        paths.includes(`${specifier}.ts`) ||
+          paths.includes(`${specifier}/index.ts`),
+      ).toBe(true);
+    }
+    expect(result.artifacts.zod).toBeUndefined();
+  });
+
+  it('merges the private zod peer into the angular artifact', async () => {
+    const result = await run(config({ angular: { generator: angular } }), {
+      write: false,
+    });
+    expect(result.artifacts.angular?.peerDependencies).toMatchObject({
+      zod: '^4',
+      '@angular/core': expect.any(String),
+    });
+  });
+
+  it('with an explicit zod entry, both trees coexist without collision', async () => {
+    const userZod: Generator = {
+      name: 'zod',
+      generate: (ctx) => zodGenerator.generate(ctx, { zodVersion: 4 }),
+    };
+    const result = await run(
+      config({
+        zod: { generator: userZod },
+        angular: { generator: angular },
+      }),
+      { write: false },
+    );
+    const paths = result.files.map((f) => f.path);
+    expect(paths).toContain('blog/zod/User.schema.ts');
+    expect(paths).toContain('blog/angular/zod/User.schema.ts');
+    const barrel = result.files.find((f) => f.path === 'blog/index.ts');
+    expect(barrel?.content).not.toContain('angular/zod');
   });
 });

@@ -25,8 +25,8 @@ For each selected schema, generate a strongly typed **headless React hook** buil
   carries the form library because React has no official forms API: the runtime
   defines the whole emitted API, so another library (for example React Hook Form)
   would be a separate package, not an option. Mirrors
-  [`gen-angular`](../../_archives/features/generator-angular/overview.md): hard
-  `dependsOn: ['zod']`, validation delegated to Zod, no validation rules derived
+  [`gen-angular`](../../_archives/features/generator-angular/overview.md): a private
+  `zod` dependency, validation delegated to Zod, no validation rules derived
   from the IR.
 - **Runtime target: TanStack Form** (`@tanstack/react-form`), consuming the Zod
   schema through Standard Schema. Declared as a peer dependency of the generated
@@ -42,11 +42,13 @@ For each selected schema, generate a strongly typed **headless React hook** buil
   - The generator can **restrict the emitted entities** (an include list): an
     OpenAPI source yields one entity per DTO, most of them responses that need no
     form.
-  - It works when the Zod generator entry has been **renamed** in the config
-    (Ekoz registers it as `zod-api` for its `api` namespace), so the dependency
-    on the Zod artifact must not rely on the literal name `zod`. Settled as a
-    generator option naming the Zod entry (default `zod`), with `dependsOn`
-    computed from the options by `@kurotako/config`; no change to `core`.
+  - It needs **no user-declared `zod` entry**, and no dependency on the literal
+    entry name `zod`: like `gen-angular`, it depends privately on `gen-zod` (a
+    descriptor in `dependsOn`, see
+    [implicit-generator-dependencies](../implicit-generator-dependencies/overview.md)),
+    so a renamed or wrapped Zod entry in the config (Ekoz registers `zod-api`) is
+    irrelevant to it. A `zodVersion` option (default `4`) selects the flavor of the
+    private Zod copy.
   - Forms default to the entity's **plain schema** (request-body shape). A
     `variants` option (`full`, `create`, `update`; default `['full']`) also allows
     the `Create` / `Update` variants that `gen-angular` uses for database entities.
@@ -76,18 +78,17 @@ For each selected schema, generate a strongly typed **headless React hook** buil
 
 - Minimum `@tanstack/react-form` version: pinned at implementation as the lowest
   release exposing the APIs the generated code uses (not guessed here).
-- Letting a generator instantiate its own dependencies (no user-declared `zod`
-  entry) and a per-instance output segment: split into
-  [implicit-generator-dependencies](../implicit-generator-dependencies/overview.md).
-  Until then, Ekoz's `zod-api` wrapper must also rewrite the artifact module
-  specifiers, not only the emitted paths.
+- Ekoz output layout: the private Zod copy lands under `<namespace>/react-tanstack/zod/`,
+  so Ekoz's `zod-api` wrapper is no longer involved in the forms' imports.
 
 ## Depends on
 
 - [ir-model](../../_archives/features/ir-model/overview.md),
   [core-pipeline](../../_archives/features/core-pipeline/overview.md).
-- [generator-zod](../../_archives/features/generator-zod/overview.md) — **hard
-  dependency**, resolved through the `zod` option (default entry name `zod`).
+- [generator-zod](../../_archives/features/generator-zod/overview.md) — consumed as a
+  **private dependency**, declared by the generator itself.
+- [implicit-generator-dependencies](../implicit-generator-dependencies/overview.md) —
+  provides the private dependency mechanism and `ctx.segment`.
 - Consumed by the Ekoz `auth` feature, which cannot ship its client forms until this
   package is published. Its design doc still refers to the former name `gen-react`
   (link anchor included) and must be updated on the Ekoz side.

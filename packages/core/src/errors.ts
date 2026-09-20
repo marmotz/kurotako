@@ -59,46 +59,6 @@ export class DuplicateNamespaceError extends TakoError {
   }
 }
 
-export class UnknownDependencyError extends TakoError {
-  readonly generator: string;
-  readonly missing: string;
-
-  constructor(generator: string, missing: string) {
-    super(
-      'unknown_dependency',
-      `generator '${generator}' declares a hard dependency on '${missing}', which is not in the config`,
-    );
-    this.generator = generator;
-    this.missing = missing;
-  }
-}
-
-export class InvalidDependencyError extends TakoError {
-  readonly generator: string;
-  readonly dependency: string;
-
-  constructor(generator: string, dependency: string) {
-    super(
-      'invalid_dependency',
-      `generator '${generator}' lists '${dependency}' in both dependsOn and optionalDependsOn`,
-    );
-    this.generator = generator;
-    this.dependency = dependency;
-  }
-}
-
-export class DependencyCycleError extends TakoError {
-  readonly cycle: string[];
-
-  constructor(cycle: string[]) {
-    super(
-      'dependency_cycle',
-      `the generator dependency graph has a cycle: ${cycle.join(' -> ')}`,
-    );
-    this.cycle = cycle;
-  }
-}
-
 export class OutputCollisionError extends TakoError {
   readonly path: string;
   readonly generators: [string, string];
@@ -142,25 +102,60 @@ export class UnsupportedOutputModeError extends TakoError {
 }
 
 export class OutputPeerConflictError extends TakoError {
-  readonly namespace: string;
+  readonly namespace?: string;
   readonly package: string;
   readonly ranges: string[];
   readonly generators: string[];
+  readonly dependent?: string;
 
+  /**
+   * Raised while aggregating mode B peers (`namespace` set, `generators` are the
+   * two contributors) or while merging a private dependency's peers into its
+   * dependent's artifact (`namespace` absent, `dependent` names the dependent and
+   * `generators` the two conflicting owners).
+   */
   constructor(
-    namespace: string,
+    namespace: string | undefined,
     pkg: string,
     ranges: string[],
     generators: string[],
+    dependent?: string,
   ) {
+    const where = namespace === undefined ? '' : `namespace '${namespace}': `;
+    const via =
+      dependent === undefined
+        ? ''
+        : ` (merged into the peers of generator '${dependent}')`;
     super(
       'output_peer_conflict',
-      `namespace '${namespace}': generators [${generators.join(', ')}] declare peer '${pkg}' with conflicting ranges [${ranges.join(', ')}]`,
+      `${where}generators [${generators.join(', ')}] declare peer '${pkg}' with conflicting ranges [${ranges.join(', ')}]${via}`,
     );
     this.namespace = namespace;
     this.package = pkg;
     this.ranges = ranges;
     this.generators = generators;
+    this.dependent = dependent;
+  }
+}
+
+/**
+ * A private generator instance emitted a file outside the sub-tree it was given
+ * (`<namespace>/<segment>/`), which would land next to (or over) its dependent's
+ * own output.
+ */
+export class SegmentViolationError extends TakoError {
+  readonly generator: string;
+  readonly path: string;
+  readonly expected: string;
+
+  constructor(generator: string, path: string, expected: string) {
+    super(
+      'segment_violation',
+      `generator '${generator}' runs as a private dependency and emitted '${path}', outside its sub-tree '${expected}'; build paths from ctx.segment`,
+    );
+    this.generator = generator;
+    this.path = path;
+    this.expected = expected;
   }
 }
 
@@ -263,23 +258,29 @@ export class DriverError extends TakoError {
   readonly role: 'parser' | 'generator';
   readonly driverName: string;
   readonly namespace?: string;
+  /** Name of the generator that owns this private instance, when it is one. */
+  readonly dependencyOf?: string;
 
   constructor(
     role: 'parser' | 'generator',
     driverName: string,
-    options?: { cause?: unknown; namespace?: string },
+    options?: { cause?: unknown; namespace?: string; dependencyOf?: string },
   ) {
     const where = options?.namespace
       ? ` (namespace '${options.namespace}')`
       : '';
+    const via = options?.dependencyOf
+      ? ` (dependency of '${options.dependencyOf}')`
+      : '';
     super(
       'driver_error',
-      `${role} '${driverName}'${where} threw during ${role === 'parser' ? 'parse' : 'generate'}`,
+      `${role} '${driverName}'${where}${via} threw during ${role === 'parser' ? 'parse' : 'generate'}`,
       options,
     );
     this.role = role;
     this.driverName = driverName;
     this.namespace = options?.namespace;
+    this.dependencyOf = options?.dependencyOf;
   }
 }
 

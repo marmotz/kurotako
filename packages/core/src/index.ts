@@ -1,6 +1,6 @@
 /**
  * `@kurotako/core` — the orchestrator. `run()` wires parsers and generators
- * through the dependency DAG: parse -> merge -> order -> generate -> collect ->
+ * (with their private dependencies): parse -> merge -> generate -> collect ->
  * write. Single entry point; see `backlog/features/core-pipeline/technical.md`.
  */
 export * from './errors.js';

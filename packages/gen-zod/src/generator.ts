@@ -27,7 +27,7 @@ export const zodGenerator = defineGenerator({
     const files: VirtualFile[] = [];
 
     for (const [namespace, source] of Object.entries(ctx.ir.sources)) {
-      const prefix = `${namespace}/zod`;
+      const prefix = `${namespace}/${ctx.segment}`;
       const entities = Object.values(source.entities);
       const aliases = nonRedundantTypeAliases(source);
       const cyclicRefs = new Set<string>();
@@ -73,6 +73,6 @@ export const zodGenerator = defineGenerator({
       });
     }
 
-    return { files, artifact: buildArtifact(ctx.ir, options) };
+    return { files, artifact: buildArtifact(ctx.ir, options, ctx.segment) };
   },
 });

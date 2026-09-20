@@ -13,6 +13,11 @@ export const AngularGeneratorOptions = v.object({
   ]),
   /** Relation handling: flat (FK scalars only) or deep (nested FormGroup / FormArray). */
   relations: v.optional(v.picklist(['flat', 'deep']), 'flat'),
+  /**
+   * Zod API flavor of the private Zod copy emitted under `<ns>/angular/zod/`
+   * (forwarded to `@kurotako/gen-zod`'s `zodVersion`). Default: 4.
+   */
+  zodVersion: v.optional(v.picklist([3, 4]), 4),
 });
 
 export type AngularGeneratorOptions = v.InferOutput<

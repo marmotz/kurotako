@@ -7,8 +7,11 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   ConfigLoadError,
   ConfigShapeError,
+  DependencyCycleError,
   DriverOptionsError,
+  DuplicateDependencyError,
   DuplicateGeneratorError,
+  LegacyDependencyError,
   NoDefaultExportError,
   UnknownGeneratorError,
   UnknownNamespaceError,
@@ -36,7 +39,7 @@ describe('loadConfig', () => {
   it('builds a ResolvedConfig: generators keyed by name, absolute output.dir, rootDir, hooks', async () => {
     writeConfig(`
       const parser = { name: 'p', parse: () => ({ namespace: 'pg', parser: 'p', entities: {}, enums: {} }) }
-      const gen = { name: 'zod', dependsOn: ['x'], generate: () => ({ files: [], artifact: { entities: {} } }) }
+      const gen = { name: 'zod', generate: () => ({ files: [], artifact: { entities: {} } }) }
       export const hooks = { afterEmit: () => {} }
       export default {
         sources: { pg: { use: parser } },
@@ -50,7 +53,7 @@ describe('loadConfig', () => {
     expect(rootDir).toBe(root);
     expect(config.rootDir).toBe(root);
     expect(Object.keys(config.generators)).toEqual(['zod']);
-    expect(config.generators.zod?.generator.dependsOn).toEqual(['x']);
+    expect(config.generators.zod?.generator.dependsOn).toBeUndefined();
     expect(config.outputs).toHaveLength(1);
     expect(config.outputs[0]?.mode).toBe('dir');
     expect(config.outputs[0]?.dir).toBe(join(root, 'generated', 'kurotako'));
@@ -372,5 +375,256 @@ describe('loadConfig', () => {
     await expect(loadConfig({ cwd: root })).rejects.toBeInstanceOf(
       NoDefaultExportError,
     );
+  });
+});
+
+describe('loadConfig: private generator dependencies', () => {
+  const PRELUDE = `
+    const parser = { name: 'p', parse: () => ({ namespace: 'pg', parser: 'p', entities: {}, enums: {} }) }
+    const out = { files: [], artifact: { entities: {} } }
+  `;
+
+  function withGenerators(body: string, generators: string): void {
+    writeConfig(`
+      import * as v from 'valibot'
+      ${PRELUDE}
+      ${body}
+      export default {
+        sources: { pg: { use: parser } },
+        generators: ${generators},
+        outputs: [{}],
+      }
+    `);
+  }
+
+  it('curries a static descriptor array into core generators with options bound', async () => {
+    withGenerators(
+      `
+      const zod = {
+        name: 'zod',
+        optionsSchema: v.object({ zodVersion: v.optional(v.picklist([3, 4]), 4) }),
+        generate: (_ctx, options) => ({ files: [], artifact: { entities: {}, extra: options } }),
+      }
+      const angular = {
+        name: 'angular',
+        dependsOn: [{ use: zod, options: { zodVersion: 3 } }],
+        generate: () => out,
+      }
+      `,
+      '[{ use: angular }]',
+    );
+    const { config } = await loadConfig({ cwd: root });
+    const angular = config.generators.angular?.generator;
+    expect(Object.keys(config.generators)).toEqual(['angular']);
+    expect(angular?.dependsOn?.map((g) => g.name)).toEqual(['zod']);
+    const out = await angular?.dependsOn?.[0]?.generate({} as never);
+    expect(out?.artifact.extra).toEqual({ zodVersion: 3 });
+  });
+
+  it('applies the dependency schema defaults when the descriptor omits options', async () => {
+    withGenerators(
+      `
+      const zod = {
+        name: 'zod',
+        optionsSchema: v.object({ zodVersion: v.optional(v.picklist([3, 4]), 4) }),
+        generate: (_ctx, options) => ({ files: [], artifact: { entities: {}, extra: options } }),
+      }
+      const angular = { name: 'angular', dependsOn: [{ use: zod }], generate: () => out }
+      `,
+      '[{ use: angular }]',
+    );
+    const { config } = await loadConfig({ cwd: root });
+    const out =
+      await config.generators.angular?.generator.dependsOn?.[0]?.generate(
+        {} as never,
+      );
+    expect(out?.artifact.extra).toEqual({ zodVersion: 4 });
+  });
+
+  it('calls the function form with the dependent validated options', async () => {
+    withGenerators(
+      `
+      const zod = {
+        name: 'zod',
+        optionsSchema: v.object({ zodVersion: v.picklist([3, 4]) }),
+        generate: (_ctx, options) => ({ files: [], artifact: { entities: {}, extra: options } }),
+      }
+      const angular = {
+        name: 'angular',
+        optionsSchema: v.object({ zodVersion: v.optional(v.picklist([3, 4]), 4) }),
+        dependsOn: (options) => [{ use: zod, options: { zodVersion: options.zodVersion } }],
+        generate: () => out,
+      }
+      `,
+      '[{ use: angular, options: { zodVersion: 3 } }]',
+    );
+    const { config } = await loadConfig({ cwd: root });
+    const out =
+      await config.generators.angular?.generator.dependsOn?.[0]?.generate(
+        {} as never,
+      );
+    expect(out?.artifact.extra).toEqual({ zodVersion: 3 });
+  });
+
+  it('resolves a deep chain, each level curried', async () => {
+    withGenerators(
+      `
+      const c = { name: 'c', generate: () => out }
+      const b = { name: 'b', dependsOn: [{ use: c }], generate: () => out }
+      const a = { name: 'a', dependsOn: [{ use: b }], generate: () => out }
+      `,
+      '[{ use: a }]',
+    );
+    const { config } = await loadConfig({ cwd: root });
+    const a = config.generators.a?.generator;
+    expect(a?.dependsOn?.[0]?.name).toBe('b');
+    expect(a?.dependsOn?.[0]?.dependsOn?.[0]?.name).toBe('c');
+    expect(Object.keys(config.generators)).toEqual(['a']);
+  });
+
+  it('keeps top-level uniqueness independent of private instances', async () => {
+    withGenerators(
+      `
+      const zod = { name: 'zod', generate: () => out }
+      const angular = { name: 'angular', dependsOn: [{ use: zod }], generate: () => out }
+      `,
+      '[{ use: angular }, { use: zod }]',
+    );
+    const { config } = await loadConfig({ cwd: root });
+    expect(Object.keys(config.generators)).toEqual(['angular', 'zod']);
+  });
+
+  it('a function form that throws becomes a ConfigShapeError naming the generator', async () => {
+    withGenerators(
+      `
+      const angular = {
+        name: 'angular',
+        dependsOn: () => { throw new Error('nope') },
+        generate: () => out,
+      }
+      `,
+      '[{ use: angular }]',
+    );
+    const error = await loadConfig({ cwd: root }).catch((e) => e);
+    expect(error).toBeInstanceOf(ConfigShapeError);
+    expect(error.issues).toEqual([
+      {
+        path: 'generators.angular.dependsOn',
+        message: 'dependsOn() threw: nope',
+      },
+    ]);
+  });
+
+  it('a function form returning a non-array becomes a ConfigShapeError', async () => {
+    withGenerators(
+      `
+      const angular = { name: 'angular', dependsOn: () => 'zod', generate: () => out }
+      `,
+      '[{ use: angular }]',
+    );
+    const error = await loadConfig({ cwd: root }).catch((e) => e);
+    expect(error).toBeInstanceOf(ConfigShapeError);
+    expect(error.issues[0].path).toBe('generators.angular.dependsOn');
+  });
+
+  it('a malformed descriptor becomes a ConfigShapeError locating the entry', async () => {
+    withGenerators(
+      `
+      const angular = { name: 'angular', dependsOn: [{ options: {} }], generate: () => out }
+      `,
+      '[{ use: angular }]',
+    );
+    const error = await loadConfig({ cwd: root }).catch((e) => e);
+    expect(error).toBeInstanceOf(ConfigShapeError);
+    expect(error.issues[0].path).toBe('generators.angular.dependsOn.0');
+  });
+
+  it('a bad dependency option names both the dependency and its dependent', async () => {
+    withGenerators(
+      `
+      const zod = {
+        name: 'zod',
+        optionsSchema: v.strictObject({ zodVersion: v.picklist([3, 4]) }),
+        generate: () => out,
+      }
+      const angular = {
+        name: 'angular',
+        dependsOn: [{ use: zod, options: { zodVersion: 9 } }],
+        generate: () => out,
+      }
+      `,
+      '[{ use: angular }]',
+    );
+    const error = await loadConfig({ cwd: root }).catch((e) => e);
+    expect(error).toBeInstanceOf(DriverOptionsError);
+    expect(error).toMatchObject({ driverName: 'zod', via: 'angular' });
+    expect(error.message).toContain(
+      "invalid options for generator 'zod' (required by 'angular')",
+    );
+  });
+
+  it('rejects two descriptors of the same driver in one dependsOn', async () => {
+    withGenerators(
+      `
+      const zod = { name: 'zod', generate: () => out }
+      const angular = {
+        name: 'angular',
+        dependsOn: [{ use: zod }, { use: zod }],
+        generate: () => out,
+      }
+      `,
+      '[{ use: angular }]',
+    );
+    const error = await loadConfig({ cwd: root }).catch((e) => e);
+    expect(error).toBeInstanceOf(DuplicateDependencyError);
+    expect(error).toMatchObject({ generator: 'angular', dependency: 'zod' });
+  });
+
+  it('rejects a dependency cycle reachable through the function form', async () => {
+    withGenerators(
+      `
+      const a = { name: 'a', dependsOn: () => [{ use: b }], generate: () => out }
+      const b = { name: 'b', dependsOn: () => [{ use: a }], generate: () => out }
+      `,
+      '[{ use: a }]',
+    );
+    const error = await loadConfig({ cwd: root }).catch((e) => e);
+    expect(error).toBeInstanceOf(DependencyCycleError);
+    expect(error.code).toBe('dependency_cycle');
+    expect(error.cycle).toEqual(['a', 'b', 'a']);
+  });
+
+  it('rejects a name-based string dependency with LegacyDependencyError', async () => {
+    withGenerators(
+      `const angular = { name: 'angular', dependsOn: ['zod'], generate: () => out }`,
+      '[{ use: angular }]',
+    );
+    const error = await loadConfig({ cwd: root }).catch((e) => e);
+    expect(error).toBeInstanceOf(LegacyDependencyError);
+    expect(error.message).toContain("'zod'");
+    expect(error.message).toContain('dependsOn: [{ use:');
+  });
+
+  it('rejects optionalDependsOn with LegacyDependencyError', async () => {
+    withGenerators(
+      `const angular = { name: 'angular', optionalDependsOn: ['zod'], generate: () => out }`,
+      '[{ use: angular }]',
+    );
+    const error = await loadConfig({ cwd: root }).catch((e) => e);
+    expect(error).toBeInstanceOf(LegacyDependencyError);
+    expect(error.message).toContain('optionalDependsOn');
+  });
+
+  it('rejects a legacy string dependency inside a nested dependency', async () => {
+    withGenerators(
+      `
+      const zod = { name: 'zod', dependsOn: ['base'], generate: () => out }
+      const angular = { name: 'angular', dependsOn: [{ use: zod }], generate: () => out }
+      `,
+      '[{ use: angular }]',
+    );
+    const error = await loadConfig({ cwd: root }).catch((e) => e);
+    expect(error).toBeInstanceOf(LegacyDependencyError);
+    expect(error.generator).toBe('zod');
   });
 });

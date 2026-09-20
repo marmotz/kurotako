@@ -48,12 +48,24 @@ describe('enum + module helpers', () => {
     expect(enumFilterName('Role')).toBe('EnumRoleFilter');
   });
 
-  it('module specifiers carry the zod/ sub-tree segment', () => {
-    expect(entityModule('blog', 'User')).toBe('blog/zod/User.schema');
-    expect(enumsModule('blog')).toBe('blog/zod/enums');
-    expect(filtersModule('blog')).toBe('blog/zod/filters');
-    expect(aliasModule('blog')).toBe('blog/zod/aliases');
-    expect(barrelModule('blog')).toBe('blog/zod');
+  it('module specifiers carry the sub-tree segment', () => {
+    expect(entityModule('blog', 'zod', 'User')).toBe('blog/zod/User.schema');
+    expect(enumsModule('blog', 'zod')).toBe('blog/zod/enums');
+    expect(filtersModule('blog', 'zod')).toBe('blog/zod/filters');
+    expect(aliasModule('blog', 'zod')).toBe('blog/zod/aliases');
+    expect(barrelModule('blog', 'zod')).toBe('blog/zod');
+  });
+
+  it('module specifiers honor a nested segment', () => {
+    expect(entityModule('blog', 'angular/zod', 'User')).toBe(
+      'blog/angular/zod/User.schema',
+    );
+    expect(enumsModule('blog', 'angular/zod')).toBe('blog/angular/zod/enums');
+    expect(filtersModule('blog', 'angular/zod')).toBe(
+      'blog/angular/zod/filters',
+    );
+    expect(aliasModule('blog', 'angular/zod')).toBe('blog/angular/zod/aliases');
+    expect(barrelModule('blog', 'angular/zod')).toBe('blog/angular/zod');
   });
 });
 

@@ -35,3 +35,10 @@ client and SQLite driver adapter.
 cd apps/backend && bun run start:dev
 cd apps/frontend && bun run start
 ```
+
+## Zod generator and `gen-angular`
+
+`tako.config.ts` keeps `zodGenerator` because the apps import the `zod` sub-tree
+themselves. `gen-angular` does not need it: it embeds its own private Zod copy under
+`<namespace>/angular/zod/` (its forms import from there), so a config that only wants
+Angular forms can drop the `zod` entry. Here both copies are generated.

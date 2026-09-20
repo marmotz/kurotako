@@ -59,8 +59,9 @@ directory, so in a monorepo it can live in that sub-project — see
 
 ## `generators`
 
-An **array** of entries. Order is irrelevant — `core` resolves the
-[dependency graph](../concepts/dependency-graph.md).
+An **array** of entries, run in declaration order. A generator's own dependencies are
+private instances declared by the generator itself, not entries of this array; see
+[Generator dependencies](../concepts/dependency-graph.md).
 
 | Field | Type | Notes |
 |---|---|---|
@@ -75,8 +76,12 @@ generators: [
 ]
 ```
 
-If a generator declares `dependsOn: ['x']` and `x` is not in the array, `loadConfig`
-fails.
+`angularGenerator` runs its own private Zod copy: the `zodGenerator` entry above is only
+needed if your code imports `<namespace>/zod` itself.
+
+A generator with the removed name-based `dependsOn: ['x']` (or `optionalDependsOn`) makes
+`loadConfig` fail with `LegacyDependencyError`; see the
+[migration note](../concepts/dependency-graph.md#migrating-from-name-based-dependson).
 
 ## `outputs`
 

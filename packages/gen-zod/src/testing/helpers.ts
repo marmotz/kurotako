@@ -22,6 +22,7 @@ export function runGenerator(
   ir: IR,
   options: ZodGeneratorOptions,
   logger: GenerateContext['logger'] = noopLogger,
+  segment = 'zod',
 ): GenOutput {
   const cycles = new Set<string>();
   for (const [ns, source] of Object.entries(ir.sources)) {
@@ -30,7 +31,7 @@ export function runGenerator(
     }
   }
   const out = zodGenerator.generate(
-    { ir, dependencies: {}, cycles, logger },
+    { ir, dependencies: {}, cycles, segment, logger },
     options,
   );
   if (out instanceof Promise) {

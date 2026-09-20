@@ -3,18 +3,18 @@
 ## Overview
 
 ```
-[ parsers (1..N) ]  ->  [ global IR ]  ->  [ generators (0..N), DAG ]  ->  [ output ]
+[ parsers (1..N) ]  ->  [ global IR ]  ->  [ generators (0..N) ]  ->  [ output ]
    parser-prisma          map of             gen-zod                        mode A: directory
-   parser-mongoose        namespaces         gen-angular (dependsOn: zod)    mode B: package/source
+   parser-mongoose        namespaces         gen-angular (private gen-zod)   mode B: package/source
 ```
 
 No fixed 3-stage pipeline. Only two driver roles:
 
 - **`parser`**: reads a schema source and produces a **partial IR** under a namespace.
-- **`generator`**: consumes the IR (global or filtered) plus the artifacts of its dependencies, and writes code.
+- **`generator`**: consumes the IR (global or filtered) plus the artifacts of its private dependencies, and writes code.
 
-The `core` orchestrates: instantiates the parsers, merges the partial IRs, resolves the topological order of the
-generators, feeds each its input, collects the artifacts.
+The `core` orchestrates: instantiates the parsers, merges the partial IRs, runs the generators in declaration order
+(each one preceded by its private dependencies), feeds each its input, collects the artifacts.
 
 ## Parsers
 
@@ -57,34 +57,68 @@ See [ir.md](ir.md). Structural points:
 - Source / target agnostic: it must carry types, constraints (required/optional, length, regex, min/max, enum),
   relations, and stay reusable for future generators (OpenAPI, SDK, factories).
 
-## Generators and DAG
+## Generators and private dependencies
 
-- Each generator declares its dependencies; the core computes a topological order.
-- A generator receives the namespace-filtered IR plus, for each dependency that ran, a structured artifact handle
+- Generators run in **declaration order**. There is no dependency graph between config entries: no name-based
+  `dependsOn`, no topological sort, no cycle detection across entries.
+- A generator that needs another generator's output declares it as a **private dependency**: a descriptor
+  `{ use: <driver>, options? }` (a config entry without `namespaces`). Core runs a **private instance** of the
+  dependency for that dependent alone, before it, on the same namespace-filtered IR, and hands its artifact over as
+  `ctx.dependencies[<dependency name>]`. Two dependents get two independent copies.
+- A generator receives the namespace-filtered IR plus, for each private dependency, a structured artifact handle
   (`GeneratorArtifact`, below) — never raw file paths.
-- Options are curried away by `@kurotako/config` exactly as for parsers; core sees the single-argument contract:
+- Options are curried away by `@kurotako/config` exactly as for parsers, dependencies included (a dependency's
+  options are validated against its own `optionsSchema`); core sees the single-argument contract and already-curried
+  dependencies:
 
   ```ts
   interface Generator {
     name: string                       // "angular"
-    dependsOn?: string[]               // hard: absent from the config => core rejects
-    optionalDependsOn?: string[]       // optional: used if present, else ignored
+    dependsOn?: Generator[]            // private, already-curried dependencies
     generate(ctx: GenerateContext): Promise<GenOutput> | GenOutput
   }
 
   interface GenerateContext {
     ir: IR                                          // namespace-filtered deep clone of the merged IR
-    dependencies: Record<string, GeneratorArtifact> // only declared deps that actually ran
+    dependencies: Record<string, GeneratorArtifact> // artifact of each private dependency, by driver name
+    cycles: Set<string>                             // `${namespace}.${name}` of every ref-cycle member
+    segment: string                                 // sub-tree under `<namespace>/` to emit into and import from
     logger: Logger
   }
 
   interface GenOutput { files: VirtualFile[]; artifact: GeneratorArtifact }
   ```
 
-- Hard vs optional is expressed as **two separate arrays**, not a tagged union; a name may not appear in both.
-- **Hard** dependency: `gen-angular` declares `dependsOn: ['zod']`. With `zod` absent from the config the core rejects
-  (`UnknownDependencyError`). There is **no** "generate its own `Validators` from the IR" fallback — Zod is the single
-  source of validation truth, and the generated Angular forms delegate to it (`zodValidator(schema)`).
+- Author side (`@kurotako/config`): `dependsOn` is `readonly { use, options? }[]`, or a function
+  `(options) => readonly { use, options? }[]` receiving the generator's validated options, so the dependency's options
+  can derive from them. `gen-angular` declares `dependsOn: (options) => [{ use: zodGenerator, options: { zodVersion:
+  options.zodVersion } }]`. A dependency chain may nest; a cycle (reachable only through the function form) is
+  rejected at load with `DependencyCycleError`. The removed name-based form (strings, `optionalDependsOn`) is rejected
+  with `LegacyDependencyError`.
+- There is **no** "generate its own `Validators` from the IR" fallback — Zod is the single source of validation
+  truth, and the generated Angular forms delegate to it (`zodValidator(schema)`).
+
+### Private instances and their output
+
+- **Segment.** A top-level generator emits into `<namespace>/<generatorName>/` (`ctx.segment === name`). A private
+  instance gets the nested segment `<parent segment>/<dependency name>` (`angular/zod`), so its files land in
+  `<namespace>/angular/zod/`. A generator used as a dependency builds its file prefix **and every module specifier it
+  publishes in its artifact** (`entities[*].module`, `extra`) from `ctx.segment`, never from a hardcoded name; core
+  cannot rewrite the opaque `extra`. `gen-zod` is the reference implementation.
+- **Segment guard.** Core rejects a private instance that emits outside `<namespace>/<segment>/`
+  (`SegmentViolationError`, code `segment_violation`).
+- **Attribution.** Private files belong to the dependent: `outputs[].generators: ['angular']` keeps
+  `<ns>/angular/zod/**`, and the drift-guard (`tako check`) covers them.
+- **Invisible root barrel.** The synthesized `<namespace>/index.ts` re-exports `<generator>/index.ts` only, and
+  `angular/index.ts` does not export `zod/`, so a private copy never collides with a user `zod` entry and raises no
+  ambiguity warning. It stays reachable by subpath (`@kurotako/pg/angular/zod/User.schema`). A user who keeps a `zod`
+  entry next to `angular` simply gets two copies.
+- **Artifacts.** A private artifact is not in `RunResult.artifacts`. Its `peerDependencies` are merged into the
+  dependent's artifact (identical ranges de-duplicate; two ranges for one package throw `OutputPeerConflictError`
+  naming the dependent), so mode B declares them once on the namespace package. Its files ship in the same
+  per-namespace package (`src/angular/zod/...`).
+- **Errors.** A private instance that throws is a `DriverError` naming the instance and its dependent
+  (`dependencyOf`).
 
 ### Artifact handle (`GeneratorArtifact`)
 

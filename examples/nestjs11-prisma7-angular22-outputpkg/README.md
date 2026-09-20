@@ -121,3 +121,10 @@ curl http://localhost:3000/tasks
 curl -X POST http://localhost:3000/tasks -H 'content-type: application/json' \
   -d '{"title":"write docs"}'   # missing projectId -> 400 with Zod issues
 ```
+
+## Zod generator and `gen-angular`
+
+`tako.config.ts` keeps `zodGenerator` because the apps import the `zod` sub-tree
+themselves. `gen-angular` does not need it: it embeds its own private Zod copy under
+`<namespace>/angular/zod/` (its forms import from there), so a config that only wants
+Angular forms can drop the `zod` entry. Here both copies are generated.

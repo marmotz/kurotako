@@ -42,6 +42,7 @@ export function relationOf(entity: Entity, index: number): Relation {
 export function runGenerator(
   ir: IR,
   logger: GenerateContext['logger'] = noopLogger,
+  segment = 'typescript',
 ): GenOutput {
   const cycles = new Set<string>();
   for (const [namespace, source] of Object.entries(ir.sources)) {
@@ -53,6 +54,7 @@ export function runGenerator(
     ir,
     dependencies: {},
     cycles,
+    segment,
     logger,
   });
   if (output instanceof Promise) {

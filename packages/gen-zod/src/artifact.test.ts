@@ -16,7 +16,7 @@ function symbolsOf(
 }
 
 describe('buildArtifact', () => {
-  const artifact = buildArtifact(irOf(blogSource()), { zodVersion: 4 });
+  const artifact = buildArtifact(irOf(blogSource()), { zodVersion: 4 }, 'zod');
 
   it('entities keyed by namespace.entity with the zod/ sub-tree module', () => {
     expect(Object.keys(artifact.entities).sort()).toEqual([
@@ -55,7 +55,7 @@ describe('buildArtifact', () => {
   });
 
   it('type aliases get an entity entry with schema/type symbols and the aliases module', () => {
-    const geo = buildArtifact(irOf(geoSource()), { zodVersion: 4 });
+    const geo = buildArtifact(irOf(geoSource()), { zodVersion: 4 }, 'zod');
     const shape = geo.entities['geo.Shape'];
     if (shape === undefined) {
       throw new Error('no artifact entity for geo.Shape');
@@ -70,7 +70,7 @@ describe('buildArtifact', () => {
       .addTypeAlias('Status', (alias) => alias.enum('Status'))
       .build();
 
-    const shopArtifact = buildArtifact(irOf(source), { zodVersion: 4 });
+    const shopArtifact = buildArtifact(irOf(source), { zodVersion: 4 }, 'zod');
     expect(shopArtifact.entities['shop.Status']).toBeUndefined();
 
     const extra = shopArtifact.extra as ZodArtifactExtra;
@@ -85,7 +85,8 @@ describe('buildArtifact', () => {
   it('peerDependencies.zod tracks zodVersion', () => {
     expect(artifact.peerDependencies).toEqual({ zod: '^4' });
     expect(
-      buildArtifact(irOf(blogSource()), { zodVersion: 3 }).peerDependencies,
+      buildArtifact(irOf(blogSource()), { zodVersion: 3 }, 'zod')
+        .peerDependencies,
     ).toEqual({ zod: '^3' });
   });
 
@@ -106,5 +107,49 @@ describe('buildArtifact', () => {
       typeName: 'Role',
       module: 'blog/zod/enums',
     });
+  });
+});
+
+describe('buildArtifact with a non-default segment', () => {
+  const artifact = buildArtifact(
+    irOf(blogSource()),
+    { zodVersion: 4 },
+    'angular/zod',
+  );
+
+  it('re-roots every entity module under the segment', () => {
+    expect(symbolsOf(artifact, 'blog.User').module).toBe(
+      'blog/angular/zod/User.schema',
+    );
+    for (const entity of Object.values(artifact.entities)) {
+      expect(entity.module.startsWith('blog/angular/zod')).toBe(true);
+    }
+  });
+
+  it('re-roots alias modules', () => {
+    const geo = buildArtifact(
+      irOf(geoSource()),
+      { zodVersion: 4 },
+      'angular/zod',
+    );
+    expect(geo.entities['geo.Shape']?.module).toBe('geo/angular/zod/aliases');
+  });
+
+  it('re-roots extra.perNamespace and enum modules', () => {
+    const blog = (artifact.extra as ZodArtifactExtra).perNamespace.blog;
+    if (blog === undefined) {
+      throw new Error('missing blog namespace in extra');
+    }
+    expect(blog.enumsModule).toBe('blog/angular/zod/enums');
+    expect(blog.filtersModule).toBe('blog/angular/zod/filters');
+    expect(blog.barrelModule).toBe('blog/angular/zod');
+    expect(blog.enums.Role?.module).toBe('blog/angular/zod/enums');
+  });
+
+  it('keeps identifiers and symbols identical to the default segment', () => {
+    const base = buildArtifact(irOf(blogSource()), { zodVersion: 4 }, 'zod');
+    expect(symbolsOf(artifact, 'blog.User').symbols).toEqual(
+      symbolsOf(base, 'blog.User').symbols,
+    );
   });
 });

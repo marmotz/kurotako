@@ -14,6 +14,9 @@ export default defineConfig({
   },
   generators: [
     { use: typescriptGenerator },
+    // Kept on purpose: the apps import `@example/tasks/zod` themselves. `angularGenerator`
+    // no longer needs this entry: it embeds its own private Zod copy under
+    // `<namespace>/angular/zod/`.
     { use: zodGenerator, options: { zodVersion: 4 } },
     {
       use: angularGenerator,

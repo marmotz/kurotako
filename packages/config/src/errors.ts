@@ -114,6 +114,8 @@ export class DriverOptionsError extends TakoError {
   readonly role: 'parser' | 'generator';
   readonly driverName: string;
   readonly namespace?: string;
+  /** For a private generator dependency: the generator that requires it. */
+  readonly via?: string;
   readonly issues: ConfigIssue[];
 
   constructor(
@@ -121,18 +123,71 @@ export class DriverOptionsError extends TakoError {
     driverName: string,
     issues: ConfigIssue[],
     namespace?: string,
+    via?: string,
   ) {
     const where = namespace ? ` (namespace '${namespace}')` : '';
+    const required = via ? ` (required by '${via}')` : '';
     const detail = issues
       .map((i) => `${i.path === '' ? '<root>' : i.path}: ${i.message}`)
       .join('; ');
     super(
       'driver_options_invalid',
-      `invalid options for ${role} '${driverName}'${where}: ${detail}`,
+      `invalid options for ${role} '${driverName}'${where}${required}: ${detail}`,
     );
     this.role = role;
     this.driverName = driverName;
     this.namespace = namespace;
+    this.via = via;
     this.issues = issues;
+  }
+}
+
+/** Two descriptors of one `dependsOn` share the same driver name. */
+export class DuplicateDependencyError extends TakoError {
+  readonly generator: string;
+  readonly dependency: string;
+
+  constructor(generator: string, dependency: string) {
+    super(
+      'config_duplicate_dependency',
+      `generator '${generator}' lists the dependency '${dependency}' more than once (it would share one ctx.dependencies key and one segment)`,
+    );
+    this.generator = generator;
+    this.dependency = dependency;
+  }
+}
+
+/**
+ * A driver name repeats in its own dependency chain. Only reachable through the
+ * function form of `dependsOn`, which can return a descriptor for a driver that
+ * (directly or not) depends on the current one.
+ */
+export class DependencyCycleError extends TakoError {
+  readonly cycle: string[];
+
+  constructor(cycle: string[]) {
+    super(
+      'dependency_cycle',
+      `the generator dependency chain has a cycle: ${cycle.join(' -> ')}`,
+    );
+    this.cycle = cycle;
+  }
+}
+
+/**
+ * A driver still declares name-based dependencies (`dependsOn` strings or
+ * `optionalDependsOn`), removed in favor of private generator descriptors.
+ */
+export class LegacyDependencyError extends TakoError {
+  readonly generator: string;
+  readonly entry: string;
+
+  constructor(generator: string, entry: string) {
+    super(
+      'config_legacy_dependency',
+      `generator '${generator}' declares ${entry}, which is no longer supported: dependencies are private generator descriptors, e.g. dependsOn: [{ use: zodGenerator, options: { … } }]. See the "Generator dependencies" migration note in the docs.`,
+    );
+    this.generator = generator;
+    this.entry = entry;
   }
 }

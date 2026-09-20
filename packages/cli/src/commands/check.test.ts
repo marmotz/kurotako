@@ -118,8 +118,8 @@ describe('tako check', () => {
   it('an invalid schema exits 1 via renderError, not a drift report', async () => {
     writeConfig(`
       const parser = { name: 'p', parse: () => ({ namespace: 'pg', parser: 'p', entities: {}, enums: {} }) }
-      const a = { name: 'a', dependsOn: ['b'], generate: () => ({ files: [], artifact: { entities: {} } }) }
-      const b = { name: 'b', dependsOn: ['a'], generate: () => ({ files: [], artifact: { entities: {} } }) }
+      const a = { name: 'a', dependsOn: () => [{ use: b }], generate: () => ({ files: [], artifact: { entities: {} } }) }
+      const b = { name: 'b', dependsOn: () => [{ use: a }], generate: () => ({ files: [], artifact: { entities: {} } }) }
       export default { sources: { pg: { use: parser } }, generators: [{ use: a }, { use: b }], outputs: [{ dir: './out' }] }
     `);
     await runCli(['check']);

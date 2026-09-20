@@ -109,3 +109,79 @@ export const missingRequiredOptions = defineConfig({
   generators: [],
   outputs: [],
 });
+
+// --- private generator dependencies ------------------------------------------
+
+const zodLike = defineGenerator({
+  name: 'zod-like',
+  optionsSchema: v.strictObject({ zodVersion: v.picklist([3, 4]) }),
+  generate: (): GenOutput => ({ files: [], artifact: { entities: {} } }),
+});
+
+const optionalZodLike = defineGenerator({
+  name: 'optional-zod-like',
+  optionsSchema: v.strictObject({ zodVersion: v.optional(v.picklist([3, 4])) }),
+  generate: (): GenOutput => ({ files: [], artifact: { entities: {} } }),
+});
+
+// The descriptor's `options` is typed from the dependency's own schema.
+export const staticDependency = defineGenerator({
+  name: 'static-dependency',
+  dependsOn: [
+    { use: zodLike, options: { zodVersion: 4 } },
+    { use: optionalZodLike },
+    { use: noOptions },
+  ],
+  generate: (): GenOutput => ({ files: [], artifact: { entities: {} } }),
+});
+
+// @ts-expect-error — `zodVersion` must be 3 | 4
+export const badDependencyOptions = defineGenerator({
+  name: 'bad-dependency-options',
+  dependsOn: [{ use: zodLike, options: { zodVersion: 5 } }],
+  generate: (): GenOutput => ({ files: [], artifact: { entities: {} } }),
+});
+
+// @ts-expect-error — `options` is required: `zodVersion` has no default
+export const missingRequiredDependencyOptions = defineGenerator({
+  name: 'missing-dependency-options',
+  dependsOn: [{ use: zodLike }],
+  generate: (): GenOutput => ({ files: [], artifact: { entities: {} } }),
+});
+
+export const rejectedDependencyOptions = defineGenerator({
+  name: 'rejected-dependency-options',
+  // @ts-expect-error — `no-options` declares no optionsSchema
+  dependsOn: [{ use: noOptions, options: {} }],
+  generate: (): GenOutput => ({ files: [], artifact: { entities: {} } }),
+});
+
+// The function form receives the dependent's own options Output (defaults
+// applied), and its returned descriptors are checked like a static array.
+export const functionDependency = defineGenerator({
+  name: 'function-dependency',
+  optionsSchema: v.object({ zodVersion: v.optional(v.picklist([3, 4]), 4) }),
+  dependsOn: (options) => {
+    // `zodVersion` is a non-optional `3 | 4` here (schema Output).
+    const version: 3 | 4 = options.zodVersion;
+    return [{ use: zodLike, options: { zodVersion: version } }];
+  },
+  generate: (): GenOutput => ({ files: [], artifact: { entities: {} } }),
+});
+
+export const badFunctionDependency = defineGenerator({
+  name: 'bad-function-dependency',
+  optionsSchema: v.object({ n: v.number() }),
+  // @ts-expect-error — `zodVersion` must be 3 | 4, not a number
+  dependsOn: (options) => [
+    { use: zodLike, options: { zodVersion: options.n } },
+  ],
+  generate: (): GenOutput => ({ files: [], artifact: { entities: {} } }),
+});
+
+// A generator with dependencies is still a valid config entry.
+export const dependentInConfig = defineConfig({
+  sources: { pg: { use: withOptions } },
+  generators: [{ use: staticDependency }, { use: functionDependency }],
+  outputs: [],
+});

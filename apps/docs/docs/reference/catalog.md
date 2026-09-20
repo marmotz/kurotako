@@ -112,7 +112,8 @@ Emits Zod schemas from the IR — one file per entity, plus `enums.ts`, `filters
 barrel, under `<namespace>/zod/`.
 
 - **Export:** `zodGenerator` — the value you pass to `use` in a `generators` entry.
-- **Name:** `zod` — its `name` field; this is what another generator's `dependsOn` refers to.
+- **Name:** `zod` — its `name` field; it is the key under which a dependent reads its artifact
+  (`ctx.dependencies.zod`) and the last segment of the private path (`<namespace>/<dependent>/zod/`).
 
 | Option       | Type       | Default | Notes                                                                                                                     |
 |--------------|------------|---------|---------------------------------------------------------------------------------------------------------------------------|
@@ -129,16 +130,18 @@ constraints, under `<namespace>/angular/`.
 
 - **Export:** `angularGenerator` — the value you pass to `use` in a `generators` entry.
 - **Name:** `angular` — its `name` field.
-- **Depends on:** `zod` (hard — `zod` must be in the `generators` array). It reuses the
-  emitted Zod schemas.
+- **Depends on:** a private copy of `zod`, run by `core` for this generator alone and emitted
+  under `<namespace>/angular/zod/`. You do not add `zodGenerator` to `generators` for
+  `angular` to work (keep it only if your code imports `<namespace>/zod`).
 
 | Option      | Type                         | Default                  | Notes                                                                        |
 |-------------|------------------------------|--------------------------|------------------------------------------------------------------------------|
 | `forms`     | `('reactive' \| 'signal')[]` | `['reactive', 'signal']` | which form surfaces to emit                                                  |
 | `relations` | `'flat'` \| `'deep'`         | `'flat'`                 | `flat` = foreign-key scalars only; `deep` = nested `FormGroup` / `FormArray` |
+| `zodVersion` | `3` \| `4`                 | `4`                      | Zod API flavor of the private Zod copy (forwarded to `gen-zod`)              |
 
 ```ts
-generators: [ { use: zodGenerator }, { use: angularGenerator, options: { forms: [ 'reactive' ], relations: 'deep' } }, ]
+generators: [ { use: angularGenerator, options: { forms: [ 'reactive' ], relations: 'deep' } } ]
 ```
 
 ### `@kurotako/gen-typescript`

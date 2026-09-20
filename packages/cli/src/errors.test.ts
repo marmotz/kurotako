@@ -1,14 +1,10 @@
 import {
   ConfigShapeError,
+  DependencyCycleError,
   DriverOptionsError,
   UnknownNamespaceError,
 } from '@kurotako/config';
-import {
-  DependencyCycleError,
-  DriverError,
-  IrValidationError,
-  TakoError,
-} from '@kurotako/core';
+import { DriverError, IrValidationError, TakoError } from '@kurotako/core';
 import { describe, expect, it } from 'vitest';
 import { ConfigExistsError, renderError } from './errors.js';
 
@@ -50,6 +46,13 @@ describe('renderError', () => {
       new DriverError('parser', 'prisma', { namespace: 'pg' }),
     );
     expect(out).toContain("\n  parser: prisma (namespace 'pg')");
+  });
+
+  it('names the dependent of a private generator instance (DriverError)', () => {
+    const out = renderError(
+      new DriverError('generator', 'zod', { dependencyOf: 'angular' }),
+    );
+    expect(out).toContain("generator 'zod' (dependency of 'angular')");
   });
 
   it('appends the cause message and code of a wrapped failure', () => {

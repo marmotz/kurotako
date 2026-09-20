@@ -4,8 +4,11 @@ import {
   ConfigLoadError,
   ConfigNotFoundError,
   ConfigShapeError,
+  DependencyCycleError,
   DriverOptionsError,
+  DuplicateDependencyError,
   DuplicateGeneratorError,
+  LegacyDependencyError,
   NoDefaultExportError,
   UnknownGeneratorError,
   UnknownNamespaceError,
@@ -25,6 +28,15 @@ describe('config errors', () => {
       [new UnknownNamespaceError('zod', 'nope'), 'config_unknown_namespace'],
       [new UnknownGeneratorError(1, 'nope'), 'config_unknown_generator'],
       [
+        new DuplicateDependencyError('angular', 'zod'),
+        'config_duplicate_dependency',
+      ],
+      [new DependencyCycleError(['a', 'b', 'a']), 'dependency_cycle'],
+      [
+        new LegacyDependencyError('angular', "'optionalDependsOn'"),
+        'config_legacy_dependency',
+      ],
+      [
         new DriverOptionsError(
           'parser',
           'prisma',
@@ -40,6 +52,20 @@ describe('config errors', () => {
       expect(err.code).toBe(code);
       expect(err.name).toBe(err.constructor.name);
     }
+  });
+
+  it('DriverOptionsError names the dependent of a private dependency', () => {
+    const err = new DriverOptionsError(
+      'generator',
+      'zod',
+      [{ path: 'zodVersion', message: 'bad' }],
+      undefined,
+      'angular',
+    );
+    expect(err.via).toBe('angular');
+    expect(err.message).toBe(
+      "invalid options for generator 'zod' (required by 'angular'): zodVersion: bad",
+    );
   });
 
   it('ConfigLoadError preserves cause', () => {

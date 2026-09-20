@@ -2,7 +2,7 @@
  * Deterministic identifier and module-specifier helpers.
  *
  * Identifiers are never namespace-prefixed; the namespace only drives the
- * `typescript/` output sub-tree.
+ * output sub-tree, taken from `GenerateContext.segment` (`typescript` at the top level).
  */
 
 /** PascalCase variant token embedded in a type identifier. */
@@ -61,27 +61,36 @@ export function enumTypeName(name: string): string {
 
 // --- module specifiers (POSIX, extension-less) -------------------------------
 
-/** `${ns}/typescript/${entity}.type`. */
-export function entityModule(namespace: string, entity: string): string {
-  return `${namespace}/typescript/${entity}.type`;
+/*
+ * `segment` is `GenerateContext.segment`: `typescript` when the generator runs as a
+ * top-level entry, a nested path when it runs as a private dependency.
+ */
+
+/** `${ns}/${segment}/${entity}.type`. */
+export function entityModule(
+  namespace: string,
+  segment: string,
+  entity: string,
+): string {
+  return `${namespace}/${segment}/${entity}.type`;
 }
 
-/** `${ns}/typescript/enums`. */
-export function enumsModule(namespace: string): string {
-  return `${namespace}/typescript/enums`;
+/** `${ns}/${segment}/enums`. */
+export function enumsModule(namespace: string, segment: string): string {
+  return `${namespace}/${segment}/enums`;
 }
 
-/** `${ns}/typescript/filters`. */
-export function filtersModule(namespace: string): string {
-  return `${namespace}/typescript/filters`;
+/** `${ns}/${segment}/filters`. */
+export function filtersModule(namespace: string, segment: string): string {
+  return `${namespace}/${segment}/filters`;
 }
 
-/** `${ns}/typescript/scalars`. */
-export function scalarsModule(namespace: string): string {
-  return `${namespace}/typescript/scalars`;
+/** `${ns}/${segment}/scalars`. */
+export function scalarsModule(namespace: string, segment: string): string {
+  return `${namespace}/${segment}/scalars`;
 }
 
-/** `${ns}/typescript` — this generator's own barrel. */
-export function barrelModule(namespace: string): string {
-  return `${namespace}/typescript`;
+/** `${ns}/${segment}` — this generator's own barrel. */
+export function barrelModule(namespace: string, segment: string): string {
+  return `${namespace}/${segment}`;
 }

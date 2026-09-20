@@ -126,11 +126,11 @@ describe('tako validate', () => {
     expect(existsSync(join(root, 'out'))).toBe(false);
   });
 
-  it('a generator DAG cycle exits 1 with the cycle path, writes nothing', async () => {
+  it('a generator dependency cycle exits 1 with the cycle path, writes nothing', async () => {
     writeConfig(`
       const parser = { name: 'p', parse: () => ({ namespace: 'pg', parser: 'p', entities: {}, enums: {} }) }
-      const a = { name: 'a', dependsOn: ['b'], generate: () => ({ files: [], artifact: { entities: {} } }) }
-      const b = { name: 'b', dependsOn: ['a'], generate: () => ({ files: [], artifact: { entities: {} } }) }
+      const a = { name: 'a', dependsOn: () => [{ use: b }], generate: () => ({ files: [], artifact: { entities: {} } }) }
+      const b = { name: 'b', dependsOn: () => [{ use: a }], generate: () => ({ files: [], artifact: { entities: {} } }) }
       export default { sources: { pg: { use: parser } }, generators: [{ use: a }, { use: b }], outputs: [{ dir: './out' }] }
     `);
     await runCli(['validate']);

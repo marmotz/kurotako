@@ -1,6 +1,6 @@
 /**
  * Typed reader over `ctx.dependencies.zod` (the `GeneratorArtifact` produced by
- * `@kurotako/gen-zod`). `dependsOn: ['zod']` guarantees the entry is present;
+ * `@kurotako/gen-zod`). The private `zod` dependency guarantees the entry is present;
  * this module only resolves identifiers + module specifiers, never re-derives a
  * Zod name (`generator-angular/technical.md` §Naming).
  *

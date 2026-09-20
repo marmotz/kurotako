@@ -113,17 +113,21 @@ export interface ParseContext {
 
 export interface Generator {
   name: string;
-  /** Hard dependency: absent from the config => error. Constrains order. */
-  dependsOn?: string[];
-  /** Optional dependency: used if present, else ignored. Constrains order. */
-  optionalDependsOn?: string[];
+  /**
+   * Private generator dependencies: already-curried generators (options bound)
+   * that `run()` executes for this generator alone, before it, into the nested
+   * sub-tree `<namespace>/<segment>/<dep.name>/`. Each one's artifact is handed
+   * back as `ctx.dependencies[dep.name]`. They never appear in `config.generators`
+   * nor in `RunResult.artifacts`.
+   */
+  dependsOn?: Generator[];
   generate(ctx: GenerateContext): Promise<GenOutput> | GenOutput;
 }
 
 export interface GenerateContext {
   /** Namespace-filtered deep clone of the merged IR. */
   ir: IR;
-  /** Only declared deps (`dependsOn ∪ optionalDependsOn`) that actually ran. */
+  /** Artifact of each private dependency (`Generator.dependsOn`), by driver name. */
   dependencies: Record<string, GeneratorArtifact>;
   /**
    * `${namespace}.${name}` for every entity / type alias that takes part in a
@@ -133,6 +137,12 @@ export interface GenerateContext {
    * rather than emitted as a bare forward reference.
    */
   cycles: Set<string>;
+  /**
+   * Sub-tree under `<namespace>/` the generator emits into and builds its module
+   * specifiers from. `generator.name` for a top-level generator; a nested path
+   * (`angular/zod`) when the generator runs as a private dependency of another.
+   */
+  segment: string;
   logger: Logger;
 }
 
@@ -144,8 +154,8 @@ export interface GenOutput {
 export interface VirtualFile {
   /**
    * POSIX, relative to the output root. The generator owns the
-   * `<namespace>/<generatorName>/` prefix (one sub-tree per generator; core
-   * synthesizes `<namespace>/index.ts`).
+   * `<namespace>/<segment>/` prefix, where `segment` is `GenerateContext.segment`
+   * (one sub-tree per generator; core synthesizes `<namespace>/index.ts`).
    */
   path: string;
   content: string;
@@ -208,7 +218,7 @@ export interface RunOptions {
 export interface RunResult {
   /** Merged, validated IR (for `--emit-ir`, drift-guard). */
   ir: IR;
-  /** Generator short names, in execution order. */
+  /** Top-level generator short names, in execution (= declaration) order. */
   order: string[];
   /** Aggregated virtual tree, sorted by path. */
   files: VirtualFile[];
