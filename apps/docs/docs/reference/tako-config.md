@@ -77,7 +77,8 @@ generators: [
 ```
 
 `angularGenerator` runs its own private Zod copy: the `zodGenerator` entry above is only
-needed if your code imports `<namespace>/zod` itself.
+needed if your code imports `<namespace>/zod` itself. `reactTanstackGenerator` behaves the
+same way (its copy lands in `<namespace>/react-tanstack/zod/`).
 
 A generator with the removed name-based `dependsOn: ['x']` (or `optionalDependsOn`) makes
 `loadConfig` fail with `LegacyDependencyError`; see the

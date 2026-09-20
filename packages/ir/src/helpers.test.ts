@@ -3,6 +3,7 @@ import {
   createFields,
   defaultValueExpr,
   flattenUnion,
+  formInitExpr,
   getSource,
   isCreateOptional,
   isCrossSource,
@@ -295,6 +296,137 @@ describe('shared-decision helpers', () => {
     expect(defaultValueExpr({ kind: 'scalar', scalar: 'string' }, 'x')).toBe(
       '"x"',
     );
+  });
+});
+
+describe('formInitExpr', () => {
+  const scalar = (s: ScalarType, over: Partial<Field> = {}): Field =>
+    field('x', { type: { kind: 'scalar', scalar: s }, ...over });
+
+  it('a literal default wins', () => {
+    expect(
+      formInitExpr(
+        scalar('boolean', { default: { kind: 'value', value: false } }),
+      ),
+    ).toBe('false');
+  });
+
+  it('a bigint literal default is a bigint, not a string', () => {
+    expect(
+      formInitExpr(
+        scalar('bigint', { default: { kind: 'value', value: '0' } }),
+      ),
+    ).toBe('0n');
+  });
+
+  it('an expr default falls through to the type zero', () => {
+    expect(
+      formInitExpr(
+        scalar('datetime', { default: { kind: 'expr', expr: 'now()' } }),
+      ),
+    ).toBe('new Date(0)');
+  });
+
+  it('a nullable field with no default is null', () => {
+    expect(formInitExpr(scalar('datetime', { nullable: true }))).toBe('null');
+  });
+
+  it('a literal default wins over nullable', () => {
+    expect(
+      formInitExpr(
+        scalar('int', {
+          nullable: true,
+          default: { kind: 'value', value: 3 },
+        }),
+      ),
+    ).toBe('3');
+  });
+
+  it.each<[ScalarType, string]>([
+    ['string', "''"],
+    ['uuid', "''"],
+    ['decimal', "''"],
+    ['bytes', "''"],
+    ['int', '0'],
+    ['float', '0'],
+    ['bigint', '0n'],
+    ['boolean', 'false'],
+    ['date', 'new Date(0)'],
+    ['datetime', 'new Date(0)'],
+    ['json', 'undefined'],
+  ])('zero value for %s', (s, expected) => {
+    expect(formInitExpr(scalar(s))).toBe(expected);
+  });
+
+  it('a list field is an empty array, or its literal default', () => {
+    expect(formInitExpr(scalar('string', { list: true }))).toBe('[]');
+    expect(
+      formInitExpr(
+        scalar('string', {
+          list: true,
+          default: { kind: 'value', value: ['a'] },
+        }),
+      ),
+    ).toBe('["a"]');
+  });
+
+  it('an array field is an empty array', () => {
+    expect(
+      formInitExpr(
+        field('x', {
+          type: { kind: 'array', element: { kind: 'ref', ref: 'Task' } },
+        }),
+      ),
+    ).toBe('[]');
+  });
+
+  it('a map field is an empty object', () => {
+    expect(
+      formInitExpr(
+        field('x', {
+          type: { kind: 'map', value: { kind: 'scalar', scalar: 'int' } },
+        }),
+      ),
+    ).toBe('{}');
+  });
+
+  it('an enum field is the resolved first member literal', () => {
+    const f = field('x', { type: { kind: 'enum', ref: 'Role' } });
+    expect(formInitExpr(f, () => 'ADMIN')).toBe('"ADMIN"');
+  });
+
+  it('an enum field with no resolver (or an unresolved ref) is undefined', () => {
+    const f = field('x', { type: { kind: 'enum', ref: 'Role' } });
+    expect(formInitExpr(f)).toBe('undefined');
+    expect(formInitExpr(f, () => undefined)).toBe('undefined');
+  });
+
+  it('an unknown field is undefined', () => {
+    expect(formInitExpr(field('x', { type: { kind: 'unknown' } }))).toBe(
+      'undefined',
+    );
+  });
+
+  it('a ref field is undefined (no synthesisable zero)', () => {
+    expect(
+      formInitExpr(field('x', { type: { kind: 'ref', ref: 'Address' } })),
+    ).toBe('undefined');
+  });
+
+  it('a non-discriminated union field is undefined', () => {
+    expect(
+      formInitExpr(
+        field('x', {
+          type: {
+            kind: 'union',
+            variants: [
+              { kind: 'scalar', scalar: 'string' },
+              { kind: 'scalar', scalar: 'int' },
+            ],
+          },
+        }),
+      ),
+    ).toBe('undefined');
   });
 });
 

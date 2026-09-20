@@ -6,6 +6,7 @@
 [ parsers (1..N) ]  ->  [ global IR ]  ->  [ generators (0..N) ]  ->  [ output ]
    parser-prisma          map of             gen-zod                        mode A: directory
    parser-mongoose        namespaces         gen-angular (private gen-zod)   mode B: package/source
+                                             gen-react-tanstack (private gen-zod)
 ```
 
 No fixed 3-stage pipeline. Only two driver roles:
@@ -91,8 +92,8 @@ See [ir.md](ir.md). Structural points:
 
 - Author side (`@kurotako/config`): `dependsOn` is `readonly { use, options? }[]`, or a function
   `(options) => readonly { use, options? }[]` receiving the generator's validated options, so the dependency's options
-  can derive from them. `gen-angular` declares `dependsOn: (options) => [{ use: zodGenerator, options: { zodVersion:
-  options.zodVersion } }]`. A dependency chain may nest; a cycle (reachable only through the function form) is
+  can derive from them. `gen-angular` and `gen-react-tanstack` each declare `dependsOn: (options) => [{ use: zodGenerator,
+  options: { zodVersion: options.zodVersion } }]`. A dependency chain may nest; a cycle (reachable only through the function form) is
   rejected at load with `DependencyCycleError`. The removed name-based form (strings, `optionalDependsOn`) is rejected
   with `LegacyDependencyError`.
 - There is **no** "generate its own `Validators` from the IR" fallback — Zod is the single source of validation
@@ -136,7 +137,7 @@ interface EntitySymbols {
 ```
 
 A dependent reads `ctx.dependencies.zod.entities['pg.User'].symbols.schema`, never a raw path — this is what decouples
-`gen-angular` from `gen-zod`'s output tree.
+`gen-angular` and `gen-react-tanstack` from `gen-zod`'s output tree.
 
 ## Namespaces and output
 
@@ -170,6 +171,7 @@ generated/kurotako/
     index.ts           # synthesized by tako: re-exports every generator's sub-tree
     zod/     index.ts  enums.ts  filters.ts  User.schema.ts
     angular/ index.ts  zod-forms.runtime.ts  User.form.ts
+    react-tanstack/ index.ts  form.runtime.ts  User.form.ts
   mongo/
     index.ts
     zod/     index.ts  User.schema.ts

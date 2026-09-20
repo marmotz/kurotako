@@ -63,4 +63,4 @@ Node >= 24. Published code must run unmodified on Node and Bun — no `Bun.*` AP
   `.changeset/`, see [`.changeset/README.md`](.changeset/README.md)). Skip it only for
   changes with no user-facing effect (docs, backlog, internal refactor with no API change).
 - Do not invent APIs, versions, or package names — verify against `docs/`.
-- Suggested feature order: `monorepo-bootstrap` -> `ir-model` -> `core-pipeline` -> `config-system` -> `parser-prisma` -> `gen-zod` -> `gen-angular` -> `cli` -> `output-modes`.
+- Suggested feature order: `monorepo-bootstrap` -> `ir-model` -> `core-pipeline` -> `config-system` -> `parser-prisma` -> `gen-zod` -> `gen-angular` -> `gen-react-tanstack` -> `cli` -> `output-modes`.

@@ -12,8 +12,9 @@ a copy of it for that generator alone.
 
 ## What a private dependency is
 
-`gen-angular` reuses the Zod schemas that `gen-zod` emits. Instead of asking you to add a
-`zod` entry and keep the two in sync, it declares the dependency itself:
+`gen-angular` reuses the Zod schemas that `gen-zod` emits (`gen-react-tanstack` does the same
+and declares its dependency identically, under `<namespace>/react-tanstack/zod/`). Instead of
+asking you to add a `zod` entry and keep the two in sync, it declares the dependency itself:
 
 ```ts
 export const angularGenerator = defineGenerator({

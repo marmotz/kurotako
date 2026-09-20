@@ -1,0 +1,74 @@
+{
+  "name": "@kurotako/gen-react-tanstack",
+  "version": "0.0.0",
+  "description": "kurotako generator that emits React + TanStack Form hooks from the intermediate representation.",
+  "keywords": [
+    "kurotako",
+    "codegen",
+    "typescript",
+    "react",
+    "tanstack",
+    "forms",
+    "generator"
+  ],
+  "license": "MIT",
+  "author": "Marmotz",
+  "homepage": "https://kurotako.marmotz.dev/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/marmotz/kurotako.git",
+    "directory": "packages/gen-react-tanstack"
+  },
+  "bugs": "https://github.com/marmotz/kurotako/issues",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc -b",
+    "test": "vitest run"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@kurotako/gen-zod": "workspace:^",
+    "@kurotako/ir": "workspace:^",
+    "valibot": "1.4.2"
+  },
+  "peerDependencies": {
+    "@kurotako/config": "workspace:^",
+    "@kurotako/core": "workspace:^"
+  },
+  "devDependencies": {
+    "@kurotako/config": "workspace:^",
+    "@kurotako/core": "workspace:^",
+    "@tanstack/react-form": "1.33.5",
+    "@testing-library/dom": "10.4.2",
+    "@testing-library/react": "16.3.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "jsdom": "30.1.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "typescript": "5.9.3",
+    "zod": "4.6.5"
+  }
+}

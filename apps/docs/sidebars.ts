@@ -23,7 +23,11 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'Getting started',
       collapsed: false,
-      items: ['getting-started/quick-start', 'getting-started/installation'],
+      items: [
+        'getting-started/quick-start',
+        'getting-started/installation',
+        'getting-started/react-quick-start',
+      ],
     },
     {
       type: 'category',

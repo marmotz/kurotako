@@ -16,7 +16,7 @@
  * to-one nested group or push a new to-many item after construction.
  */
 import type { GeneratorArtifact, Logger } from '@kurotako/core';
-import type { Entity, SourceIR } from '@kurotako/ir';
+import type { Entity, EnumZero, SourceIR } from '@kurotako/ir';
 import {
   controlsTypeName,
   factoryMethod,
@@ -31,7 +31,6 @@ import {
   controlExpr,
   controlsInterface,
   controlType,
-  type EnumZero,
   enumZeroFromSource,
   fieldControlEntry,
   initExpr,

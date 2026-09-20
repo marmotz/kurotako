@@ -144,6 +144,34 @@ constraints, under `<namespace>/angular/`.
 generators: [ { use: angularGenerator, options: { forms: [ 'reactive' ], relations: 'deep' } } ]
 ```
 
+### `@kurotako/gen-react-tanstack`
+
+Emits one typed React hook per entity, `use<Entity>Form`, built on
+[TanStack Form](https://tanstack.com/form) and validated by the Zod schemas kurotako
+generates from the same IR, under `<namespace>/react-tanstack/`: one `<Entity>.form.ts` per
+entity, a `form.runtime.ts` (the only file that calls `@tanstack/react-form`) and a barrel.
+See the [React quick start](../getting-started/react-quick-start.md).
+
+- **Export:** `reactTanstackGenerator` — the value you pass to `use` in a `generators` entry.
+- **Name:** `react-tanstack` — its `name` field.
+- **Depends on:** a private copy of `zod`, run by `core` for this generator alone and emitted
+  under `<namespace>/react-tanstack/zod/`. You do not add `zodGenerator` to `generators`
+  (keep it only if your code imports `<namespace>/zod`).
+- **Peer dependency:** `@tanstack/react-form` `^1.17.0` (plus `zod`, merged from the private copy).
+
+| Option       | Type                                 | Default    | Notes                                                                                                                          |
+|--------------|--------------------------------------|------------|--------------------------------------------------------------------------------------------------------------------------------|
+| `zodVersion` | `3` \| `4`                           | `4`        | Zod API flavor of the private Zod copy (forwarded to `gen-zod`)                                                                |
+| `include`    | `string[]`                           | every entity | entity names to emit hooks for, in every namespace the entry covers; a name found in none of them is an error                |
+| `variants`   | `('full' \| 'create' \| 'update')[]` | `['full']` | which Zod variant a hook is built on; `full` is the request-body shape, at least one variant                                   |
+| `relations`  | `'flat'` \| `'deep'`                 | `'flat'`   | `flat` = scalar and enum fields; `deep` = nested objects for to-one relations, arrays for to-many                              |
+
+```ts
+generators: [
+  { use: reactTanstackGenerator, options: { include: ['LoginDto'], variants: ['create'] } },
+]
+```
+
 ### `@kurotako/gen-typescript`
 
 Emits pure TypeScript type declarations from the IR — no runtime dependency on generated

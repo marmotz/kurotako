@@ -130,69 +130,33 @@ describe('controlType', () => {
 });
 
 describe('initExpr', () => {
-  it('a literal default seeds the control', () => {
-    const field = scalarField('boolean', {
-      default: { kind: 'value', value: false },
-    });
-    expect(initExpr(field)).toBe('false');
-  });
-
-  it('a bigint literal default seeds the control as a bigint, not a string', () => {
-    const field = scalarField('bigint', {
-      default: { kind: 'value', value: '0' },
-    });
-    expect(initExpr(field)).toBe('0n');
-  });
-
-  it('an expr default falls through to the type zero (never null for a non-nullable field)', () => {
-    const field = scalarField('datetime', {
-      default: { kind: 'expr', expr: 'now()' },
-    });
-    expect(initExpr(field)).toBe('new Date(0)');
-  });
-
-  it('a nullable field with no default zeroes to null', () => {
-    const field = scalarField('datetime', { nullable: true });
-    expect(initExpr(field)).toBe('null');
-  });
-
-  it.each<[ScalarType, string]>([
-    ['string', "''"],
-    ['int', '0'],
-    ['bigint', '0n'],
-    ['boolean', 'false'],
-    ['date', 'new Date(0)'],
-    ['datetime', 'new Date(0)'],
-    ['json', 'undefined'],
-  ])('zero value for %s', (scalar, expected) => {
-    expect(initExpr(scalarField(scalar))).toBe(expected);
-  });
-
-  it('a list field zeroes to an empty array', () => {
+  // Per-branch cases of the shared type zero live in `@kurotako/ir`
+  // (`formInitExpr`); only the delegation and the Angular-specific override
+  // are covered here.
+  it('delegates to the shared type zero', () => {
+    expect(initExpr(scalarField('string'))).toBe("''");
+    expect(initExpr(scalarField('datetime', { nullable: true }))).toBe('null');
     expect(initExpr(scalarField('string', { list: true }))).toBe('[]');
+    expect(
+      initExpr(
+        scalarField('boolean', { default: { kind: 'value', value: false } }),
+      ),
+    ).toBe('false');
+    expect(
+      initExpr(
+        scalarField('string', { type: { kind: 'enum', ref: 'Role' } }),
+        () => 'ADMIN',
+      ),
+    ).toBe('"ADMIN"');
   });
 
-  it('an enum field with no default zeroes to the resolved first member literal, not undefined', () => {
-    const field = scalarField('string', {
-      type: { kind: 'enum', ref: 'Role' },
-    });
-    expect(initExpr(field, () => 'ADMIN')).toBe('"ADMIN"');
-  });
-
-  it('an enum field with no default and no resolver falls back to undefined', () => {
-    const field = scalarField('string', {
-      type: { kind: 'enum', ref: 'Role' },
-    });
-    expect(initExpr(field)).toBe('undefined');
-  });
-
-  it('a ref field zeroes to null (empty-seeded, validated by Zod)', () => {
+  it('a ref field is seeded null (empty control, validated by Zod)', () => {
     expect(
       initExpr(scalarField('string', { type: { kind: 'ref', ref: 'A' } })),
     ).toBe('null');
   });
 
-  it('a union field zeroes to null', () => {
+  it('a union field is seeded null', () => {
     const field = scalarField('string', {
       type: {
         kind: 'union',
@@ -203,6 +167,17 @@ describe('initExpr', () => {
       },
     });
     expect(initExpr(field)).toBe('null');
+  });
+
+  it('a ref list field stays an empty array', () => {
+    expect(
+      initExpr(
+        scalarField('string', {
+          list: true,
+          type: { kind: 'ref', ref: 'A' },
+        }),
+      ),
+    ).toBe('[]');
   });
 });
 
