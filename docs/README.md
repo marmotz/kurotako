@@ -13,6 +13,6 @@ way of a validation layer.
 ## Project status
 
 MVP implemented (`parser-prisma` + `gen-zod` + `gen-angular` + `cli`, plus the `kurotako`
-meta-package). Decisions are recorded in [vision.md](vision.md#decisions-already-made) and
+meta-package), followed by `gen-typescript`, `gen-openapi` and `gen-react-tanstack`. Decisions are recorded in [vision.md](vision.md#decisions-already-made) and
 [vision.md](vision.md#resolved-questions); the design history lives in
 `backlog/_archives/features/`.

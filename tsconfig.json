@@ -12,6 +12,7 @@
     { "path": "packages/gen-openapi" },
     { "path": "packages/gen-zod" },
     { "path": "packages/gen-angular" },
+    { "path": "packages/gen-react-tanstack" },
     { "path": "packages/gen-typescript" }
   ]
 }

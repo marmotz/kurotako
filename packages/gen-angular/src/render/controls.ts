@@ -7,12 +7,13 @@
  */
 import type {
   Entity,
+  EnumZero,
   Field,
   FieldType,
   ScalarType,
   SourceIR,
 } from '@kurotako/ir';
-import { defaultValueExpr, resolveEnum } from '@kurotako/ir';
+import { formInitExpr, resolveEnum } from '@kurotako/ir';
 import type { Variant } from '../names.js';
 import { type RefTypeName, unionType } from './unions.js';
 
@@ -87,86 +88,27 @@ export function controlType(field: Field, resolvers: TypeResolvers): string {
   return t;
 }
 
-/** Resolve an enum ref to a real member literal for `initExpr`'s enum zero. */
-export type EnumZero = (ref: string) => string | undefined;
-
 /** `EnumZero` backed by the IR: the enum's first declared member, in source order. */
 export function enumZeroFromSource(source: SourceIR, entity: Entity): EnumZero {
   return (ref) => resolveEnum(source, entity, ref)?.values[0]?.name;
 }
 
 /**
- * A valid, always-assignable non-null literal for the field's base type. Never
- * `null` — the Zod-inferred DTO type for a field with no literal default is
- * `T` (required) or `T | undefined` (optional), never `T | null`; only a
- * `field.nullable` field's DTO type includes `null`, and `initExpr` handles
- * that case itself rather than folding it in here.
+ * The control's initial-value expression: the shared `formInitExpr`, with a
+ * `ref` / non-discriminated `union` fallback field (no non-null zero) seeded
+ * empty (`null`) instead of `undefined` — its reactive `FormControl` is validated
+ * by Zod.
  */
-function zeroValue(field: Field, enumZero?: EnumZero): string {
-  if (field.type.kind === 'scalar') {
-    switch (field.type.scalar) {
-      case 'string':
-      case 'uuid':
-      case 'decimal':
-      case 'bytes':
-        return "''";
-      case 'int':
-      case 'float':
-        return '0';
-      case 'bigint':
-        return '0n';
-      case 'boolean':
-        return 'false';
-      case 'date':
-      case 'datetime':
-        return 'new Date(0)';
-      case 'json':
-        // control type is `unknown`: `| undefined` is trivially assignable.
-        return 'undefined';
-    }
-  }
-  if (field.type.kind === 'enum') {
-    // Unlike a scalar zero, `x ?? undefined` never actually strips
-    // `| undefined` from `x`'s type (TS keeps it, since the fallback's own
-    // type still includes it) — so a non-nullable enum control with no
-    // literal default needs a *real* member literal, not `undefined`, or
-    // `new FormControl(..., { nonNullable: true })` fails to type-check
-    // against the field's exact union type.
-    const value = enumZero?.(field.type.ref);
-    return value === undefined ? 'undefined' : JSON.stringify(value);
-  }
-  if (field.type.kind === 'map') {
-    return '{}';
-  }
-  if (field.type.kind === 'array') {
-    return '[]';
-  }
-  // `ref` / non-discriminated `union`: no synthesisable zero — the control type
-  // is `RefDto` / `A | B` and the seed is cast (`controlExpr`); `zodValidator`
-  // flags the still-empty control until the consumer fills it
-  // (`ir-union-type/technical.md` §8).
-  return 'undefined';
-}
-
-/** The control's initial-value expression: a literal default, else the type's zero. */
 export function initExpr(field: Field, enumZero?: EnumZero): string {
-  if (field.list || field.type.kind === 'array') {
-    return field.default?.kind === 'value'
-      ? defaultValueExpr(field.type, field.default.value)
-      : '[]';
-  }
-  if (field.default?.kind === 'value') {
-    return defaultValueExpr(field.type, field.default.value);
-  }
-  if (field.nullable) {
+  const expr = formInitExpr(field, enumZero);
+  if (
+    expr === 'undefined' &&
+    !field.list &&
+    (field.type.kind === 'ref' || field.type.kind === 'union')
+  ) {
     return 'null';
   }
-  // A `ref` / non-discriminated `union` fallback field has no non-null zero;
-  // its reactive `FormControl` is seeded empty (`null`) and validated by Zod.
-  if (field.type.kind === 'ref' || field.type.kind === 'union') {
-    return 'null';
-  }
-  return zeroValue(field, enumZero);
+  return expr;
 }
 
 /**

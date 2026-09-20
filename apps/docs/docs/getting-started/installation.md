@@ -65,6 +65,7 @@ use (see the [API reference](../api/)).
 |----------------------------|----------------------------------------------------------|
 | `@kurotako/gen-zod`        | Zod schemas                                              |
 | `@kurotako/gen-angular`    | Angular types and typed `FormGroup`s (embeds its own Zod)|
+| `@kurotako/gen-react-tanstack` | typed React + TanStack Form hooks (embeds its own Zod) |
 | `@kurotako/gen-typescript` | pure TypeScript type declarations, no runtime dependency |
 | `@kurotako/gen-openapi`    | one OpenAPI 3.0/3.1 document per namespace               |
 
@@ -72,6 +73,10 @@ use (see the [API reference](../api/)).
 # Prisma in, Zod + Angular out:
 npm install -D @kurotako/parser-prisma @kurotako/gen-zod @kurotako/gen-angular
 # bun add -d @kurotako/parser-prisma @kurotako/gen-zod @kurotako/gen-angular
+
+# OpenAPI in, React + TanStack Form hooks out:
+npm install -D @kurotako/parser-openapi @kurotako/gen-react-tanstack
+npm install @tanstack/react-form zod
 
 # Prisma in, Zod only:
 npm install -D @kurotako/parser-prisma @kurotako/gen-zod

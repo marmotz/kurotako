@@ -264,6 +264,27 @@ Per the project rule, every implementation ships with tests.
 - Changesets: new package `@kurotako/gen-react-tanstack` (minor, first publish is manual per the release
   pipeline notes), `@kurotako/ir` minor, `@kurotako/gen-angular` patch.
 
+## Implementation notes (settled by the compile and behaviour tests)
+
+- `ReactFormExtendedApi` takes 12 generics in the order drafted above; `StandardSchemaV1` and
+  `FormOptions` are exported by `@tanstack/react-form` (no `@standard-schema/spec` fallback). The peer floor is
+  `^1.17.0`, the first release exporting `revalidateLogic` and the `onDynamic` validator (checked by compiling the
+  output against it).
+- The `schema` option is typed `ZodFormSchema<T> = StandardSchemaV1<unknown, T>` (a schema whose *output* is `T`), not
+  `StandardSchemaV1<T, unknown>`: a Zod schema with a coercion (`z.coerce.date()`) or a recursive `z.ZodType<Dto>` has an
+  `unknown` input, which the stricter type rejects. The runtime file casts it back for TanStack. `extend` / `refine`
+  schemas stay assignable.
+- `onSubmit` / `onSubmitInvalid` take TanStack's own `FormOptions` types (their `formApi` is the core `FormApi`, not the
+  React one).
+- **Recursive values types**: TanStack's `DeepKeys<T>` has no recursion guard, so a self-referential values type makes
+  `tsc` fail with TS2589 as soon as the form API is used. Each hook therefore types its values with a generated
+  `<Entity><Variant>FormValues`: the Zod DTO itself when nothing recurses; otherwise a field reaching a `ref` cycle is
+  typed `unknown`, and in deep mode a relation is followed at most two levels below the entity and never back to an
+  entity already on the path (`render/values.ts`). A to-one relation pair that would recurse forever at runtime is not
+  seeded either. The artifact exposes the type under the `values` / `createValues` / `updateValues` roles.
+- A to-one relation whose target is not emitted (`include`) degrades the same way as a cyclic one (no import of a
+  missing module).
+
 ## Ekoz wiring (informative, lives in the Ekoz repo)
 
 ```ts

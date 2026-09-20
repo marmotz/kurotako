@@ -306,6 +306,79 @@ export function defaultValueExpr(type: FieldType, value: JsonValue): string {
   return JSON.stringify(value);
 }
 
+/** Resolve an enum ref to a real member literal for `formInitExpr`'s enum zero. */
+export type EnumZero = (ref: string) => string | undefined;
+
+/**
+ * A valid, always-assignable non-null literal for the field's base type. Never
+ * `null` — a field with no literal default is `T` (required) or
+ * `T | undefined` (optional) in a generated DTO type, never `T | null`; only a
+ * `field.nullable` field includes `null`, and `formInitExpr` handles that case
+ * itself rather than folding it in here.
+ */
+function zeroValue(field: Field, enumZero?: EnumZero): string {
+  if (field.type.kind === 'scalar') {
+    switch (field.type.scalar) {
+      case 'string':
+      case 'uuid':
+      case 'decimal':
+      case 'bytes':
+        return "''";
+      case 'int':
+      case 'float':
+        return '0';
+      case 'bigint':
+        return '0n';
+      case 'boolean':
+        return 'false';
+      case 'date':
+      case 'datetime':
+        return 'new Date(0)';
+      case 'json':
+        // typed `unknown`: `| undefined` is trivially assignable.
+        return 'undefined';
+    }
+  }
+  if (field.type.kind === 'enum') {
+    // `x ?? undefined` never strips `| undefined` from `x`'s type, so a
+    // non-nullable enum with no literal default needs a *real* member literal,
+    // not `undefined`, to be assignable to the field's exact union type.
+    const value = enumZero?.(field.type.ref);
+    return value === undefined ? 'undefined' : JSON.stringify(value);
+  }
+  if (field.type.kind === 'map') {
+    return '{}';
+  }
+  if (field.type.kind === 'array') {
+    return '[]';
+  }
+  // `ref` / non-discriminated `union`: no synthesisable zero.
+  return 'undefined';
+}
+
+/**
+ * A form field's initial-value expression, as source text: a literal default,
+ * `[]` for a list / array, `null` for a nullable field, else the type's zero
+ * (`''`, `0`, `false`, `0n`, `new Date(0)`, `{}`, the enum's first member).
+ * A `ref` / non-discriminated `union` field has no synthesisable zero and yields
+ * `undefined`; a generator whose form model cannot hold `undefined` overrides
+ * that case itself. `enumZero` resolves an enum ref to its first member name.
+ */
+export function formInitExpr(field: Field, enumZero?: EnumZero): string {
+  if (field.list || field.type.kind === 'array') {
+    return field.default?.kind === 'value'
+      ? defaultValueExpr(field.type, field.default.value)
+      : '[]';
+  }
+  if (field.default?.kind === 'value') {
+    return defaultValueExpr(field.type, field.default.value);
+  }
+  if (field.nullable) {
+    return 'null';
+  }
+  return zeroValue(field, enumZero);
+}
+
 /**
  * Fields to include in a "create" payload: `entity.fields` minus the ones whose
  * only value source is db-side (a primary-key member that is `isDbAssigned`).

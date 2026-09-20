@@ -32,7 +32,8 @@ kurotako models code generation as a pipeline of two kinds of component:
   slice of an [intermediate representation](concepts/intermediate-representation.md) (IR)
   under a [namespace](concepts/namespaces.md).
 - **Generators** consume the merged IR — plus the artifacts of the generators they
-  depend on — and emit code (Zod schemas, Angular types and `FormGroup`s, …).
+  depend on — and emit code (Zod schemas, Angular types and `FormGroup`s, React form
+  hooks, …).
 
 There is no fixed middle stage and no dependency graph: generators run in declaration
 order, and a generator that needs another one declares it as a
@@ -52,6 +53,9 @@ schema.prisma ──▶ parser-prisma ──▶  IR  ──▶ gen-zod ───
 3. `@kurotako/gen-angular` — IR (+ Zod) → types, typed `FormGroup`s and `Validators`
    aligned on the schema constraints.
 4. `@kurotako/cli` — the `tako` binary orchestrating the pipeline against a real project.
+
+After the MVP, `@kurotako/gen-react-tanstack` (IR + Zod → typed React + TanStack Form hooks)
+joined the generators.
 
 Supporting packages: `@kurotako/ir` (shared types and schemas), `@kurotako/core`
 (orchestration, private generator dependencies, IR merge) and `@kurotako/config` (the `tako.config.ts`

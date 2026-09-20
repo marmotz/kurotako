@@ -43,9 +43,10 @@ npm install -D @kurotako/parser-prisma @kurotako/gen-zod @kurotako/gen-angular
 # bun add -d @kurotako/parser-prisma @kurotako/gen-zod @kurotako/gen-angular
 ```
 
-A React-only project would install `@kurotako/gen-zod` alone; a project with a different
-schema source would swap `@kurotako/parser-prisma` for another parser. The full list is
-in the [catalog](../reference/catalog.md).
+A React project would install `@kurotako/gen-react-tanstack` instead (see the
+[React quick start](react-quick-start.md)); a project with a different schema source
+would swap `@kurotako/parser-prisma` for another parser. The full list is in the
+[catalog](../reference/catalog.md).
 
 The commands below use `npm`/`npx`; the Bun equivalents (`bun add`, `bunx tako …`) work
 identically, as do pnpm and Yarn. See [Installation](installation.md) for details.

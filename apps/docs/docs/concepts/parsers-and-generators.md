@@ -44,6 +44,8 @@ dependencies — and emits files:
 - `@kurotako/gen-angular` emits TypeScript types, typed `FormGroup`s and `Validators`
   aligned on the schema constraints. It embeds its own private copy of the Zod generator
   and reads its artifact; you need no `zod` entry.
+- `@kurotako/gen-react-tanstack` emits one typed React hook per entity, built on TanStack
+  Form and validated by Zod. Like `gen-angular`, it embeds its own private Zod copy.
 - `@kurotako/gen-typescript` emits pure TypeScript type declarations from the IR, with no
   runtime dependency on generated code and no dependency on another generator.
 - `@kurotako/gen-openapi` emits one OpenAPI 3.0/3.1 document per namespace from the IR.

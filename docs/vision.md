@@ -16,7 +16,7 @@ Differentiators:
 1. **Pipeline architecture with interchangeable drivers**, not a plugin locked onto a single stack. One `parser` input,
    N `generator` outputs wired by private generator dependencies.
 2. **Angular as an output from the very first generator**: a blind spot of the current ecosystem, which targets React
-   almost exclusively.
+   almost exclusively. React is served too, through `gen-react-tanstack`.
 3. **Multiple sources**: several `parsers` active in parallel (e.g. Prisma for PostgreSQL
     + Mongoose for MongoDB), isolated by namespace.
 
@@ -27,6 +27,9 @@ Differentiators:
 3. `gen-angular`: IR (+ Zod) → types + typed `FormGroup`s / Signal Forms. Validation is fully **Zod-delegated**
    (`zodValidator(schema)` on the group), not re-derived as Angular `Validators`.
 4. `cli`: `tako` binary orchestrating the pipeline against a real project.
+
+Added after the MVP: `gen-react-tanstack` (IR + Zod → one typed React + TanStack Form hook per entity, validation
+Zod-delegated through Standard Schema, private Zod dependency like `gen-angular`).
 
 Supporting pieces: `@kurotako/ir` (shared types), `@kurotako/core` (orchestration, private generator dependencies, IR merge by
 namespace), config system, output modes.

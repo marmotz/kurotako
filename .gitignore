@@ -17,3 +17,6 @@ packages/kurotako/dist-test
 apps/docs/build
 apps/docs/.docusaurus
 apps/docs/docs/api
+
+# Transient test fixtures (@kurotako/gen-react-tanstack behaviour tests)
+packages/gen-react-tanstack/tmp-*

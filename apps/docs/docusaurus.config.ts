@@ -64,6 +64,7 @@ const config: Config = {
           '../../packages/core',
           '../../packages/config',
           '../../packages/cli',
+          '../../packages/gen-react-tanstack',
         ],
         out: 'docs/api',
         readme: 'none',
