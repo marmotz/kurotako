@@ -1,6 +1,6 @@
 # parser-prisma rejects a Prisma 8 expression index as an invalid contract
 
-**Status**: [technical design](technical.md)
+**Status**: fixed — [#192](https://github.com/marmotz/kurotako/issues/192) and [#193](https://github.com/marmotz/kurotako/issues/193) shipped; design in [technical.md](technical.md).
 
 ## Context
 
@@ -43,17 +43,17 @@ error: script "check" exited with code 1
 Confirmed at two levels, both hard-requiring `columns` on every index entry
 with no accommodation for an expression index:
 
-- [`packages/parser-prisma/src/contract/schema.ts:76-84`](../../../packages/parser-prisma/src/contract/schema.ts) —
+- [`packages/parser-prisma/src/contract/schema.ts:76-84`](../../../../packages/parser-prisma/src/contract/schema.ts) —
   the valibot `table.indexes` entry schema is
   `v.looseObject({ columns: v.array(v.string()), name: v.optional(v.string()), type: v.optional(v.string()) })`.
   `columns` is mandatory, so any index entry that instead carries
   `expression` (and no `columns`) fails validation at exactly the reported
   path — this is the error being thrown.
-- [`packages/parser-prisma/src/contract/read.ts:283-293`](../../../packages/parser-prisma/src/contract/read.ts) —
+- [`packages/parser-prisma/src/contract/read.ts:283-293`](../../../../packages/parser-prisma/src/contract/read.ts) —
   even past validation, the mapping into `PrismaEntity.indexes` reads
   `entry.columns` unconditionally (`toFieldNames(strings(record(entry).columns), columnToField)`)
   with no branch for an `expression`-only entry.
-- [`packages/ir/src/schemas.ts:184-188`](../../../packages/ir/src/schemas.ts) —
+- [`packages/ir/src/schemas.ts:184-188`](../../../../packages/ir/src/schemas.ts) —
   the IR itself has no representation for an expression index either:
   `IndexDefSchema` is `{ fields: string[], name?, type? }`, with no
   `expression` member. So this is not just a `parser-prisma` validation gap;

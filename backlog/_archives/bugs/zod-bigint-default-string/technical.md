@@ -2,13 +2,13 @@
 
 ## Root cause
 
-The IR is JSON-serializable by construction ([`packages/ir/src/schemas.ts:9-11`](../../../packages/ir/src/schemas.ts)):
+The IR is JSON-serializable by construction ([`packages/ir/src/schemas.ts:9-11`](../../../../packages/ir/src/schemas.ts)):
 `DefaultValueSchema`'s `value` variant is a `JsonValue`
-([`packages/ir/src/schemas.ts:127`](../../../packages/ir/src/schemas.ts)), which has no
+([`packages/ir/src/schemas.ts:127`](../../../../packages/ir/src/schemas.ts)), which has no
 `bigint` member. A `bigint` field's literal default therefore has no valid
 in-IR representation other than a numeric string — confirmed at the source:
 Prisma's DMMF itself encodes a `BigInt` `@default` as a JS string, and
-[`packages/parser-prisma/src/map/defaults.ts:35-38`](../../../packages/parser-prisma/src/map/defaults.ts)
+[`packages/parser-prisma/src/map/defaults.ts:35-38`](../../../../packages/parser-prisma/src/map/defaults.ts)
 passes any non-call literal through verbatim (`{ kind: 'value', value: raw }`),
 so `field.default.value` for a `bigint` field is always the numeric string
 Prisma reported (e.g. `"0"`), never a bare `number`.
@@ -17,16 +17,16 @@ Three render sites turn `field.default.value` into a source-code expression
 via `JSON.stringify`, which re-quotes that string instead of producing a
 bigint literal:
 
-- [`packages/gen-zod/src/render/field.ts:53`](../../../packages/gen-zod/src/render/field.ts) —
+- [`packages/gen-zod/src/render/field.ts:53`](../../../../packages/gen-zod/src/render/field.ts) —
   `` expr += `.default(${JSON.stringify(field.default.value)})` `` → `.default("0")`
   instead of `.default(0n)`. Breaks compilation (TS2769: `string` is not
   assignable to `ZodBigInt`'s `default()` overloads).
-- [`packages/gen-angular/src/render/controls.ts:158-159`](../../../packages/gen-angular/src/render/controls.ts) —
+- [`packages/gen-angular/src/render/controls.ts:158-159`](../../../../packages/gen-angular/src/render/controls.ts) —
   `initExpr` returns `JSON.stringify(field.default.value)` → the `FormControl`
   seed is the string `'"0"'` instead of `0n`. Same failure mode as gen-zod:
   the control is declared `FormControl<bigint>` (`SCALAR_BASE.bigint`, line 41)
   but seeded with a `string`.
-- [`packages/gen-typescript/src/render/jsdoc.ts:24-25`](../../../packages/gen-typescript/src/render/jsdoc.ts) —
+- [`packages/gen-typescript/src/render/jsdoc.ts:24-25`](../../../../packages/gen-typescript/src/render/jsdoc.ts) —
   `` tags.push(`@default ${JSON.stringify(field.default.value)}`) `` → renders
   `@default "0"` in the JSDoc comment. No compile error (it's a comment), but
   inconsistent with the other two once they're fixed.
@@ -42,7 +42,7 @@ its TS literal syntax (unquoted, `n`-suffixed).
 ### Shared helper in `@kurotako/ir`
 
 Per the existing "shared-decision helpers" principle already stated at
-[`packages/ir/src/helpers.ts:250-255`](../../../packages/ir/src/helpers.ts)
+[`packages/ir/src/helpers.ts:250-255`](../../../../packages/ir/src/helpers.ts)
 ("any modelling rule that a parser or generator would otherwise
 re-implement 'in its own way' lives here"), add one pure helper next to
 `scalarTsType` (same file) and export it from the package barrel:
@@ -63,7 +63,7 @@ export function defaultValueExpr(type: FieldType, value: JsonValue): string {
 }
 ```
 
-`JsonValue` is already exported from `@kurotako/ir` ([`packages/ir/src/types.ts:27`](../../../packages/ir/src/types.ts)).
+`JsonValue` is already exported from `@kurotako/ir` ([`packages/ir/src/types.ts:27`](../../../../packages/ir/src/types.ts)).
 The cast is safe: a `bigint`-scalar field's default is only ever produced by
 `mapDefault` passing through the DMMF's own string encoding (see Root cause);
 nothing else on the IR-construction path produces a `bigint` default of a

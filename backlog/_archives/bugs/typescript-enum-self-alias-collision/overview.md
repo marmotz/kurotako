@@ -1,6 +1,6 @@
 # gen-typescript rejects every named enum as colliding with its own self-alias
 
-**Status**: [technical.md](technical.md)
+**Status**: fixed — [#186](https://github.com/marmotz/kurotako/issues/186) to [#189](https://github.com/marmotz/kurotako/issues/189) shipped; design in [technical.md](technical.md).
 
 ## Context
 
@@ -38,20 +38,20 @@ aliases[name] = { name, type: { kind: 'enum', ref: name } };
 ```
 
 This exact pattern is called out and *correctly* handled elsewhere in the
-codebase — [`packages/gen-openapi/src/document.ts:20-25`](../../../packages/gen-openapi/src/document.ts):
+codebase — [`packages/gen-openapi/src/document.ts:20-25`](../../../../packages/gen-openapi/src/document.ts):
 
 > "`render/schema.ts` maps `FieldType.kind === 'enum'` to a bare `$ref`
 > (mirroring `parser-openapi`'s self-referencing `typeAliases[name] = { kind:
 > 'enum', ref: name }` entry) ... the synthetic self-referencing alias is
 > skipped in favour of this one."
 
-`gen-openapi`'s own name-collection ([`document.ts:76-82`](../../../packages/gen-openapi/src/document.ts))
+`gen-openapi`'s own name-collection ([`document.ts:76-82`](../../../../packages/gen-openapi/src/document.ts))
 does exactly that: it builds the schema name list as entities ∪ enums ∪
 (type aliases *minus* whatever is already an entity or an enum), so an
 enum's self-alias never counts as a second, competing declaration.
 
 `gen-typescript`'s pre-flight check has no equivalent exclusion. In
-[`packages/gen-typescript/src/generator.ts`](../../../packages/gen-typescript/src/generator.ts):
+[`packages/gen-typescript/src/generator.ts`](../../../../packages/gen-typescript/src/generator.ts):
 
 - `generatedPublicNames` (line 86) computes `enumNames` (every name in
   `collectEnums(source)`, which reads `source.enums` — line 95) and
@@ -86,11 +86,11 @@ fixture where a name appears in both `source.enums` and `source.typeAliases`).
 has no equivalent pre-flight collision check, so it does not crash `tako
 generate`. It has a twin bug instead: `emitEnums`/`emitAliases` both name a
 schema/type after the bare enum name (`${name}Schema` / `${name}`,
-[`names.ts:83-90`](../../../packages/gen-zod/src/names.ts)), so `enums.ts`
+[`names.ts:83-90`](../../../../packages/gen-zod/src/names.ts)), so `enums.ts`
 and `aliases.ts` each export a `<Name>Schema` const and a `<Name>` type for
 the same name, and the sub-tree barrel re-exports both
 (`export * from './enums'; export * from './aliases';`,
-[`emit/barrel.ts`](../../../packages/gen-zod/src/emit/barrel.ts)) — an
+[`emit/barrel.ts`](../../../../packages/gen-zod/src/emit/barrel.ts)) — an
 ambiguous-export error at `tsc` time for whoever consumes the generated
 barrel. Confirmed by reading `emit/aliases.ts` and `emit/barrel.ts`; not
 reproduced end-to-end here.

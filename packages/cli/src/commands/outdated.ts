@@ -3,7 +3,7 @@
  * in the target project against the npm registry. Informational only, always
  * exits 0.
  *
- * Design: `backlog/features/cli-self-update/technical.md` §`tako outdated`
+ * Design: `backlog/_archives/features/cli-self-update/technical.md` §`tako outdated`
  * command.
  */
 

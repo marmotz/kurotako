@@ -1,6 +1,6 @@
 # parser-openapi maps an inline string-enum property to `unknown`, not a union type
 
-**Status**: [technical design](technical.md)
+**Status**: fixed — [#183](https://github.com/marmotz/kurotako/issues/183) shipped; design in [technical.md](technical.md).
 
 ## Context
 
@@ -44,23 +44,23 @@ generated OpenAPI document is affected.
 
 ## Root cause
 
-[`packages/parser-openapi/src/parser.ts`](../../../packages/parser-openapi/src/parser.ts)
+[`packages/parser-openapi/src/parser.ts`](../../../../packages/parser-openapi/src/parser.ts)
 has two separate places that recognise a JSON Schema string enum, and only
 one of them can actually name it:
 
 - **Top-level (named) schemas** — the loop over `components.schemas` entries
-  ([`parser.ts:451-462`](../../../packages/parser-openapi/src/parser.ts)):
+  ([`parser.ts:451-462`](../../../../packages/parser-openapi/src/parser.ts)):
   when a schema *at the top level* is itself `{ type: 'string', enum: [...] }`,
   it is registered as a proper `EnumDef` (`enums[name] = { name, values }`)
   and aliased to `{ kind: 'enum', ref: name }`. This is the path that already
   works correctly for a genuinely standalone enum schema.
 - **Inline / nested schemas** — `mapSchema`
-  ([`parser.ts:206`](../../../packages/parser-openapi/src/parser.ts)), the
+  ([`parser.ts:206`](../../../../packages/parser-openapi/src/parser.ts)), the
   recursive mapper used for every property's schema that is not itself a
   `$ref`. When it reaches a schema carrying `enum: [...]` that wasn't handled
   by any earlier branch (object, array, `$ref`, `oneOf`/`anyOf`), it falls
   through to
-  [`parser.ts:307-312`](../../../packages/parser-openapi/src/parser.ts):
+  [`parser.ts:307-312`](../../../../packages/parser-openapi/src/parser.ts):
 
   ```ts
   if (
@@ -71,22 +71,22 @@ one of them can actually name it:
   ```
 
   `FieldType`'s `enum` variant is `{ kind: 'enum'; ref: string }`
-  ([`packages/ir/src/types.ts:35-43`](../../../packages/ir/src/types.ts)) — it
+  ([`packages/ir/src/types.ts:35-43`](../../../../packages/ir/src/types.ts)) — it
   requires a name resolvable against `SourceIR.enums`/`typeAliases`. An
   inline enum reached through `mapSchema` has no such name (it is a bare
   property schema, not a `components.schemas` entry), so `mapSchema` cannot
   produce a `kind: 'enum'` value here and falls back to the generic
   `{ kind: 'unknown', hint: 'enum' }` placeholder — a deliberate, tested
-  fallback ([`packages/gen-zod/src/emit/entity.test.ts:176`](../../../packages/gen-zod/src/emit/entity.test.ts)),
+  fallback ([`packages/gen-zod/src/emit/entity.test.ts:176`](../../../../packages/gen-zod/src/emit/entity.test.ts)),
   not an oversight in the fallback itself.
 
   Every downstream renderer then does exactly the right thing with a
   `kind: 'unknown'` field — `gen-zod`
-  ([`packages/gen-zod/src/render/scalars.ts:88,151`](../../../packages/gen-zod/src/render/scalars.ts))
+  ([`packages/gen-zod/src/render/scalars.ts:88,151`](../../../../packages/gen-zod/src/render/scalars.ts))
   emits `z.unknown()`, `gen-typescript`
-  ([`packages/gen-typescript/src/render/scalars.ts:58,94`](../../../packages/gen-typescript/src/render/scalars.ts))
+  ([`packages/gen-typescript/src/render/scalars.ts:58,94`](../../../../packages/gen-typescript/src/render/scalars.ts))
   emits the `unknown` type, and the `@see unknown: <hint>` JSDoc comment
-  ([`packages/gen-typescript/src/render/jsdoc.ts:28-32`](../../../packages/gen-typescript/src/render/jsdoc.ts))
+  ([`packages/gen-typescript/src/render/jsdoc.ts:28-32`](../../../../packages/gen-typescript/src/render/jsdoc.ts))
   faithfully reports what it was given. None of these three are wrong; they
   are rendering a type that genuinely carries no enum information because
   `mapSchema` discarded it before it got there.

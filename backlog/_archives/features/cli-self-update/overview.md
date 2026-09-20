@@ -1,6 +1,6 @@
 # CLI self-update check
 
-**Status**: see [technical.md](technical.md)
+**Status**: done — both tasks shipped ([#171](https://github.com/marmotz/kurotako/issues/171), [#172](https://github.com/marmotz/kurotako/issues/172)); design in [technical.md](technical.md).
 
 ## Context
 

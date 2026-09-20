@@ -3,7 +3,7 @@
  * `kurotako` version against the npm registry, cached for 8h so most
  * invocations do not hit the network.
  *
- * Design: `backlog/features/cli-self-update/technical.md` §Background version
+ * Design: `backlog/_archives/features/cli-self-update/technical.md` §Background version
  * check.
  */
 

@@ -7,13 +7,13 @@
 Synthesize a name for a JSON Schema string enum found inline on an entity
 property (or on an array of that property), by extending the exact same
 code path `parser-openapi` already uses to synthesize names for inline
-*object* schemas ([`parser.ts:400-421`](../../../packages/parser-openapi/src/parser.ts)).
+*object* schemas ([`parser.ts:400-421`](../../../../packages/parser-openapi/src/parser.ts)).
 No IR change, no generator change: the fix is entirely contained in
 `packages/parser-openapi/src/parser.ts`.
 
 ## Current code shape
 
-Inside `addNamedSchema`'s property loop ([`parser.ts:399-421`](../../../packages/parser-openapi/src/parser.ts)):
+Inside `addNamedSchema`'s property loop ([`parser.ts:399-421`](../../../../packages/parser-openapi/src/parser.ts)):
 
 ```ts
 const property = asSchema(value);
@@ -42,7 +42,7 @@ so both the direct-property and array-of-property cases share one code path.
 `<EntityName><PascalKey>`) — it doesn't only apply to objects, it's just
 currently only *used* by the object branch.
 
-The top-level enum loop ([`parser.ts:450-461`](../../../packages/parser-openapi/src/parser.ts))
+The top-level enum loop ([`parser.ts:450-461`](../../../../packages/parser-openapi/src/parser.ts))
 shows the three statements needed to register a name as an enum:
 
 ```ts
@@ -51,7 +51,7 @@ enums[name] = { name, values: schema.enum.map((value) => ({ name: value })) };
 aliases[name] = { name, type: { kind: 'enum', ref: name } };
 ```
 
-`claim` ([`parser.ts:342-348`](../../../packages/parser-openapi/src/parser.ts))
+`claim` ([`parser.ts:342-348`](../../../../packages/parser-openapi/src/parser.ts))
 is the same collision guard `addNamedSchema` itself uses: it throws
 `OpenApiNameCollisionError` if `inlineName` is already allocated to a
 *different* schema object, and is a no-op (returns `false`, nothing
@@ -62,13 +62,13 @@ vs. `AccountViewDtoStatus` never collide); it will do the same for enums
 with no extra code.
 
 `mapSchema`'s own inline-enum fallback (`{ kind: 'unknown', hint: 'enum' }`,
-[`parser.ts:307-312`](../../../packages/parser-openapi/src/parser.ts)) stays
+[`parser.ts:307-312`](../../../../packages/parser-openapi/src/parser.ts)) stays
 exactly as it is — it remains the correct outcome for a string enum reached
 through `mapSchema` directly (nested in a `oneOf`/`anyOf` variant, an
 `additionalProperties` value, or any other schema position that isn't a
 direct entity property). This mirrors the existing, accepted behavior of the
 object-inline case: `mapSchema`'s generic object fallback
-(`{ kind: 'unknown', hint: 'object' }`, [`parser.ts:298`](../../../packages/parser-openapi/src/parser.ts))
+(`{ kind: 'unknown', hint: 'object' }`, [`parser.ts:298`](../../../../packages/parser-openapi/src/parser.ts))
 is likewise never given a name outside the property loop. Extending name
 synthesis to every position `mapSchema` can reach is out of scope for this
 fix (see overview.md's "Décisions actées").
@@ -88,7 +88,7 @@ function isStringEnumSchema(schema: Schema): boolean {
 }
 ```
 
-Property-loop change ([`parser.ts:399-421`](../../../packages/parser-openapi/src/parser.ts)):
+Property-loop change ([`parser.ts:399-421`](../../../../packages/parser-openapi/src/parser.ts)):
 
 ```ts
 const synthesizeInline =
@@ -115,7 +115,7 @@ if (synthesizeInline) {
 ```
 
 `mapSchema`'s own `{ kind: 'unknown', hint: 'enum' }` branch
-([`parser.ts:307-312`](../../../packages/parser-openapi/src/parser.ts)) is
+([`parser.ts:307-312`](../../../../packages/parser-openapi/src/parser.ts)) is
 left untouched — it is unreachable from this property loop once
 `synthesizeEnum` is true, and remains the correct answer everywhere else
 `mapSchema` is called (nested `oneOf`/`anyOf` variants, `additionalProperties`
@@ -131,28 +131,28 @@ given.
 
 All four generators already treat `FieldType.kind === 'enum'` completely
 generically, resolving `ref` against `SourceIR.enums` (or an entity-scoped
-`enums` map, via `resolveEnum` in [`packages/ir/src/helpers.ts:32-38`](../../../packages/ir/src/helpers.ts)) —
+`enums` map, via `resolveEnum` in [`packages/ir/src/helpers.ts:32-38`](../../../../packages/ir/src/helpers.ts)) —
 nothing in their code distinguishes a top-level named enum from a
 synthesized one, since both are ordinary entries in `enums[name]` /
 `aliases[name]`:
 
-- **gen-zod**: `baseExpr` ([`packages/gen-zod/src/render/scalars.ts:86`](../../../packages/gen-zod/src/render/scalars.ts))
+- **gen-zod**: `baseExpr` ([`packages/gen-zod/src/render/scalars.ts:86`](../../../../packages/gen-zod/src/render/scalars.ts))
   emits `enumSchemaName(type.ref)`; `collectTypeDeps`
-  ([`packages/gen-zod/src/render/scalars.ts:133`](../../../packages/gen-zod/src/render/scalars.ts))
+  ([`packages/gen-zod/src/render/scalars.ts:133`](../../../../packages/gen-zod/src/render/scalars.ts))
   imports it from `./enums`.
 - **gen-typescript**: `renderFieldType`
-  ([`packages/gen-typescript/src/render/scalars.ts:93`](../../../packages/gen-typescript/src/render/scalars.ts))
+  ([`packages/gen-typescript/src/render/scalars.ts:93`](../../../../packages/gen-typescript/src/render/scalars.ts))
   and `collectTypeDependencies`
-  ([`packages/gen-typescript/src/render/scalars.ts:30`](../../../packages/gen-typescript/src/render/scalars.ts))
+  ([`packages/gen-typescript/src/render/scalars.ts:30`](../../../../packages/gen-typescript/src/render/scalars.ts))
   resolve it through `resolveEnum`.
 - **gen-angular**: `typeBase`
-  ([`packages/gen-angular/src/render/controls.ts:52`](../../../packages/gen-angular/src/render/controls.ts))
+  ([`packages/gen-angular/src/render/controls.ts:52`](../../../../packages/gen-angular/src/render/controls.ts))
   and `variantType`
-  ([`packages/gen-angular/src/render/unions.ts:116`](../../../packages/gen-angular/src/render/unions.ts))
+  ([`packages/gen-angular/src/render/unions.ts:116`](../../../../packages/gen-angular/src/render/unions.ts))
   both resolve it via the injected `enumTypeName` resolver, itself backed by
   `resolveEnum`.
 - **gen-openapi**: `renderFieldType`
-  ([`packages/gen-openapi/src/render/schema.ts:47`](../../../packages/gen-openapi/src/render/schema.ts))
+  ([`packages/gen-openapi/src/render/schema.ts:47`](../../../../packages/gen-openapi/src/render/schema.ts))
   emits `{ $ref: schemaRef(type.ref) }` — round-tripping a synthesized enum
   back through `gen-openapi` produces a genuine standalone
   `components.schemas` entry, which is a strictly more faithful contract
@@ -170,10 +170,10 @@ of them needs a code change or a new `FieldType.kind` case.
   `unknown`, matching the `Goal` in `overview.md`.
 - A genuinely top-level named enum schema (`components.schemas.Status`) is
   unaffected — it still goes through the pre-existing top-level loop
-  ([`parser.ts:450-461`](../../../packages/parser-openapi/src/parser.ts)),
+  ([`parser.ts:450-461`](../../../../packages/parser-openapi/src/parser.ts)),
   which this change does not touch.
 - `mapSchema`'s `{ kind: 'unknown', hint: 'enum' }` fallback
-  ([`packages/gen-zod/src/emit/entity.test.ts:176`](../../../packages/gen-zod/src/emit/entity.test.ts)
+  ([`packages/gen-zod/src/emit/entity.test.ts:176`](../../../../packages/gen-zod/src/emit/entity.test.ts)
   covers its rendering) stays reachable and correct for every enum position
   outside the direct-entity-property case — no test asserting that fallback
   needs to change.
@@ -186,13 +186,13 @@ of them needs a code change or a new `FieldType.kind` case.
 
 - `packages/parser-openapi/src/parser.test.ts`: new case mirroring
   `'allocates inline object schemas once with an owner-derived name'`
-  ([`parser.test.ts:304`](../../../packages/parser-openapi/src/parser.test.ts))
+  ([`parser.test.ts:304`](../../../../packages/parser-openapi/src/parser.test.ts))
   for an inline string enum — asserts `source.enums.RoomViewDtoType` (or
   equivalent synthesized name) and
   `source.entities.RoomViewDto.fields[...].type` equal
   `{ kind: 'enum', ref: '...' }`.
 - A second case mirroring `'names a synthetic inline entity from its title
-  when present'` ([`parser.test.ts:492`](../../../packages/parser-openapi/src/parser.test.ts))
+  when present'` ([`parser.test.ts:492`](../../../../packages/parser-openapi/src/parser.test.ts))
   for the `title`-override path on an inline enum.
 - A third case for the array-of-inline-enum property (`property.type ===
   'array'`, `items` is a bare string enum), confirming `entry.list` is still

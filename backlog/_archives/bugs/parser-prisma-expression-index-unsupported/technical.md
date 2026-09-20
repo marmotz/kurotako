@@ -10,7 +10,7 @@ index, at every layer it crosses: the Prisma 8 `contract.json` reader, the
 parser-internal `PrismaIndex` shape, and `@kurotako/ir`'s `IndexDef`. All
 three become a `kind: 'columns' | 'expression'` discriminated union —
 mirroring how `FieldTypeSchema` and `DefaultValueSchema` already discriminate
-on `kind` in [`packages/ir/src/schemas.ts`](../../../packages/ir/src/schemas.ts).
+on `kind` in [`packages/ir/src/schemas.ts`](../../../../packages/ir/src/schemas.ts).
 
 Confirmed by grep across `packages/*/src`: only `@kurotako/parser-prisma`
 (both DMMF and contract read paths) and `@kurotako/ir` itself read or build
@@ -20,7 +20,7 @@ their tests — no generator package needs any change.
 
 ## `@kurotako/ir` — `IndexDef` becomes a discriminated union
 
-[`packages/ir/src/schemas.ts:184-188`](../../../packages/ir/src/schemas.ts):
+[`packages/ir/src/schemas.ts:184-188`](../../../../packages/ir/src/schemas.ts):
 
 ```ts
 export const IndexDefSchema = v.object({
@@ -58,7 +58,7 @@ This is a **breaking shape change**: every existing `IndexDef` literal
 
 ### `validate.ts` — guard the field-ref check
 
-[`packages/ir/src/validate.ts:402-413`](../../../packages/ir/src/validate.ts)
+[`packages/ir/src/validate.ts:402-413`](../../../../packages/ir/src/validate.ts)
 currently reads `idx.fields` unconditionally:
 
 ```ts
@@ -88,7 +88,7 @@ treatment as `DefaultValueSchema`'s `expr` variant, which isn't parsed either.
 
 ### `builder.ts` — new `indexExpression()` on `EntityBuilder`
 
-[`packages/ir/src/builder.ts:111`](../../../packages/ir/src/builder.ts) keeps
+[`packages/ir/src/builder.ts:111`](../../../../packages/ir/src/builder.ts) keeps
 `index(fields, opts)` unchanged (its one call site and its shape are fine)
 and gains a sibling method rather than turning `index()`'s first argument
 into a union — keeps the existing call site and existing tests untouched,
@@ -133,7 +133,7 @@ indexExpression(
 
 ### `dmmf/model.ts` — `PrismaIndex` mirrors `IndexDef`
 
-[`packages/parser-prisma/src/dmmf/model.ts:59-63`](../../../packages/parser-prisma/src/dmmf/model.ts):
+[`packages/parser-prisma/src/dmmf/model.ts:59-63`](../../../../packages/parser-prisma/src/dmmf/model.ts):
 
 ```ts
 export type PrismaIndex =
@@ -151,7 +151,7 @@ const entry: PrismaIndex = { kind: 'columns', fields: idx.fields.map((f) => f.na
 
 ### `contract/schema.ts` — accept an expression index entry
 
-[`packages/parser-prisma/src/contract/schema.ts:76-84`](../../../packages/parser-prisma/src/contract/schema.ts):
+[`packages/parser-prisma/src/contract/schema.ts:76-84`](../../../../packages/parser-prisma/src/contract/schema.ts):
 
 ```ts
 indexes: v.optional(
@@ -196,7 +196,7 @@ load-bearing, not cosmetic. `uniques`/`primaryKey`/`foreignKeys` stay
 
 ### `contract/read.ts` — map into the new `PrismaIndex` union
 
-[`packages/parser-prisma/src/contract/read.ts:283-293`](../../../packages/parser-prisma/src/contract/read.ts):
+[`packages/parser-prisma/src/contract/read.ts:283-293`](../../../../packages/parser-prisma/src/contract/read.ts):
 
 ```ts
 indexes: (Array.isArray(table.indexes) ? table.indexes : []).map((raw) => {
@@ -221,7 +221,7 @@ name, so there is nothing to translate.
 
 ### `map/build.ts` — branch on `kind`
 
-[`packages/parser-prisma/src/map/build.ts:191-201`](../../../packages/parser-prisma/src/map/build.ts):
+[`packages/parser-prisma/src/map/build.ts:191-201`](../../../../packages/parser-prisma/src/map/build.ts):
 
 ```ts
 for (const index of entity.indexes) {
@@ -250,26 +250,26 @@ for (const index of entity.indexes) {
 
 ## Tests
 
-- [`packages/ir/src/validate.test.ts`](../../../packages/ir/src/validate.test.ts) —
+- [`packages/ir/src/validate.test.ts`](../../../../packages/ir/src/validate.test.ts) —
   update the existing `indexes: [{ fields: ['email'] }]` literal to
   `{ kind: 'columns', fields: ['email'] }`; add a case with
   `{ kind: 'expression', expression: 'lower(email)' }` asserting it produces
   no `unresolved_field_ref` issue.
-- [`packages/ir/src/builder.test.ts`](../../../packages/ir/src/builder.test.ts) —
+- [`packages/ir/src/builder.test.ts`](../../../../packages/ir/src/builder.test.ts) —
   add coverage for `.index(...)` (currently untested) and the new
   `.indexExpression(...)`, asserting the built `Entity.indexes` shape.
-- [`packages/ir/src/schemas.test.ts`](../../../packages/ir/src/schemas.test.ts) —
+- [`packages/ir/src/schemas.test.ts`](../../../../packages/ir/src/schemas.test.ts) —
   update the `indexes: []` fixture path only if it round-trips a non-empty
   index; add a parse case for both `IndexDefSchema` variants if none exists.
-- [`packages/parser-prisma/src/dmmf/read.test.ts`](../../../packages/parser-prisma/src/dmmf/read.test.ts) —
+- [`packages/parser-prisma/src/dmmf/read.test.ts`](../../../../packages/parser-prisma/src/dmmf/read.test.ts) —
   update any `PrismaIndex` literal assertions to the tagged shape.
-- [`packages/parser-prisma/src/contract/read.test.ts`](../../../packages/parser-prisma/src/contract/read.test.ts) —
+- [`packages/parser-prisma/src/contract/read.test.ts`](../../../../packages/parser-prisma/src/contract/read.test.ts) —
   update the `post?.indexes` assertions (`fields: [...]`) to
   `objectContaining({ kind: 'columns', fields: [...] })`; add a new
   expression index to the `Post` model in both fixture files
-  ([`__fixtures__/contract.prisma`](../../../packages/parser-prisma/src/contract/__fixtures__/contract.prisma)
+  ([`__fixtures__/contract.prisma`](../../../../packages/parser-prisma/src/contract/__fixtures__/contract.prisma)
   and the captured
-  [`__fixtures__/contract.json`](../../../packages/parser-prisma/src/contract/__fixtures__/contract.json),
+  [`__fixtures__/contract.json`](../../../../packages/parser-prisma/src/contract/__fixtures__/contract.json),
   kept in sync by hand — mirroring the bug's real-world `Room.room_directory_fts`
   GIN index shape) and assert it reads as
   `{ kind: 'expression', expression: '...', name: '...', type: 'gin' }` with
@@ -291,7 +291,7 @@ for (const index of entity.indexes) {
 
 ## Documentation
 
-- [`docs/ir.md:45`](../../../docs/ir.md) — update the `indexes: IndexDef[]`
+- [`docs/ir.md:45`](../../../../docs/ir.md) — update the `indexes: IndexDef[]`
   inline comment from `// { fields, name?, type? }` to reflect the
   `columns | expression` union.
 

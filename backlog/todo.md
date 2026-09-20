@@ -1,53 +1,28 @@
-<!-- backlog-sync 2026-09-19T00:00Z — GENERATED, do not hand-edit. Regenerate: skill backlog-sync -->
+<!-- backlog-sync 2026-09-20T15:56Z — GENERATED, do not hand-edit. Regenerate: skill backlog-sync -->
 
 # Backlog
 
-## CLI self-update check  ·  [overview](features/cli-self-update/overview.md)
+## React + TanStack Form generator (`@kurotako/gen-react-tanstack`)  ·  [overview](features/generator-react-tanstack/overview.md)
 
-_**Status**: see [technical.md](technical.md)_ — 2/2 tasks done
-
-| Done | Issue | Title | Blocked by |
-|------|-------|-------|------------|
-| [x]  | [#171](https://github.com/marmotz/kurotako/issues/171) | Background version check for the tako binary | — |
-| [x]  | [#172](https://github.com/marmotz/kurotako/issues/172) | tako outdated: on-demand check of installed @kurotako/* packages | #171 |
-
-## Bugs
-
-### parser-openapi maps an inline string-enum property to `unknown`, not a union type  ·  [overview](bugs/openapi-inline-enum-unknown/overview.md)
-
-_**Status**: [technical design](technical.md)_ — 1/1 tasks done
+_**Status**: technical design in [technical.md](technical.md)_ — 0/7 tasks done
 
 | Done | Issue | Title | Blocked by |
 |------|-------|-------|------------|
-| [x]  | [#183](https://github.com/marmotz/kurotako/issues/183) | parser-openapi: synthesize a name for inline string enums instead of falling back to unknown | — |
+| [ ]  | [#196](https://github.com/marmotz/kurotako/issues/196) | ir: extract the shared form initial-value helper from gen-angular | — |
+| [ ]  | [#197](https://github.com/marmotz/kurotako/issues/197) | config: allow dependsOn to be computed from the generator options | — |
+| [ ]  | [#198](https://github.com/marmotz/kurotako/issues/198) | gen-react-tanstack: package scaffold, options and Zod dependency wiring | #197 |
+| [ ]  | [#199](https://github.com/marmotz/kurotako/issues/199) | gen-react-tanstack: emit the runtime helper and flat entity hooks | #196, #198 |
+| [ ]  | [#200](https://github.com/marmotz/kurotako/issues/200) | gen-react-tanstack: relations 'deep' mode | #199 |
+| [ ]  | [#201](https://github.com/marmotz/kurotako/issues/201) | gen-react-tanstack: documentation site and repo docs | #200 |
+| [ ]  | [#202](https://github.com/marmotz/kurotako/issues/202) | examples: OpenAPI + React + TanStack Form example | #200 |
 
-### parser-prisma rejects a Prisma 8 expression index as an invalid contract  ·  [overview](bugs/parser-prisma-expression-index-unsupported/overview.md)
+## Implicit generator dependencies  ·  [overview](features/implicit-generator-dependencies/overview.md)
 
-_**Status**: [technical design](technical.md)_ — 2/2 tasks done
-
-| Done | Issue | Title | Blocked by |
-|------|-------|-------|------------|
-| [x]  | [#192](https://github.com/marmotz/kurotako/issues/192) | ir: model an expression-based index as a discriminated IndexDef union | — |
-| [x]  | [#193](https://github.com/marmotz/kurotako/issues/193) | parser-prisma: accept a Prisma 8 expression index in contract.json | #192 |
-
-### gen-typescript rejects every named enum as colliding with its own self-alias  ·  [overview](bugs/typescript-enum-self-alias-collision/overview.md)
-
-_**Status**: [technical.md](technical.md)_ — 4/4 tasks done
+_**Status**: technical design in [technical.md](technical.md)_ — 0/4 tasks done
 
 | Done | Issue | Title | Blocked by |
 |------|-------|-------|------------|
-| [x]  | [#186](https://github.com/marmotz/kurotako/issues/186) | ir: add nonRedundantTypeAliases helper for enum self-alias exclusion | — |
-| [x]  | [#187](https://github.com/marmotz/kurotako/issues/187) | gen-openapi: migrate self-alias exclusion to the shared IR helper | #186 |
-| [x]  | [#188](https://github.com/marmotz/kurotako/issues/188) | gen-typescript: stop rejecting a named enum's own self-alias as a collision | #186 |
-| [x]  | [#189](https://github.com/marmotz/kurotako/issues/189) | gen-zod: stop emitting a colliding export and a phantom artifact entry for an enum self-alias | #186 |
-
-### gen-zod emits a string literal instead of a bigint literal for a BigInt field default  ·  [overview](bugs/zod-bigint-default-string/overview.md)
-
-_**Status**: [technical design](technical.md)_ — 4/4 tasks done
-
-| Done | Issue | Title | Blocked by |
-|------|-------|-------|------------|
-| [x]  | [#175](https://github.com/marmotz/kurotako/issues/175) | ir: add defaultValueExpr shared helper for bigint literal defaults | — |
-| [x]  | [#176](https://github.com/marmotz/kurotako/issues/176) | gen-zod: render bigint literal default as an unquoted bigint literal | #175 |
-| [x]  | [#177](https://github.com/marmotz/kurotako/issues/177) | gen-angular: seed a bigint FormControl's literal default as a bigint, not a string | #175 |
-| [x]  | [#178](https://github.com/marmotz/kurotako/issues/178) | gen-typescript: render @default JSDoc tag for a bigint field as a bigint literal | #175 |
+| [ ]  | [#203](https://github.com/marmotz/kurotako/issues/203) | core, gen-zod: pass ctx.segment to generators and honor it in gen-zod | — |
+| [ ]  | [#204](https://github.com/marmotz/kurotako/issues/204) | core, config, gen-angular: replace name-based dependsOn with private generator dependencies | #203 |
+| [ ]  | [#205](https://github.com/marmotz/kurotako/issues/205) | examples: drop the redundant zod generator from the Angular examples | #204 |
+| [ ]  | [#206](https://github.com/marmotz/kurotako/issues/206) | docs: document private generator dependencies and the removal of the DAG | #204 |

@@ -1,6 +1,6 @@
 # gen-zod emits a string literal instead of a bigint literal for a BigInt field default
 
-**Status**: [technical design](technical.md)
+**Status**: fixed — [#175](https://github.com/marmotz/kurotako/issues/175) to [#178](https://github.com/marmotz/kurotako/issues/178) shipped; design in [technical.md](technical.md).
 
 ## Context
 

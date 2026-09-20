@@ -9,7 +9,7 @@ scope decision (this bug covers both `gen-typescript` and `gen-zod`).
 
 `parser-openapi` registers a named enum (top-level or synthesized-inline) in
 two `SourceIR` maps at once
-([`packages/parser-openapi/src/parser.ts:477-481`](../../../packages/parser-openapi/src/parser.ts)):
+([`packages/parser-openapi/src/parser.ts:477-481`](../../../../packages/parser-openapi/src/parser.ts)):
 
 ```ts
 enums[name] = { name, values: schema.enum.map((value) => ({ name: value })) };
@@ -22,13 +22,13 @@ inline enum ever resolved to a named `kind: 'enum'` type, so the shape was
 never exercised end-to-end by `ekoz`-like documents; it was already latent.
 
 `TypeAlias.type` is a `FieldType`
-([`packages/ir/src/types.ts:35-56`](../../../packages/ir/src/types.ts)); the
+([`packages/ir/src/types.ts:35-56`](../../../../packages/ir/src/types.ts)); the
 self-alias is the variant `{ kind: 'enum'; ref: string }` with `ref` equal to
 the alias's own `name`. `docs/ir.md` "Closed points" §3 documents that the
 IR's cross-reference pass resolves `ref`/type-alias resolution but never
 forbids this specific shape — it is intentional, mirrored by
 `gen-openapi`'s own comment at
-[`packages/gen-openapi/src/document.ts:20-26`](../../../packages/gen-openapi/src/document.ts):
+[`packages/gen-openapi/src/document.ts:20-26`](../../../../packages/gen-openapi/src/document.ts):
 a bare enum `$ref` in a field type resolves through the alias table, so every
 named enum needs a self-alias entry for `$ref` resolution to work — the
 alias is metadata for reference resolution, not a second declaration.
@@ -37,9 +37,9 @@ Two independent generators fail to treat it that way:
 
 ### `gen-typescript` — hard crash (the reported bug)
 
-[`packages/gen-typescript/src/generator.ts:86-115`](../../../packages/gen-typescript/src/generator.ts)
+[`packages/gen-typescript/src/generator.ts:86-115`](../../../../packages/gen-typescript/src/generator.ts)
 (`generatedPublicNames`) puts every `source.typeAliases` key into `aliasNames`
-with no exclusion. [`validateSourceEmission`](../../../packages/gen-typescript/src/generator.ts:117-147)
+with no exclusion. [`validateSourceEmission`](../../../../packages/gen-typescript/src/generator.ts:117-147)
 then flags any name in both `aliasNames` and `enumNames` as a collision
 (line 128-136) — true for every named enum, unconditionally, since its
 self-alias key is always in `aliasNames` and the enum itself is always in
@@ -47,12 +47,12 @@ self-alias key is always in `aliasNames` and the enum itself is always in
 single file is emitted, exactly as reported.
 
 Loosening only the pre-flight check is not sufficient: even without it,
-[`emit/aliases.ts`](../../../packages/gen-typescript/src/emit/aliases.ts)
+[`emit/aliases.ts`](../../../../packages/gen-typescript/src/emit/aliases.ts)
 would still iterate `Object.values(source.typeAliases ?? {})` (line 9) and
 emit, for the self-alias, `collectTypeDependencies` resolving `{kind:
 'enum', ref: 'Status'}` to an import of `Status` from `./enums.js`
 (`enumTypeName('Status') === 'Status'`,
-[`names.ts:57-60`](../../../packages/gen-typescript/src/names.ts)), then a
+[`names.ts:57-60`](../../../../packages/gen-typescript/src/names.ts)), then a
 `export type Status = Status;` block (line 37) — importing and locally
 re-declaring the same identifier `Status` in the same module is a
 TypeScript duplicate-identifier error on its own, independent of the
@@ -64,13 +64,13 @@ survive collision detection.
 `gen-zod` has no pre-flight collision check, so `tako generate` does not
 crash. But its enum and alias emitters share the same naming convention
 (`enumSchemaName`/`aliasSchemaName` both format `${name}Schema`,
-[`names.ts:63-75`](../../../packages/gen-zod/src/names.ts)), so for the
+[`names.ts:63-75`](../../../../packages/gen-zod/src/names.ts)), so for the
 self-alias `{ name: 'Status', type: { kind: 'enum', ref: 'Status' } }`:
 
-- [`emit/enums.ts:50-65`](../../../packages/gen-zod/src/emit/enums.ts) emits,
+- [`emit/enums.ts:50-65`](../../../../packages/gen-zod/src/emit/enums.ts) emits,
   in `enums.ts`: `export const Status = [...] as const;`, `export const
   StatusSchema = z.enum(Status);`, `export type Status = ...`.
-- [`emit/aliases.ts`](../../../packages/gen-zod/src/emit/aliases.ts) resolves
+- [`emit/aliases.ts`](../../../../packages/gen-zod/src/emit/aliases.ts) resolves
   the alias's `baseExpr` to `enumSchemaName('Status')` = `'StatusSchema'`
   (`render/scalars.ts:86-87`), records it as an enum dependency (line 79-81),
   and therefore emits in `aliases.ts`: `import { StatusSchema } from
@@ -83,11 +83,11 @@ self-alias `{ name: 'Status', type: { kind: 'enum', ref: 'Status' } }`:
   corrects that: the failure is inside `aliases.ts`, not at `index.ts`.)
 - Independent of the above, `aliases.ts` and `enums.ts` both also export a
   type `Status`, so the sub-tree barrel
-  ([`emit/barrel.ts`](../../../packages/gen-zod/src/emit/barrel.ts):
+  ([`emit/barrel.ts`](../../../../packages/gen-zod/src/emit/barrel.ts):
   `export * from './enums'; export * from './aliases';`) would additionally
   be an ambiguous re-export once/if the first error were papered over.
 
-`gen-zod`'s [`artifact.ts:100-109`](../../../packages/gen-zod/src/artifact.ts)
+`gen-zod`'s [`artifact.ts:100-109`](../../../../packages/gen-zod/src/artifact.ts)
 compounds this: it registers `entities['<ns>.Status']` pointing at
 `aliasModule`/`aliasSchemaName('Status')` for *every* type alias including
 the self-alias — a phantom artifact entry claiming a symbol that (once fixed)
@@ -97,7 +97,7 @@ line 4-6), so a stale entry here would misdirect a downstream import once
 `aliases.ts` stops emitting `Status`. Enums are consumed by
 `generator-angular` through `ZodArtifactExtra.perNamespace[ns].enums`
 instead (populated correctly at
-[`artifact.ts:113-`](../../../packages/gen-zod/src/artifact.ts) from
+[`artifact.ts:113-`](../../../../packages/gen-zod/src/artifact.ts) from
 `collectEnums`, unaffected by this bug) — so dropping the phantom
 `entities['<ns>.Status']` entry has no consumer relying on it existing.
 
@@ -105,9 +105,9 @@ instead (populated correctly at
 
 ### Shared `@kurotako/ir` helper
 
-Add to [`packages/ir/src/helpers.ts`](../../../packages/ir/src/helpers.ts)
+Add to [`packages/ir/src/helpers.ts`](../../../../packages/ir/src/helpers.ts)
 (exported through the package's single barrel,
-[`packages/ir/src/index.ts:7`](../../../packages/ir/src/index.ts),
+[`packages/ir/src/index.ts:7`](../../../../packages/ir/src/index.ts),
 `export * from './helpers.js'` — no separate export line needed):
 
 ```ts
@@ -134,7 +134,7 @@ export function nonRedundantTypeAliases(source: SourceIR): TypeAlias[] {
 The predicate is **shape-based** (`type.kind === 'enum' && type.ref ===
 name`), not name-based like `gen-openapi`'s current inline filter
 (`!enumsByName.has(name) && ...`,
-[`document.ts:79-81`](../../../packages/gen-openapi/src/document.ts)).
+[`document.ts:79-81`](../../../../packages/gen-openapi/src/document.ts)).
 This is a deliberate difference from the option previewed during discussion,
 found while grounding the design in the existing test suite:
 `gen-typescript/src/generator.test.ts:216-223` builds a source with
@@ -157,7 +157,7 @@ instead of three.
 
 ### `gen-openapi` — migrate to the shared helper
 
-[`document.ts:76-82`](../../../packages/gen-openapi/src/document.ts):
+[`document.ts:76-82`](../../../../packages/gen-openapi/src/document.ts):
 replace the inline `.filter((name) => !enumsByName.has(name) &&
 source.entities[name] === undefined)` with
 `nonRedundantTypeAliases(source).map((a) => a.name).filter((name) =>
@@ -168,46 +168,46 @@ construction-time uniqueness check — not touched here).
 
 ### `gen-typescript` — stop treating the self-alias as a second declaration
 
-- [`generator.ts:113`](../../../packages/gen-typescript/src/generator.ts)
+- [`generator.ts:113`](../../../../packages/gen-typescript/src/generator.ts)
   (`generatedPublicNames`): `aliasNames` becomes
   `new Set(nonRedundantTypeAliases(source).map((a) => a.name))`.
-- [`generator.ts:169`](../../../packages/gen-typescript/src/generator.ts)
-  and [`generator.ts:186`](../../../packages/gen-typescript/src/generator.ts)
+- [`generator.ts:169`](../../../../packages/gen-typescript/src/generator.ts)
+  and [`generator.ts:186`](../../../../packages/gen-typescript/src/generator.ts)
   (whether `aliases.ts` is emitted at all, and the `emitsAliases` flag
   passed to `emitBarrel`): both switch from
   `Object.keys(source.typeAliases ?? {}).length > 0` to
   `nonRedundantTypeAliases(source).length > 0`, so a namespace whose only
   "alias" is an enum self-alias emits no empty `aliases.ts` file and no
   dangling barrel re-export.
-- [`emit/aliases.ts:9`](../../../packages/gen-typescript/src/emit/aliases.ts):
+- [`emit/aliases.ts:9`](../../../../packages/gen-typescript/src/emit/aliases.ts):
   `const aliases = nonRedundantTypeAliases(source);` instead of
   `Object.values(source.typeAliases ?? {})` — the self-alias is never
   iterated, so it is never emitted as `export type Status = Status;`.
-- [`emit/barrel.ts:9`](../../../packages/gen-typescript/src/emit/barrel.ts):
+- [`emit/barrel.ts:9`](../../../../packages/gen-typescript/src/emit/barrel.ts):
   the default-parameter fallback for `emitsAliases` gets the same
   `nonRedundantTypeAliases` treatment, for callers that omit the third
   argument.
-- `cyclicAliasNames` ([`generator.ts:48-83`](../../../packages/gen-typescript/src/generator.ts))
+- `cyclicAliasNames` ([`generator.ts:48-83`](../../../../packages/gen-typescript/src/generator.ts))
   is left untouched: it only follows `{ kind: 'ref' }` edges
   (`collectTypeDependencies`/`refCycleMembers` in
-  [`packages/ir/src/helpers.ts:68-`](../../../packages/ir/src/helpers.ts)
+  [`packages/ir/src/helpers.ts:68-`](../../../../packages/ir/src/helpers.ts)
   never treats `{ kind: 'enum' }` as a cycle edge), so a self-alias can
   never appear in `ctx.cycles` and this function's behavior is unaffected
   either way — verified by reading `refCycleMembers`, not changed.
 
 ### `gen-zod` — stop emitting a colliding self-alias
 
-- [`generator.ts`](../../../packages/gen-zod/src/generator.ts) (the local
+- [`generator.ts`](../../../../packages/gen-zod/src/generator.ts) (the local
   `aliases` variable, `~line 31`, and the `aliases.length > 0` gate for
   whether `aliases.ts` is emitted): switch to `nonRedundantTypeAliases(source)`.
-- [`emit/aliases.ts:73`](../../../packages/gen-zod/src/emit/aliases.ts):
+- [`emit/aliases.ts:73`](../../../../packages/gen-zod/src/emit/aliases.ts):
   `const declared = nonRedundantTypeAliases(source);` instead of
   `Object.values(source.typeAliases ?? {})`.
-- [`emit/barrel.ts:16`](../../../packages/gen-zod/src/emit/barrel.ts):
+- [`emit/barrel.ts:16`](../../../../packages/gen-zod/src/emit/barrel.ts):
   the `Object.keys(source.typeAliases ?? {}).length > 0` gate for the
   `export * from './aliases'` barrel line switches to
   `nonRedundantTypeAliases(source).length > 0`.
-- [`artifact.ts:101`](../../../packages/gen-zod/src/artifact.ts): the alias
+- [`artifact.ts:101`](../../../../packages/gen-zod/src/artifact.ts): the alias
   loop building `entities['<ns>.<name>']` switches to iterating
   `nonRedundantTypeAliases(source)` instead of
   `Object.values(source.typeAliases ?? {})`, removing the phantom entry for

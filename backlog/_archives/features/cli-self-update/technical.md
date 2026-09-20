@@ -7,17 +7,17 @@ See [overview.md](overview.md) for the product-level decisions this design imple
 ## Current state
 
 - The `tako` binary is published by two npm packages, both declaring `bin.tako`:
-  - `kurotako` ([`packages/kurotako/package.json`](../../../packages/kurotako/package.json)) —
+  - `kurotako` ([`packages/kurotako/package.json`](../../../../packages/kurotako/package.json)) —
     the meta-package end users install (`npm i kurotako`). Its
-    [`src/bin/tako.ts`](../../../packages/kurotako/src/bin/tako.ts) intercepts
+    [`src/bin/tako.ts`](../../../../packages/kurotako/src/bin/tako.ts) intercepts
     `--version`/`-v` itself and prints its **own** `__TAKO_VERSION__` (injected from
     its own `package.json` at build time via
-    [`tsup.config.ts`](../../../packages/kurotako/tsup.config.ts)), then delegates
+    [`tsup.config.ts`](../../../../packages/kurotako/tsup.config.ts)), then delegates
     everything else to `runCli()` from `@kurotako/cli`.
-  - `@kurotako/cli` ([`packages/cli/package.json`](../../../packages/cli/package.json)) —
+  - `@kurotako/cli` ([`packages/cli/package.json`](../../../../packages/cli/package.json)) —
     the package that implements the CLI itself. Its own
-    [`src/bin/tako.ts`](../../../packages/cli/src/bin/tako.ts) and
-    [`src/cli.ts:18-20`](../../../packages/cli/src/cli.ts) declare and use their own
+    [`src/bin/tako.ts`](../../../../packages/cli/src/bin/tako.ts) and
+    [`src/cli.ts:18-20`](../../../../packages/cli/src/cli.ts) declare and use their own
     `__TAKO_VERSION__`, injected the same way from `packages/cli/package.json`.
   - The two versions are independent (changesets are per-package): today `kurotako` is
     at `0.2.1`, `@kurotako/cli` at `0.1.3`. This is why `tako --version` shows `0.2.1`
@@ -28,11 +28,11 @@ See [overview.md](overview.md) for the product-level decisions this design imple
   `node-fetch`, `undici` usage found) — both are introduced by this feature. Node >= 24
   provides global `fetch`, no new dependency needed.
 - Commands are defined with `citty` and registered in
-  [`src/cli.ts:22-27`](../../../packages/cli/src/cli.ts) (`subCommands` object). See
-  [`src/commands/check.ts`](../../../packages/cli/src/commands/check.ts) for the
+  [`src/cli.ts:22-27`](../../../../packages/cli/src/cli.ts) (`subCommands` object). See
+  [`src/commands/check.ts`](../../../../packages/cli/src/commands/check.ts) for the
   pattern a new command follows: `defineCommand({ meta, args: { ...sharedArgs }, run })`
   using `ConsoleReporter` for output.
-- [`packages/config/src/resolve.ts`](../../../packages/config/src/resolve.ts) walks up
+- [`packages/config/src/resolve.ts`](../../../../packages/config/src/resolve.ts) walks up
   from `cwd` to find `tako.config.ts`, stopping at a `.git` directory — the closest
   existing notion of "project root" to reuse for locating the target project's
   `package.json`.
@@ -131,12 +131,12 @@ the rest of `ConsoleReporter` output, never altering `process.exitCode`.
 
 ## `tako outdated` command (the `@kurotako/*` project packages)
 
-New file [`packages/cli/src/commands/outdated.ts`](../../../packages/cli/src/commands/outdated.ts),
-registered in `subCommands` in [`src/cli.ts`](../../../packages/cli/src/cli.ts) next to
+New file [`packages/cli/src/commands/outdated.ts`](../../../../packages/cli/src/commands/outdated.ts),
+registered in `subCommands` in [`src/cli.ts`](../../../../packages/cli/src/cli.ts) next to
 `init` / `generate` / `validate` / `check`.
 
 Discovery, reusing the project-root logic already in
-[`resolveConfigFile`](../../../packages/config/src/resolve.ts) (same `.git`-anchored
+[`resolveConfigFile`](../../../../packages/config/src/resolve.ts) (same `.git`-anchored
 walk-up, `--config`-independent — `outdated` only needs the project's `package.json`,
 not its `tako.config.ts`):
 
