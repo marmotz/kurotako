@@ -136,11 +136,20 @@ export const ContractSchema = v.looseObject({
           defaults: v.optional(
             v.array(
               v.looseObject({
-                ref: v.looseObject({
-                  namespace: v.string(),
-                  table: v.string(),
-                  column: v.string(),
-                }),
+                // rc.13 and earlier: { namespace, table, column }.
+                // rc.22: { namespace, entry, field } (same values, renamed keys).
+                ref: v.union([
+                  v.looseObject({
+                    namespace: v.string(),
+                    table: v.string(),
+                    column: v.string(),
+                  }),
+                  v.looseObject({
+                    namespace: v.string(),
+                    entry: v.string(),
+                    field: v.string(),
+                  }),
+                ]),
                 onCreate: v.optional(
                   v.looseObject({ kind: v.string(), id: v.string() }),
                 ),

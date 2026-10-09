@@ -589,7 +589,7 @@ describe('run', () => {
     );
   });
 
-  it('warns once about ambiguous root-barrel exports even with several outputs', async () => {
+  it('reports ambiguous root-barrel exports once, at debug level, even with several outputs', async () => {
     const colliding = (name: string): Generator => ({
       name,
       generate: () => ({
@@ -604,6 +604,7 @@ describe('run', () => {
       }),
     });
     const warn = vi.fn();
+    const debug = vi.fn();
     await run(
       config({
         generators: {
@@ -615,9 +616,10 @@ describe('run', () => {
           { dir: path.join(dir, 'b'), generators: ['zod', 'typescript'] },
         ],
       }),
-      { logger: { debug() {}, info() {}, warn, error() {} } },
+      { logger: { debug, info() {}, warn, error() {} } },
     );
-    const barrelWarnings = warn.mock.calls.filter(([msg]) =>
+    expect(warn).not.toHaveBeenCalled();
+    const barrelWarnings = debug.mock.calls.filter(([msg]) =>
       String(msg).includes('Name clash in namespace'),
     );
     expect(barrelWarnings).toHaveLength(1);

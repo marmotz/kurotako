@@ -21,6 +21,11 @@ bun run prisma:db:init  # applies and signs the PostgreSQL contract
 bun run tako:generate   # writes and builds packages/example-tasks
 ```
 
+Mode `package` needs `tsconfig.base.json` and `tsup.config.base.ts` one level above
+`packagesDir` (committed here; `tako init --package-base` creates them without overwriting),
+and `typescript`, `zod`, `@angular/core` and `@angular/forms` resolvable from the generated
+package. See [Output modes](https://kurotako.marmotz.dev/docs/reference/output-modes#mode-b-prerequisites).
+
 `packages/example-tasks` is regenerable (gitignored) except for a committed
 `package.json` stub — see the Prisma 7 package-output example's README ("Generate"
 section) for why it's needed to bootstrap `bun install` on a fresh clone.

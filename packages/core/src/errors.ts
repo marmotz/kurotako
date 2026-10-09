@@ -172,9 +172,8 @@ export class PackageBuildError extends TakoError {
   }
 }
 
-const MISSING_PACKAGE_WORKSPACE_FILE_GUIDANCE: Record<string, string> = {
-  'tsconfig.base.json': `Create '<workspaceRoot>/tsconfig.base.json':
-{
+/** Content of the `tsconfig.base.json` that mode `package` expects one level above `packagesDir`. */
+export const PACKAGE_TSCONFIG_BASE = `{
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
@@ -183,12 +182,10 @@ const MISSING_PACKAGE_WORKSPACE_FILE_GUIDANCE: Record<string, string> = {
     "skipLibCheck": true
   }
 }
+`;
 
-Use these values as-is, no adjustment needed: in particular, keep
-"moduleResolution": "bundler" as the simplest option compatible with every
-generated import style.`,
-  'tsup.config.base.{ts,js,mjs,cjs}': `Create '<workspaceRoot>/tsup.config.base.ts':
-import type { Options } from 'tsup';
+/** Content of the `tsup.config.base.ts` that mode `package` expects one level above `packagesDir`. */
+export const PACKAGE_TSUP_CONFIG_BASE = `import type { Options } from 'tsup';
 
 export const basePreset: Options = {
   entry: ['src/index.ts'],
@@ -198,7 +195,17 @@ export const basePreset: Options = {
   clean: true,
   target: 'node22',
   outDir: 'dist',
-};`,
+};
+`;
+
+const MISSING_PACKAGE_WORKSPACE_FILE_GUIDANCE: Record<string, string> = {
+  'tsconfig.base.json': `Create '<workspaceRoot>/tsconfig.base.json' (or run 'tako init --package-base'):
+${PACKAGE_TSCONFIG_BASE}
+Use these values as-is, no adjustment needed: in particular, keep
+"moduleResolution": "bundler" as the simplest option compatible with every
+generated import style.`,
+  'tsup.config.base.{ts,js,mjs,cjs}': `Create '<workspaceRoot>/tsup.config.base.ts' (or run 'tako init --package-base'):
+${PACKAGE_TSUP_CONFIG_BASE}`,
   "'typescript' (devDependency, needed for the .d.ts build)": `Run, from '<workspaceRoot>':
   <your package manager> add -D typescript`,
 };
@@ -208,17 +215,25 @@ export class MissingPackageWorkspaceFilesError extends TakoError {
   readonly missing: string[];
 
   constructor(workspaceRoot: string, missing: string[]) {
+    const peers = missing
+      .map((item) => /^peer dependency '(.+)'/.exec(item)?.[1])
+      .filter((name): name is string => name !== undefined);
     const guidance = missing
+      .filter((item) => !item.startsWith('peer dependency '))
       .map((item) => {
         const template = MISSING_PACKAGE_WORKSPACE_FILE_GUIDANCE[item];
         return template
           ? template.replaceAll('<workspaceRoot>', workspaceRoot)
           : item;
-      })
-      .join('\n\n');
+      });
+    if (peers.length > 0) {
+      guidance.push(
+        `Make the peer dependencies resolvable from the generated packages. Run, from '${workspaceRoot}':\n  <your package manager> add -D ${peers.join(' ')}`,
+      );
+    }
     super(
       'missing_package_workspace_files',
-      `mode 'package' requires 'tsconfig.base.json' and 'tsup.config.base.{ts,js,mjs,cjs}' in '${workspaceRoot}' (one directory above 'packagesDir'); missing: ${missing.join(', ')}\n\n${guidance}`,
+      `mode 'package' prerequisites are missing (workspace root '${workspaceRoot}', one directory above 'packagesDir'): ${missing.join(', ')}\n\n${guidance.join('\n\n')}`,
     );
     this.workspaceRoot = workspaceRoot;
     this.missing = missing;

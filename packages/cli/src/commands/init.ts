@@ -12,6 +12,10 @@ import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, relative, resolve } from 'node:path';
 import { CONFIG_TEMPLATE, CONFIG_TEMPLATE_MONOREPO } from '@kurotako/config';
+import {
+  PACKAGE_TSCONFIG_BASE,
+  PACKAGE_TSUP_CONFIG_BASE,
+} from '@kurotako/core';
 import { defineCommand } from 'citty';
 import { sharedArgs } from '../args.js';
 import { ConfigExistsError } from '../errors.js';
@@ -57,10 +61,46 @@ function detectMonorepo(startDir: string): boolean {
   }
 }
 
+const TSUP_BASE_EXTENSIONS = ['.ts', '.js', '.mjs', '.cjs'];
+
+/**
+ * Scaffold the two files mode `package` requires one level above `packagesDir`.
+ * Never overwrites: a file that already exists (any `tsup.config.base.*`
+ * extension) is reported and left untouched.
+ */
+async function scaffoldPackageBase(
+  packagesDir: string,
+  reporter: ConsoleReporter,
+  cwd: string,
+): Promise<void> {
+  const workspaceRoot = dirname(resolve(cwd, packagesDir));
+  const shown = (path: string) => relative(cwd, path) || path;
+  const tsconfig = resolve(workspaceRoot, 'tsconfig.base.json');
+  const tsup = resolve(workspaceRoot, 'tsup.config.base.ts');
+  const tsupExisting = TSUP_BASE_EXTENSIONS.map((ext) =>
+    resolve(workspaceRoot, `tsup.config.base${ext}`),
+  ).find((path) => existsSync(path));
+
+  await mkdir(workspaceRoot, { recursive: true });
+  if (existsSync(tsconfig)) {
+    reporter.info(`kept existing ${shown(tsconfig)}`);
+  } else {
+    await writeFile(tsconfig, PACKAGE_TSCONFIG_BASE, 'utf8');
+    reporter.info(`created ${shown(tsconfig)}`);
+  }
+  if (tsupExisting) {
+    reporter.info(`kept existing ${shown(tsupExisting)}`);
+  } else {
+    await writeFile(tsup, PACKAGE_TSUP_CONFIG_BASE, 'utf8');
+    reporter.info(`created ${shown(tsup)}`);
+  }
+}
+
 export const initCommand = defineCommand({
   meta: {
     name: 'init',
-    description: 'create a tako.config.ts in the current directory',
+    description:
+      "create a tako.config.ts in the current directory, or with --package-base the workspace files mode 'package' requires",
   },
   args: {
     ...sharedArgs,
@@ -75,10 +115,25 @@ export const initCommand = defineCommand({
         'write the monorepo config layout (auto-detected from workspaces when unset)',
       default: undefined,
     },
+    'package-base': {
+      type: 'boolean',
+      description:
+        "instead of the config, create tsconfig.base.json and tsup.config.base.ts (mode 'package') one level above --packages-dir; never overwrites",
+      default: false,
+    },
+    'packages-dir': {
+      type: 'string',
+      description: "the output 'packagesDir' for --package-base",
+      default: './packages',
+    },
   },
   run: async ({ args }) => {
     const reporter = new ConsoleReporter({ debug: Boolean(args.debug) });
     const cwd = process.cwd();
+    if (args['package-base']) {
+      await scaffoldPackageBase(String(args['packages-dir']), reporter, cwd);
+      return;
+    }
     // Unlike `loadConfig`, `init` never walks up: it always targets `cwd`.
     const target = args.config
       ? resolve(cwd, args.config)

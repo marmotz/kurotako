@@ -37,12 +37,15 @@ const artifacts: Record<string, GeneratorArtifact> = {
   zod: { entities: {}, peerDependencies: { zod: '^4' } },
 };
 
-async function stubResolvableTypescript(workspaceRoot: string): Promise<void> {
-  const tsDir = path.join(workspaceRoot, 'node_modules', 'typescript');
+async function stubResolvablePackage(
+  workspaceRoot: string,
+  name: string,
+): Promise<void> {
+  const tsDir = path.join(workspaceRoot, 'node_modules', name);
   await fs.mkdir(tsDir, { recursive: true });
   await fs.writeFile(
     path.join(tsDir, 'package.json'),
-    '{"name":"typescript","main":"index.js"}',
+    JSON.stringify({ name, main: 'index.js' }),
     'utf8',
   );
   await fs.writeFile(path.join(tsDir, 'index.js'), '', 'utf8');
@@ -55,7 +58,8 @@ beforeEach(async () => {
   await fs.writeFile(path.join(dir, '.git'), '', 'utf8');
   await fs.writeFile(path.join(dir, 'tsconfig.base.json'), '{}', 'utf8');
   await fs.writeFile(path.join(dir, 'tsup.config.base.ts'), '', 'utf8');
-  await stubResolvableTypescript(dir);
+  await stubResolvablePackage(dir, 'typescript');
+  await stubResolvablePackage(dir, 'zod');
   build.mockReset();
   build.mockResolvedValue(undefined);
   vi.mocked(runInstall).mockClear();
@@ -187,6 +191,29 @@ describe('packageWriter', () => {
     expect(error).toBeInstanceOf(MissingPackageWorkspaceFilesError);
     expect((error as MissingPackageWorkspaceFilesError).missing).toEqual([
       "'typescript' (devDependency, needed for the .d.ts build)",
+      "peer dependency 'zod' (required by the generated package)",
+    ]);
+  });
+
+  it('lists every missing prerequisite at once: base files, typescript and generator peers', async () => {
+    await fs.rm(path.join(dir, 'tsconfig.base.json'));
+    await fs.rm(path.join(dir, 'node_modules'), { recursive: true });
+    const error = await write({ packageManager: 'bun' }).catch((e) => e);
+    expect(error).toBeInstanceOf(MissingPackageWorkspaceFilesError);
+    expect((error as MissingPackageWorkspaceFilesError).missing).toEqual([
+      'tsconfig.base.json',
+      "'typescript' (devDependency, needed for the .d.ts build)",
+      "peer dependency 'zod' (required by the generated package)",
+    ]);
+    expect((error as Error).message).toContain('add -D zod');
+    expect(build).not.toHaveBeenCalled();
+  });
+
+  it('reports a generator peer that cannot be resolved from the generated package', async () => {
+    await fs.rm(path.join(dir, 'node_modules', 'zod'), { recursive: true });
+    const error = await write({ packageManager: 'bun' }).catch((e) => e);
+    expect((error as MissingPackageWorkspaceFilesError).missing).toEqual([
+      "peer dependency 'zod' (required by the generated package)",
     ]);
   });
 

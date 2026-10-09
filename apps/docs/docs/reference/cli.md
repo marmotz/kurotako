@@ -15,6 +15,7 @@ tako                       print help
 tako --version | -v        print the CLI version
 tako --help | -h           usage (works per sub-command too)
 tako init      [--config <path>] [--force] [--monorepo | --no-monorepo]
+tako init      --package-base [--packages-dir <dir>]
 tako generate  [--config <path>] [--watch] [--dry-run]
 tako validate  [--config <path>]
 tako check     [--config <path>]
@@ -40,6 +41,11 @@ Writes a commented `tako.config.ts`.
   `package.json` and picks the monorepo skeleton when that file has a `workspaces`
   key (array or `{ packages: [...] }`) or a `pnpm-workspace.yaml` sits next to it.
   See [Using tako in a monorepo](monorepo.md).
+- `--package-base [--packages-dir <dir>]` writes `tsconfig.base.json` and
+  `tsup.config.base.ts` one level above `<dir>` (default `./packages`), the files that
+  [mode `package`](output-modes.md#mode-b-prerequisites) requires, instead of the config.
+  It never overwrites: an existing `tsconfig.base.json`, or any existing
+  `tsup.config.base.{ts,js,mjs,cjs}`, is kept.
 
 ## `tako generate`
 

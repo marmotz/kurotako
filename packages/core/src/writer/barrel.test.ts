@@ -66,8 +66,8 @@ describe('synthesizeRootBarrels', () => {
           "export * from './typescript/index.js';\nexport * from './zod/index.js';\nexport type { User } from './typescript/index.js';\n",
       },
     ]);
-    expect(log.warn).toHaveBeenCalledTimes(1);
-    const [message, meta] = vi.mocked(log.warn).mock.calls[0] as [
+    expect(log.debug).toHaveBeenCalledTimes(1);
+    const [message, meta] = vi.mocked(log.debug).mock.calls[0] as [
       string,
       Record<string, unknown>,
     ];
@@ -78,7 +78,7 @@ describe('synthesizeRootBarrels', () => {
     expect(message).toContain('This is not an error.');
     expect(message).toContain("import from the generator's path");
     expect(message).toContain("import … from 'pg/zod'");
-    expect(message).toContain('To silence this warning');
+    expect(message).toContain('To avoid the clash');
     expect(message).toContain('Names affected (1): User.');
     expect(meta).toEqual({
       namespace: 'pg',
@@ -118,7 +118,7 @@ describe('synthesizeRootBarrels', () => {
           "export * from './angular/index.js';\nexport * from './zod/index.js';\n",
       },
     ]);
-    expect(log.warn).not.toHaveBeenCalled();
+    expect(log.debug).not.toHaveBeenCalled();
   });
 
   function manyCollisions(names: string[]): VirtualFile[] {
@@ -135,7 +135,7 @@ describe('synthesizeRootBarrels', () => {
     ];
   }
 
-  it('emits one plain-language warning per namespace with a bounded, ordered sample', () => {
+  it('emits one plain-language debug message per namespace with a bounded, ordered sample', () => {
     const log = logger();
     synthesizeRootBarrels(
       manyCollisions([
@@ -149,8 +149,8 @@ describe('synthesizeRootBarrels', () => {
       undefined,
       log,
     );
-    expect(log.warn).toHaveBeenCalledTimes(1);
-    const [message, meta] = vi.mocked(log.warn).mock.calls[0] as [
+    expect(log.debug).toHaveBeenCalledTimes(1);
+    const [message, meta] = vi.mocked(log.debug).mock.calls[0] as [
       string,
       Record<string, unknown>,
     ];
@@ -168,7 +168,7 @@ describe('synthesizeRootBarrels', () => {
         "To use a specific one, import from the generator's path instead of the namespace:",
         "  import … from 'pg/typescript'   (same as 'pg')",
         "  import … from 'pg/zod'",
-        'To silence this warning, point the output at a single generator (the ' +
+        'To avoid the clash, point the output at a single generator (the ' +
           "'generators' list in your output config).",
         '',
         'Names affected (6): Account, Invoice, Order, Project, Task and 1 more.',

@@ -46,6 +46,16 @@ beforeEach(async () => {
     'utf8',
   );
   await fs.writeFile(path.join(tsDir, 'index.js'), '', 'utf8');
+  for (const name of ['zod', '@angular/core']) {
+    const peerDir = path.join(dir, 'node_modules', name);
+    await fs.mkdir(peerDir, { recursive: true });
+    await fs.writeFile(
+      path.join(peerDir, 'package.json'),
+      JSON.stringify({ name, main: 'index.js' }),
+      'utf8',
+    );
+    await fs.writeFile(path.join(peerDir, 'index.js'), '', 'utf8');
+  }
   build.mockClear();
   vi.mocked(runInstall).mockClear();
 });

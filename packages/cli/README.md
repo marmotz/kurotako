@@ -21,6 +21,7 @@ Needs **Node.js >= 24**; runs unmodified on Node and Bun.
 
 ```text
 tako init      [--config <path>] [--force] [--monorepo | --no-monorepo]
+tako init      --package-base [--packages-dir <dir>]
 tako generate  [--config <path>] [--watch] [--dry-run]
 tako validate  [--config <path>]
 tako check     [--config <path>]

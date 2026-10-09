@@ -21,7 +21,7 @@ import { contributingGenerators } from './tree.js';
  * When generator barrels expose the same identifier, an explicit re-export
  * resolves the otherwise ambiguous star exports. The lexically first generator
  * owns the root name; every generator remains available from its own subpath.
- * Each namespace emits a single plain-language warning explaining the clash,
+ * Each namespace emits a single plain-language debug message explaining the clash,
  * backed by a structured meta object for programmatic reporters or `--debug`.
  * Export names are read from the emitted TypeScript module graph, rather than
  * artifacts, because artifacts only describe dependency-facing entity symbols.
@@ -47,7 +47,9 @@ export function synthesizeRootBarrels(
     ].join('\n');
 
     if (collisions.size > 0) {
-      logger?.warn(
+      // Collisions only ever arise between different generators describing the
+      // same model, which is the nominal case: debug level, not a warning.
+      logger?.debug(
         formatCollisionWarning(namespace, generators, collisions),
         collisionMeta(namespace, generators, collisions),
       );
@@ -86,7 +88,7 @@ function listPhrase(items: string[]): string {
 /**
  * A multi-line, plain-language explanation for one namespace: what caused the
  * name clash, that it is not an error, which import gives which declaration,
- * and how to make the warning go away. The full per-identifier detail lives in
+ * and how to avoid it. The full per-identifier detail lives in
  * the meta object ({@link collisionMeta}) and is only printed with `--debug`.
  */
 function formatCollisionWarning(
@@ -125,7 +127,7 @@ function formatCollisionWarning(
       (name) =>
         `  import … from '${namespace}/${name}'${name === primary ? `   (same as '${namespace}')` : ''}`,
     ),
-    `To silence this warning, point the output at a single generator (the 'generators' list in your output config).`,
+    `To avoid the clash, point the output at a single generator (the 'generators' list in your output config).`,
     '',
     `Names affected (${count}): ${affected}.`,
   ].join('\n');

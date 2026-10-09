@@ -1,6 +1,16 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { join } from 'node:path';
 import { CONFIG_TEMPLATE, CONFIG_TEMPLATE_MONOREPO } from '@kurotako/config';
+import {
+  PACKAGE_TSCONFIG_BASE,
+  PACKAGE_TSUP_CONFIG_BASE,
+} from '@kurotako/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { runCli } from '../cli.js';
 
@@ -126,6 +136,43 @@ describe('tako init', () => {
       expect(readFileSync(join(root, 'tako.config.ts'), 'utf8')).toBe(
         CONFIG_TEMPLATE,
       );
+    });
+  });
+
+  describe('--package-base', () => {
+    it('writes the two base files one level above the default ./packages, and no config', async () => {
+      await runCli(['init', '--package-base']);
+      expect(process.exitCode ?? 0).toBe(0);
+      expect(readFileSync(join(root, 'tsconfig.base.json'), 'utf8')).toBe(
+        PACKAGE_TSCONFIG_BASE,
+      );
+      expect(readFileSync(join(root, 'tsup.config.base.ts'), 'utf8')).toBe(
+        PACKAGE_TSUP_CONFIG_BASE,
+      );
+      expect(existsSync(join(root, 'tako.config.ts'))).toBe(false);
+    });
+
+    it('--packages-dir targets the parent of the given directory', async () => {
+      await runCli([
+        'init',
+        '--package-base',
+        '--packages-dir',
+        'libs/generated',
+      ]);
+      expect(existsSync(join(root, 'libs', 'tsconfig.base.json'))).toBe(true);
+      expect(existsSync(join(root, 'libs', 'tsup.config.base.ts'))).toBe(true);
+    });
+
+    it('never overwrites an existing file, whatever the tsup extension', async () => {
+      writeFileSync(join(root, 'tsconfig.base.json'), 'mine');
+      writeFileSync(join(root, 'tsup.config.base.mjs'), 'mine');
+      await runCli(['init', '--package-base']);
+      expect(process.exitCode ?? 0).toBe(0);
+      expect(readFileSync(join(root, 'tsconfig.base.json'), 'utf8')).toBe(
+        'mine',
+      );
+      expect(existsSync(join(root, 'tsup.config.base.ts'))).toBe(false);
+      expect(stderr).toContain('kept existing');
     });
   });
 });

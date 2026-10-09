@@ -90,10 +90,19 @@ describe('errors', () => {
     ]);
     expect(error.message).toContain("Create '/repo/tsconfig.base.json'");
     expect(error.message).toContain('"moduleResolution": "bundler"');
+    expect(error.message).toContain('tako init --package-base');
     expect(error.message).toContain("Create '/repo/tsup.config.base.ts'");
     expect(error.message).toContain('export const basePreset');
     expect(error.message).toContain("Run, from '/repo'");
     expect(error.message).toContain('add -D typescript');
+  });
+
+  it('MissingPackageWorkspaceFilesError groups missing peers into one install command', () => {
+    const error = new MissingPackageWorkspaceFilesError('/repo', [
+      "peer dependency '@angular/core' (required by the generated package)",
+      "peer dependency 'zod' (required by the generated package)",
+    ]);
+    expect(error.message).toContain('add -D @angular/core zod');
   });
 
   it('OutputNotGeneratedError explains the marker and how to unblock the path', () => {

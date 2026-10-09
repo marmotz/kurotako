@@ -75,6 +75,29 @@ The result is imported by package name:
 import { UserSchema } from '@myapp/db/zod';
 ```
 
+### Prerequisites {#mode-b-prerequisites}
+
+`tako generate` checks these before writing anything, and reports everything that is
+missing in a single error (with ready-to-paste content for the two files). The workspace
+root is the directory **one level above `packagesDir`**.
+
+- `tsconfig.base.json` in the workspace root. The generated `tsconfig.json` extends it.
+  Minimal content: `target: ES2022`, `module: ESNext`, `moduleResolution: bundler`,
+  `strict: true`, `skipLibCheck: true`.
+- `tsup.config.base.{ts,js,mjs,cjs}` in the workspace root, exporting a `basePreset`
+  (`tsup` `Options`: `format: ['esm', 'cjs']`, `dts` enabled, `outDir: 'dist'`). The
+  generated `tsup.config.ts` spreads it.
+- `typescript` resolvable from the workspace root (needed for the `.d.ts` build).
+- Every peer dependency of the active generators resolvable from the generated package,
+  that is, installed in the workspace root (or in `packagesDir`'s ancestors): `zod` for
+  `gen-zod`, `@angular/core` and `@angular/forms` for `gen-angular`, and so on. Without
+  them the `.d.ts` build fails with `TS2307` (cannot find module) followed by `TS7006`
+  (implicit `any`).
+
+To create the two base files, run `tako init --package-base` (add `--packages-dir <dir>`
+if it is not `./packages`). It never overwrites an existing file. Install the
+`typescript` and peer dependencies with your package manager.
+
 ### Bootstrapping a workspace that already depends on the generated package {#mode-b-bootstrap}
 
 `tako generate` writes each package's `package.json` and then installs it into your
@@ -111,6 +134,21 @@ clone, `tako generate` runs, and immediately overwrites the stub with the real g
 `package.json` — which itself carries the same marker, so it stays a valid seed for the
 next clone too. Everything else under `packages/db/` (`dist/`, `src/`, `tsup.config.ts`,
 …) stays gitignored as before; only this one file needs the exception.
+
+## Several generators in one namespace {#shared-entry-point}
+
+When several generators describe the same model (for example `typescript`, `zod` and
+`angular`), many declarations share a name (`UserDto`, `BoolFilter`, ...). The synthesized
+`<namespace>` entry point can expose only one declaration per name, so it keeps the one
+from the lexically first generator (usually `typescript`). Nothing is lost, and this is
+not an error: `tako` only logs it at debug level (`--debug`). To get a specific
+generator's declaration, import it explicitly:
+
+```ts
+import { UserDto } from '@myapp/db';            // typescript's declarations for clashing names
+import { UserSchema } from '@myapp/db/zod';     // zod
+import { UserForm } from '@myapp/db/angular';   // angular
+```
 
 ## Choosing
 

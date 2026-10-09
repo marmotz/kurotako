@@ -37,6 +37,8 @@ interface PackageLayout {
   entriesByNamespace: Map<string, string[]>;
   /** Sorted by `path`. */
   planned: PlannedFile[];
+  /** Namespace -> peer package -> range, as written to each `package.json`. */
+  peersByNamespace: Record<string, Record<string, string>>;
 }
 
 /**
@@ -132,7 +134,14 @@ function computePackageLayout({
 
   planned.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
 
-  return { packagesDir, scopeSlug, namespaces, entriesByNamespace, planned };
+  return {
+    packagesDir,
+    scopeSlug,
+    namespaces,
+    entriesByNamespace,
+    planned,
+    peersByNamespace,
+  };
 }
 
 export const packageWriter: Writer = {
@@ -141,9 +150,20 @@ export const packageWriter: Writer = {
   },
 
   async write({ files, output, artifacts, logger = noopLogger }) {
-    const { packagesDir, scopeSlug, namespaces, entriesByNamespace, planned } =
-      computePackageLayout({ files, output, artifacts, logger });
-    assertWorkspaceBaseFiles(packagesDir);
+    const {
+      packagesDir,
+      scopeSlug,
+      namespaces,
+      entriesByNamespace,
+      planned,
+      peersByNamespace,
+    } = computePackageLayout({ files, output, artifacts, logger });
+    assertWorkspacePrerequisites(
+      packagesDir,
+      scopeSlug,
+      namespaces,
+      peersByNamespace,
+    );
 
     await fs.mkdir(packagesDir, { recursive: true });
     for (const namespace of namespaces) {
@@ -181,10 +201,17 @@ const TSUP_CONFIG_BASE_EXTENSIONS = ['.ts', '.js', '.mjs', '.cjs'];
 /**
  * The generated `tsconfig.json` / `tsup.config.ts` reference `../../tsconfig.base.json`
  * / `../../tsup.config.base` (two levels up from `<pkgDir>`, i.e. one level up from
- * `packagesDir`). Failing fast here turns an opaque esbuild "Could not resolve" into
- * an actionable error naming exactly what's missing and where.
+ * `packagesDir`), and the `.d.ts` build needs `typescript` plus every peer
+ * dependency of the generated package to be resolvable from it. Failing fast
+ * here, with everything that is missing in one error, replaces an opaque
+ * esbuild "Could not resolve" / TS2307 per build step.
  */
-function assertWorkspaceBaseFiles(packagesDir: string): void {
+function assertWorkspacePrerequisites(
+  packagesDir: string,
+  scopeSlug: string,
+  namespaces: string[],
+  peersByNamespace: Record<string, Record<string, string>>,
+): void {
   const workspaceRoot = path.dirname(packagesDir);
   const missing: string[] = [];
 
@@ -199,6 +226,21 @@ function assertWorkspaceBaseFiles(packagesDir: string): void {
   }
   if (!isResolvableFrom('typescript', workspaceRoot)) {
     missing.push("'typescript' (devDependency, needed for the .d.ts build)");
+  }
+
+  const missingPeers = new Set<string>();
+  for (const namespace of namespaces) {
+    const pkgDir = path.join(packagesDir, `${scopeSlug}-${namespace}`);
+    for (const peer of Object.keys(peersByNamespace[namespace] ?? {})) {
+      if (!isResolvableFrom(peer, pkgDir)) {
+        missingPeers.add(peer);
+      }
+    }
+  }
+  for (const peer of [...missingPeers].sort()) {
+    missing.push(
+      `peer dependency '${peer}' (required by the generated package)`,
+    );
   }
 
   if (missing.length > 0) {

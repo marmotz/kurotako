@@ -66,16 +66,14 @@ function generatorDefault(
   table: string,
   column: string,
 ): RawRecord | undefined {
-  const defaults = record(
-    record(record(contract.execution).mutations).defaults,
-  );
+  const defaults = record(record(contract.execution).mutations).defaults;
   if (!Array.isArray(defaults)) return undefined;
   return defaults.map(record).find((entry) => {
     const ref = record(entry.ref);
     return (
       ref.namespace === namespace &&
-      ref.table === table &&
-      ref.column === column
+      (ref.table ?? ref.entry) === table &&
+      (ref.column ?? ref.field) === column
     );
   });
 }
