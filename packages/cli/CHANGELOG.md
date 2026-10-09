@@ -1,5 +1,17 @@
 # @kurotako/cli
 
+## 0.3.0
+
+### Minor Changes
+
+- fba5a64: Add `tako init --package-base [--packages-dir <dir>]`, which scaffolds the `tsconfig.base.json` and `tsup.config.base.ts` that mode `package` requires, without overwriting existing files. `@kurotako/core` exports the two templates (`PACKAGE_TSCONFIG_BASE`, `PACKAGE_TSUP_CONFIG_BASE`).
+
+### Patch Changes
+
+- Updated dependencies [fba5a64]
+- Updated dependencies [fba5a64]
+  - @kurotako/core@0.3.1
+
 ## 0.2.2
 
 ### Patch Changes
