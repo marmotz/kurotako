@@ -1,5 +1,12 @@
 # kurotako
 
+## 0.2.7
+
+### Patch Changes
+
+- Updated dependencies [fba5a64]
+  - @kurotako/cli@0.3.0
+
 ## 0.2.6
 
 ### Patch Changes

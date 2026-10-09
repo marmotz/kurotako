@@ -1,5 +1,12 @@
 # @kurotako/core
 
+## 0.3.1
+
+### Patch Changes
+
+- fba5a64: Mode `package`: the preflight check now reports every missing prerequisite in one error (workspace base files, `typescript`, and the peer dependencies of the active generators), and the root-barrel name clash message between generators is logged at debug level instead of as a warning.
+- fba5a64: Add `tako init --package-base [--packages-dir <dir>]`, which scaffolds the `tsconfig.base.json` and `tsup.config.base.ts` that mode `package` requires, without overwriting existing files. `@kurotako/core` exports the two templates (`PACKAGE_TSCONFIG_BASE`, `PACKAGE_TSUP_CONFIG_BASE`).
+
 ## 0.3.0
 
 ### Minor Changes
