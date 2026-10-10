@@ -7,6 +7,7 @@ import type * as v from 'valibot';
 import type {
   CompositeUniqueSchema,
   ConstraintsSchema,
+  DateTypeSchema,
   DefaultValueSchema,
   EntitySchema,
   EnumDefSchema,
@@ -54,6 +55,7 @@ export type Entity = v.InferOutput<typeof EntitySchema>;
 export type Field = v.InferOutput<typeof FieldSchema>;
 export type ScalarType = v.InferOutput<typeof ScalarTypeSchema>;
 export type TypeAlias = v.InferOutput<typeof TypeAliasSchema>;
+export type DateType = v.InferOutput<typeof DateTypeSchema>;
 export type StringFormat = v.InferOutput<typeof StringFormatSchema>;
 export type ReferentialAction = v.InferOutput<typeof ReferentialActionSchema>;
 export type IndexType = v.InferOutput<typeof IndexTypeSchema>;

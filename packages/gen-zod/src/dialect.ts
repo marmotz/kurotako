@@ -6,10 +6,18 @@
  * `z.number().int()`, top-level string-format builders vs chained methods). Every
  * emitter takes a `ZodDialect` and never branches on the version itself.
  */
-import type { StringFormat } from '@kurotako/ir';
+import type { DateType, StringFormat } from '@kurotako/ir';
+import { temporalClass } from '@kurotako/ir';
 
 export interface ZodDialect {
   readonly version: 3 | 4;
+  /** How `date` / `datetime` fields are modelled (the generator's `dateType` option). */
+  readonly dateType: DateType;
+  /**
+   * Base expression for a `date` / `datetime` scalar. `format` is the field's
+   * `constraints.format`: `'time'` marks a time of day rather than a timestamp.
+   */
+  scalarDate(scalar: 'date' | 'datetime', format?: StringFormat): string;
   /** Base expression for an `int` scalar. */
   scalarInt(): string;
   /** Base expression for a `uuid` scalar. */
@@ -51,20 +59,61 @@ const V3_FORMAT_METHOD: Record<StringFormat, string> = {
   ipv6: ".ip({ version: 'v6' })",
 };
 
-const v4: ZodDialect = {
-  version: 4,
-  scalarInt: () => 'z.int()',
-  scalarUuid: () => 'z.uuid()',
-  stringFormat: (format) => V4_FORMAT_BUILDER[format],
-};
+/** Name of the generated helper schema (in `temporal.ts`) for a Temporal class. */
+export const TEMPORAL_SCHEMA_NAMES = {
+  Instant: 'TemporalInstantSchema',
+  PlainDate: 'TemporalPlainDateSchema',
+  PlainTime: 'TemporalPlainTimeSchema',
+} as const;
 
-const v3: ZodDialect = {
-  version: 3,
-  scalarInt: () => 'z.number().int()',
-  scalarUuid: () => 'z.string().uuid()',
-  stringFormat: (format, base) => `${base}${V3_FORMAT_METHOD[format]}`,
-};
+function scalarDateFor(
+  dateType: DateType,
+  stringFormat: ZodDialect['stringFormat'],
+): ZodDialect['scalarDate'] {
+  return (scalar, format) => {
+    switch (dateType) {
+      case 'date':
+        return 'z.coerce.date()';
+      case 'string': {
+        const kind =
+          scalar === 'date' ? 'date' : format === 'time' ? 'time' : 'datetime';
+        return stringFormat(kind, 'z.string()');
+      }
+      case 'temporal':
+        return TEMPORAL_SCHEMA_NAMES[temporalClass(scalar, format)];
+    }
+  };
+}
 
-export function dialectFor(version: 3 | 4): ZodDialect {
-  return version === 4 ? v4 : v3;
+function v4(dateType: DateType): ZodDialect {
+  const stringFormat: ZodDialect['stringFormat'] = (format) =>
+    V4_FORMAT_BUILDER[format];
+  return {
+    version: 4,
+    dateType,
+    scalarDate: scalarDateFor(dateType, stringFormat),
+    scalarInt: () => 'z.int()',
+    scalarUuid: () => 'z.uuid()',
+    stringFormat,
+  };
+}
+
+function v3(dateType: DateType): ZodDialect {
+  const stringFormat: ZodDialect['stringFormat'] = (format, base) =>
+    `${base}${V3_FORMAT_METHOD[format]}`;
+  return {
+    version: 3,
+    dateType,
+    scalarDate: scalarDateFor(dateType, stringFormat),
+    scalarInt: () => 'z.number().int()',
+    scalarUuid: () => 'z.string().uuid()',
+    stringFormat,
+  };
+}
+
+export function dialectFor(
+  version: 3 | 4,
+  dateType: DateType = 'date',
+): ZodDialect {
+  return version === 4 ? v4(dateType) : v3(dateType);
 }

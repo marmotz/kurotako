@@ -1,10 +1,11 @@
 /** Assemble scalar and enum fields into TypeScript object members. */
-import type { Entity, Field, SourceIR } from '@kurotako/ir';
+import type { DateType, Entity, Field, SourceIR } from '@kurotako/ir';
 import { jsDoc } from './jsdoc.js';
 import { fieldTsType } from './scalars.js';
 
 export interface MemberLineOptions {
   optional: boolean;
+  dateType?: DateType;
 }
 
 /** Render one field member, including documentation and list/null wrappers. */
@@ -14,7 +15,7 @@ export function memberLine(
   source: SourceIR,
   entity: Entity,
 ): string {
-  let type = fieldTsType(field, source, entity);
+  let type = fieldTsType(field, source, entity, opts.dateType);
   if (field.list) {
     if (type.includes(' | ')) type = `(${type})`;
     type = `${type}[]`;

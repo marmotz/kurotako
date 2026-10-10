@@ -8,3 +8,4 @@ export {
   TypeScriptGenError,
 } from './errors.js';
 export { typescriptGenerator } from './generator.js';
+export { TypeScriptGeneratorOptions } from './options.js';

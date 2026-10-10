@@ -7,8 +7,15 @@
  * and this schema stay in lockstep. This module only maps the resulting lists to
  * the Zod-specific projections.
  */
-import type { Entity, Field } from '@kurotako/ir';
-import { createFields, isCreateOptional, updateFields } from '@kurotako/ir';
+import type { DateType, Entity, Field } from '@kurotako/ir';
+import {
+  createFields,
+  isCreateOptional,
+  isReadOptional,
+  readFields,
+  temporalClass,
+  updateFields,
+} from '@kurotako/ir';
 import { enumFilterName, type VariantName } from '../names.js';
 
 export interface FieldSelection {
@@ -40,6 +47,11 @@ export function variantFields(
       }));
     case 'update':
       return updateFields(entity).map((field) => ({ field, optional: true }));
+    case 'read':
+      return readFields(entity).map((field) => ({
+        field,
+        optional: isReadOptional(field),
+      }));
     case 'where':
     case 'select':
       return entity.fields.map((field) => ({ field, optional: true }));
@@ -48,9 +60,14 @@ export function variantFields(
 
 /**
  * The Where operator schema identifier for a field, or `null` when the field's
- * scalar class has no filter (`json`, `unknown`).
+ * scalar class has no filter (`json`, `unknown`). Date-like fields share
+ * `DateTimeFilter`, except under `dateType: 'temporal'` where each Temporal class
+ * has its own (`InstantFilter`, `PlainDateFilter`, `PlainTimeFilter`).
  */
-export function filterClass(field: Field): string | null {
+export function filterClass(
+  field: Field,
+  dateType: DateType = 'date',
+): string | null {
   const type = field.type;
   if (type.kind === 'enum') {
     return enumFilterName(type.ref);
@@ -74,7 +91,11 @@ export function filterClass(field: Field): string | null {
       return 'BoolFilter';
     case 'date':
     case 'datetime':
-      return 'DateTimeFilter';
+      // Temporal values of different classes are not comparable with each
+      // other, so each class gets its own filter.
+      return dateType === 'temporal'
+        ? `${temporalClass(type.scalar, field.constraints.format)}Filter`
+        : 'DateTimeFilter';
     case 'json':
       return null;
   }

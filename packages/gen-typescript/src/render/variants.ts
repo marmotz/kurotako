@@ -1,6 +1,13 @@
 /** Shared payload field selection and Where-filter classification. */
-import type { Entity, Field } from '@kurotako/ir';
-import { createFields, isCreateOptional, updateFields } from '@kurotako/ir';
+import type { DateType, Entity, Field } from '@kurotako/ir';
+import {
+  createFields,
+  isCreateOptional,
+  isReadOptional,
+  readFields,
+  temporalClass,
+  updateFields,
+} from '@kurotako/ir';
 import type { VariantName } from '../names.js';
 
 export interface FieldSelection {
@@ -26,14 +33,26 @@ export function variantFields(
       }));
     case 'update':
       return updateFields(entity).map((field) => ({ field, optional: true }));
+    case 'read':
+      return readFields(entity).map((field) => ({
+        field,
+        optional: isReadOptional(field),
+      }));
     case 'where':
     case 'select':
       return entity.fields.map((field) => ({ field, optional: true }));
   }
 }
 
-/** The Where filter type for a direct scalar or enum field. */
-export function filterClass(field: Field): string | null {
+/**
+ * The Where filter type for a direct scalar or enum field. Date-like fields share
+ * `DateTimeFilter`, except under `dateType: 'temporal'` where each Temporal class
+ * has its own (`InstantFilter`, `PlainDateFilter`, `PlainTimeFilter`).
+ */
+export function filterClass(
+  field: Field,
+  dateType: DateType = 'date',
+): string | null {
   if (field.type.kind === 'enum') return `Enum${field.type.ref}Filter`;
   if (field.type.kind !== 'scalar') return null;
 
@@ -53,7 +72,9 @@ export function filterClass(field: Field): string | null {
       return 'BoolFilter';
     case 'date':
     case 'datetime':
-      return 'DateTimeFilter';
+      return dateType === 'temporal'
+        ? `${temporalClass(field.type.scalar, field.constraints.format)}Filter`
+        : 'DateTimeFilter';
     case 'json':
       return null;
   }

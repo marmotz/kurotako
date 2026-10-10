@@ -1,12 +1,15 @@
 /** Source type aliases -> the shared aliases.ts declaration module. */
 import { jsFile } from '@kurotako/core';
-import type { SourceIR } from '@kurotako/ir';
+import type { DateType, SourceIR } from '@kurotako/ir';
 import { nonRedundantTypeAliases } from '@kurotako/ir';
 import { typeName } from '../names.js';
 import { collectTypeDependencies, renderFieldType } from '../render/scalars.js';
 
 /** Emit source aliases and imports for their external entity/enum dependencies. */
-export function emitAliases(source: SourceIR): string {
+export function emitAliases(
+  source: SourceIR,
+  dateType: DateType = 'date',
+): string {
   const aliases = nonRedundantTypeAliases(source);
   const enums = new Set<string>();
   const entityRefs = new Set<string>();
@@ -35,7 +38,7 @@ export function emitAliases(source: SourceIR): string {
 
   const blocks = aliases.map((alias) => {
     const doc = alias.doc === undefined ? '' : `/** ${alias.doc} */\n`;
-    return `${doc}export type ${alias.name} = ${renderFieldType(alias.type, source)};`;
+    return `${doc}export type ${alias.name} = ${renderFieldType(alias.type, source, { dateType })};`;
   });
   const importBlock = imports
     .sort((left, right) => left.specifier.localeCompare(right.specifier))

@@ -15,8 +15,11 @@ import { contributingGenerators } from './tree.js';
 /**
  * One `VirtualFile { path: '<ns>/index.ts' }` per namespace present in `files`,
  * its content one sorted `export * from './<generatorName>';` line per
- * generator that contributed a file under `<ns>/<generatorName>/`. A
- * single-generator namespace still gets a barrel.
+ * generator that contributed a file under `<ns>/<generatorName>/`, except the
+ * generators whose artifact sets `exportFromRoot: false` (UI-framework output
+ * such as `angular`: reachable from `<ns>/<generatorName>` only). A
+ * single-generator namespace still gets a barrel, an empty one (`export {};`)
+ * when every contributor opted out.
  *
  * When generator barrels expose the same identifier, an explicit re-export
  * resolves the otherwise ambiguous star exports. The lexically first generator
@@ -28,16 +31,19 @@ import { contributingGenerators } from './tree.js';
  */
 export function synthesizeRootBarrels(
   files: VirtualFile[],
-  _artifactsByGenerator?: Record<string, GeneratorArtifact>,
+  artifactsByGenerator?: Record<string, GeneratorArtifact>,
   logger?: Logger,
 ): VirtualFile[] {
   const contributors = contributingGenerators(files);
   const barrels: VirtualFile[] = [];
 
   for (const namespace of [...contributors.keys()].sort()) {
-    const generators = contributors.get(namespace) ?? [];
+    const generators = (contributors.get(namespace) ?? []).filter(
+      (name) => artifactsByGenerator?.[name]?.exportFromRoot !== false,
+    );
     const collisions = exportedNameCollisions(namespace, generators, files);
     const content = [
+      ...(generators.length === 0 ? ['export {};'] : []),
       ...generators.map((name) => `export * from '${jsIndex(`./${name}`)}';`),
       ...[...collisions.entries()].map(
         ([identifier, { owners, isType }]) =>

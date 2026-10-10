@@ -24,6 +24,8 @@ describe('typeName — full variant x family matrix', () => {
     ['Create', 'Deep', 'UserCreateDeepDto'],
     ['Update', '', 'UserUpdateDto'],
     ['Update', 'Deep', 'UserUpdateDeepDto'],
+    ['Read', '', 'UserReadDto'],
+    ['Read', 'Deep', 'UserReadDeepDto'],
     ['Where', '', 'UserWhereDto'],
     ['Where', 'Deep', 'UserWhereDeepDto'],
     ['Select', '', 'UserSelectDto'],
@@ -39,12 +41,20 @@ describe('typeName — full variant x family matrix', () => {
 
 describe('name constants and module helpers', () => {
   it('preserves the fixed variant and family mappings', () => {
-    expect(VARIANTS).toEqual(['full', 'create', 'update', 'where', 'select']);
+    expect(VARIANTS).toEqual([
+      'full',
+      'create',
+      'update',
+      'read',
+      'where',
+      'select',
+    ]);
     expect(FAMILIES).toEqual(['flat', 'deep']);
     expect(VARIANT_TOKEN).toEqual({
       full: '',
       create: 'Create',
       update: 'Update',
+      read: 'Read',
       where: 'Where',
       select: 'Select',
     });

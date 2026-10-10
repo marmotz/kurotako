@@ -87,8 +87,9 @@ export function fakeZodArtifact(
 
   const extra: ZodArtifactExtra = {
     zodVersion: opts?.zodVersion ?? 4,
+    dateType: 'date',
     families: ['flat', 'deep'],
-    variants: ['full', 'create', 'update', 'where', 'select'],
+    variants: ['full', 'create', 'update', 'read', 'where', 'select'],
     perNamespace,
   };
 

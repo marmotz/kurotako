@@ -1,5 +1,12 @@
 /** Field types -> bare TypeScript type strings and their emitted dependencies. */
-import type { Entity, Field, FieldType, SourceIR } from '@kurotako/ir';
+import type {
+  DateType,
+  Entity,
+  Field,
+  FieldType,
+  SourceIR,
+  StringFormat,
+} from '@kurotako/ir';
 import { flattenUnion, resolveEnum, scalarTsType } from '@kurotako/ir';
 import { typeName } from '../names.js';
 
@@ -61,11 +68,24 @@ export function collectTypeDependencies(
   return into;
 }
 
+/** How date-like scalars are typed; `format` is the owning field's `constraints.format`. */
+export interface DateRenderOptions {
+  dateType?: DateType;
+  format?: StringFormat;
+}
+
 /**
  * Render a `FieldType` recursively. Entity refs name their emitted flat DTO;
  * type-alias refs retain their declared name from the source alias registry.
+ * `dateOpts.format` only applies to a top-level scalar, nested types carry no
+ * constraints of their own.
  */
-export function renderFieldType(type: FieldType, source: SourceIR): string {
+export function renderFieldType(
+  type: FieldType,
+  source: SourceIR,
+  dateOpts?: DateRenderOptions,
+): string {
+  const nested = dateOpts && { dateType: dateOpts.dateType };
   switch (type.kind) {
     case 'ref':
       return source.entities[type.ref] !== undefined
@@ -78,21 +98,21 @@ export function renderFieldType(type: FieldType, source: SourceIR): string {
         : variants
             .map((variant) =>
               variant.kind === 'union'
-                ? `(${renderFieldType(variant, source)})`
-                : renderFieldType(variant, source),
+                ? `(${renderFieldType(variant, source, nested)})`
+                : renderFieldType(variant, source, nested),
             )
             .join(' | ');
     }
     case 'map':
-      return `Record<string, ${renderFieldType(type.value, source)}>`;
+      return `Record<string, ${renderFieldType(type.value, source, nested)}>`;
     case 'array':
       return type.element.kind === 'union'
-        ? `(${renderFieldType(type.element, source)})[]`
-        : `${renderFieldType(type.element, source)}[]`;
+        ? `(${renderFieldType(type.element, source, nested)})[]`
+        : `${renderFieldType(type.element, source, nested)}[]`;
     case 'scalar':
     case 'enum':
     case 'unknown':
-      return scalarTsType(type);
+      return scalarTsType(type, dateOpts);
   }
 }
 
@@ -101,7 +121,11 @@ export function fieldTsType(
   field: Field,
   source: SourceIR,
   entity: Entity,
+  dateType?: DateType,
 ): string {
   collectTypeDependencies(field.type, source, entity);
-  return renderFieldType(field.type, source);
+  return renderFieldType(field.type, source, {
+    dateType,
+    format: field.constraints.format,
+  });
 }

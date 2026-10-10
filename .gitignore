@@ -20,3 +20,9 @@ apps/docs/docs/api
 
 # Transient test fixtures (@kurotako/gen-react-tanstack behaviour tests)
 packages/gen-react-tanstack/tmp-*
+
+# Transient test fixtures (@kurotako/core writer/package.consumer.test.ts)
+packages/core/tmp-*
+
+# Transient test fixtures (@kurotako/gen-zod date-types.test.ts)
+packages/gen-zod/tmp-*

@@ -14,6 +14,8 @@ describe('buildArtifact', () => {
         createDeepType: 'UserCreateDeepDto',
         updateType: 'UserUpdateDto',
         updateDeepType: 'UserUpdateDeepDto',
+        readType: 'UserReadDto',
+        readDeepType: 'UserReadDeepDto',
         whereType: 'UserWhereDto',
         whereDeepType: 'UserWhereDeepDto',
         selectType: 'UserSelectDto',
@@ -23,7 +25,7 @@ describe('buildArtifact', () => {
     expect(artifact.peerDependencies).toBeUndefined();
     expect(artifact.extra).toEqual({
       families: ['flat', 'deep'],
-      variants: ['full', 'create', 'update', 'where', 'select'],
+      variants: ['full', 'create', 'update', 'read', 'where', 'select'],
       perNamespace: {
         blog: {
           barrelModule: 'blog/typescript',

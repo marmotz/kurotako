@@ -1,6 +1,6 @@
 /** Shared Prisma-style Where filter interfaces. */
 import { jsFile } from '@kurotako/core';
-import type { SourceIR } from '@kurotako/ir';
+import type { DateType, SourceIR } from '@kurotako/ir';
 import { scalarTsType } from '@kurotako/ir';
 import { enumTypeName } from '../names.js';
 import { filterClass } from '../render/variants.js';
@@ -15,24 +15,30 @@ const SCALAR_FILTER_ORDER = [
   'FloatFilter',
   'BigIntFilter',
   'DateTimeFilter',
+  'InstantFilter',
+  'PlainDateFilter',
+  'PlainTimeFilter',
   'BoolFilter',
 ] as const;
 
 type ScalarFilter = (typeof SCALAR_FILTER_ORDER)[number];
 
 /** Collect the public filter interface identifiers emitted for a source. */
-export function collectFilterNames(source: SourceIR): Set<string> {
+export function collectFilterNames(
+  source: SourceIR,
+  dateType: DateType = 'date',
+): Set<string> {
   const names = new Set<string>();
   for (const entity of Object.values(source.entities)) {
     for (const field of entity.fields) {
-      const filter = filterClass(field);
+      const filter = filterClass(field, dateType);
       if (filter !== null) names.add(filter);
     }
   }
   return names;
 }
 
-function baseType(name: ScalarFilter): string {
+function baseType(name: ScalarFilter, dateType: DateType): string {
   switch (name) {
     case 'StringFilter':
       return scalarTsType({ kind: 'scalar', scalar: 'string' });
@@ -42,7 +48,13 @@ function baseType(name: ScalarFilter): string {
     case 'BigIntFilter':
       return scalarTsType({ kind: 'scalar', scalar: 'bigint' });
     case 'DateTimeFilter':
-      return scalarTsType({ kind: 'scalar', scalar: 'datetime' });
+      return scalarTsType({ kind: 'scalar', scalar: 'datetime' }, { dateType });
+    case 'InstantFilter':
+      return 'Temporal.Instant';
+    case 'PlainDateFilter':
+      return 'Temporal.PlainDate';
+    case 'PlainTimeFilter':
+      return 'Temporal.PlainTime';
     case 'BoolFilter':
       return scalarTsType({ kind: 'scalar', scalar: 'boolean' });
   }
@@ -69,12 +81,15 @@ function emitInterface(
 }
 
 /** Emit only the direct scalar and enum classes used by a source's fields. */
-export function emitFilters(source: SourceIR): string {
+export function emitFilters(
+  source: SourceIR,
+  dateType: DateType = 'date',
+): string {
   const scalars = new Set<string>();
   const enums = new Set<string>();
   for (const entity of Object.values(source.entities)) {
     for (const field of entity.fields) {
-      const filter = filterClass(field);
+      const filter = filterClass(field, dateType);
       if (filter === null) continue;
       if (field.type.kind === 'enum') enums.add(field.type.ref);
       else scalars.add(filter);
@@ -85,7 +100,9 @@ export function emitFilters(source: SourceIR): string {
   const blocks: string[] = [];
   for (const name of SCALAR_FILTER_ORDER) {
     if (scalars.has(name))
-      blocks.push(emitInterface(name, baseType(name), operations(name)));
+      blocks.push(
+        emitInterface(name, baseType(name, dateType), operations(name)),
+      );
   }
   for (const name of enumNames) {
     blocks.push(

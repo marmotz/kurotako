@@ -4,8 +4,8 @@
  * additionally wraps any throw from `parse()` as a `DriverError`.
  *
  * Codes: `prisma_input`, `prisma_peer_missing`, `prisma_schema`,
- * `prisma_contract`, `prisma_contract_version`, `prisma_dialect`, and
- * `prisma_entity_collision`.
+ * `prisma_contract`, `prisma_contract_version`, `prisma_dialect`,
+ * `prisma_entity_collision` and `prisma_hidden_field`.
  */
 import { TakoError } from '@kurotako/core';
 
@@ -122,5 +122,18 @@ export class PrismaAmbiguousRelationError extends TakoError {
       'prisma_ambiguous_relation',
       `Prisma contract relation targets '${modelName}', which exists in multiple namespaces; Prisma 8 RC does not resolve this reliably`,
     );
+  }
+}
+
+/** `options.hidden` names an entity or a field that is not in the schema. */
+export class PrismaHiddenFieldError extends TakoError {
+  readonly unknown: readonly string[];
+
+  constructor(unknown: readonly string[]) {
+    super(
+      'prisma_hidden_field',
+      `prisma parser: 'hidden' lists ${unknown.join(', ')}, which ${unknown.length === 1 ? 'is' : 'are'} not in the schema (use '<Entity>': ['<field>'] with the entity name as it appears in the IR)`,
+    );
+    this.unknown = unknown;
   }
 }

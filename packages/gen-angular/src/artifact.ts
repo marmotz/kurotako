@@ -112,5 +112,7 @@ export function buildArtifact(
     ? { '@angular/core': '>=22', '@angular/forms': '>=22' }
     : { '@angular/core': '>=17', '@angular/forms': '>=17' };
 
-  return { entities, peerDependencies, extra };
+  // The Angular sub-tree imports `@angular/*` at module load: keep it out of the
+  // namespace root so a Node consumer of `<scope>/<ns>` never pulls it in.
+  return { entities, peerDependencies, exportFromRoot: false, extra };
 }

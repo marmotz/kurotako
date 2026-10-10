@@ -1,6 +1,8 @@
 import * as v from 'valibot';
 import { describe, expect, it } from 'vitest';
 import {
+  DateTypeSchema,
+  FieldSchema,
   FieldTypeSchema,
   IndexDefSchema,
   SourceIrSchema,
@@ -176,5 +178,36 @@ describe('SourceIrSchema — typeAliases', () => {
         },
       },
     });
+  });
+});
+
+describe('FieldSchema — hidden', () => {
+  const base = {
+    name: 'passwordHash',
+    type: { kind: 'scalar', scalar: 'string' },
+    list: false,
+    optional: false,
+    nullable: false,
+    constraints: {},
+  };
+
+  it('accepts hidden: true and still allows it to be absent', () => {
+    roundTrips(FieldSchema, { ...base, hidden: true });
+    expect(v.parse(FieldSchema, base).hidden).toBeUndefined();
+  });
+
+  it('rejects a non-boolean hidden', () => {
+    expect(v.safeParse(FieldSchema, { ...base, hidden: 'yes' }).success).toBe(
+      false,
+    );
+  });
+});
+
+describe('DateTypeSchema', () => {
+  it('accepts the three representations and nothing else', () => {
+    for (const value of ['date', 'string', 'temporal']) {
+      expect(v.safeParse(DateTypeSchema, value).success).toBe(true);
+    }
+    expect(v.safeParse(DateTypeSchema, 'moment').success).toBe(false);
   });
 });

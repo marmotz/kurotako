@@ -15,6 +15,12 @@ export const PrismaParserOptions = v.strictObject({
   version: v.optional(v.picklist([7, 8])),
   namespacePrefix: v.optional(v.record(v.string(), v.string())),
   rename: v.optional(v.record(v.string(), v.string())),
+  /**
+   * Fields kept out of the read shape (`<Entity>Read…` schemas and types):
+   * `{ User: ['passwordHash'] }`, keyed by the entity name as it appears in the
+   * IR. The `/// @kurotako.hidden` doc annotation does the same in Prisma 7 mode.
+   */
+  hidden: v.optional(v.record(v.string(), v.array(v.string()))),
 });
 
 export type PrismaParserOptions = v.InferOutput<typeof PrismaParserOptions>;

@@ -8,6 +8,7 @@
 import { jsFile } from '@kurotako/core';
 import type { SourceIR } from '@kurotako/ir';
 import type { ZodDialect } from '../dialect.js';
+import { TEMPORAL_SCHEMA_NAMES } from '../dialect.js';
 import { enumFilterName, enumSchemaName } from '../names.js';
 import { filterClass } from '../render/variants.js';
 
@@ -23,6 +24,9 @@ const SCALAR_FILTER_ORDER = [
   'FloatFilter',
   'BigIntFilter',
   'DateTimeFilter',
+  'InstantFilter',
+  'PlainDateFilter',
+  'PlainTimeFilter',
   'BoolFilter',
 ] as const;
 
@@ -43,7 +47,15 @@ function scalarBase(name: string, dialect: ZodDialect): string {
     case 'BigIntFilter':
       return 'z.bigint()';
     case 'DateTimeFilter':
-      return 'z.coerce.date()';
+      // `dateType: 'string'` keeps the filter loose: any ISO 8601 string, whether
+      // the compared field is a timestamp, a date or a time of day.
+      return dialect.dateType === 'string' ? 'z.string()' : 'z.coerce.date()';
+    case 'InstantFilter':
+      return TEMPORAL_SCHEMA_NAMES.Instant;
+    case 'PlainDateFilter':
+      return TEMPORAL_SCHEMA_NAMES.PlainDate;
+    case 'PlainTimeFilter':
+      return TEMPORAL_SCHEMA_NAMES.PlainTime;
     case 'BoolFilter':
       return 'z.boolean()';
     default:
@@ -78,7 +90,7 @@ export function emitFilters(source: SourceIR, dialect: ZodDialect): string {
 
   for (const entity of Object.values(source.entities)) {
     for (const field of entity.fields) {
-      const cls = filterClass(field);
+      const cls = filterClass(field, dialect.dateType);
       if (cls === null) {
         continue;
       }

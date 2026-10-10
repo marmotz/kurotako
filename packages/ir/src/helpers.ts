@@ -4,6 +4,7 @@
  * in one place so every generator agrees.
  */
 import type {
+  DateType,
   Entity,
   EnumDef,
   Field,
@@ -13,6 +14,7 @@ import type {
   Relation,
   ScalarType,
   SourceIR,
+  StringFormat,
   TypeAlias,
 } from './types.js';
 
@@ -278,6 +280,9 @@ export type ScalarTsType =
   | 'bigint'
   | 'boolean'
   | 'Date'
+  | 'Temporal.Instant'
+  | 'Temporal.PlainDate'
+  | 'Temporal.PlainTime'
   | 'Uint8Array'
   | 'JsonValue'
   | 'unknown';
@@ -399,6 +404,24 @@ export function isCreateOptional(field: Field): boolean {
 }
 
 /**
+ * A field the read shape (`Read` variant) may leave out: it is `optional` in the
+ * source *and* has no default. A field with a default is always filled in by the
+ * time a row is read back (`id`, `createdAt`, ...), so it is required on read
+ * even though it is optional on create.
+ */
+export function isReadOptional(field: Field): boolean {
+  return field.optional && field.default === undefined;
+}
+
+/**
+ * Fields of the read shape (`Read` variant): `entity.fields` minus the ones the
+ * source marked `hidden`.
+ */
+export function readFields(entity: Entity): Field[] {
+  return entity.fields.filter((field) => field.hidden !== true);
+}
+
+/**
  * Fields to include in an "update" payload: `entity.fields` minus primary-key
  * members; the caller treats every one as optional (partial).
  */
@@ -415,7 +438,10 @@ export function updateFields(entity: Entity): Field[] {
  * generator's choice), the enum type name for `{ kind: 'enum' }` (identifiers are
  * never prefixed, ADR-0004), and `'unknown'` for `{ kind: 'unknown' }`.
  */
-export function scalarTsType(type: FieldType): string {
+export function scalarTsType(
+  type: FieldType,
+  opts?: { dateType?: DateType; format?: StringFormat },
+): string {
   switch (type.kind) {
     case 'enum':
       return type.ref;
@@ -424,21 +450,62 @@ export function scalarTsType(type: FieldType): string {
     case 'unknown':
       return 'unknown';
     case 'scalar':
-      return mapScalar(type.scalar);
+      return type.scalar === 'date' || type.scalar === 'datetime'
+        ? dateTsType(type.scalar, opts?.format, opts?.dateType ?? 'date')
+        : mapScalar(type.scalar);
     case 'union':
       return flattenUnion(type)
         .map((variant) =>
           variant.kind === 'union'
-            ? `(${scalarTsType(variant)})`
-            : scalarTsType(variant),
+            ? `(${scalarTsType(variant, opts)})`
+            : scalarTsType(variant, opts),
         )
         .join(' | ');
     case 'map':
-      return `Record<string, ${scalarTsType(type.value)}>`;
+      return `Record<string, ${scalarTsType(type.value, opts)}>`;
     case 'array': {
-      const element = scalarTsType(type.element);
+      const element = scalarTsType(type.element, opts);
       return type.element.kind === 'union' ? `(${element})[]` : `${element}[]`;
     }
+  }
+}
+
+/** Which `Temporal` class a date-like scalar maps to. */
+export type TemporalClass = 'Instant' | 'PlainDate' | 'PlainTime';
+
+/**
+ * The `Temporal` class for a `date` / `datetime` scalar: `date` -> `PlainDate`,
+ * `datetime` with `format: 'time'` -> `PlainTime`, any other `datetime` ->
+ * `Instant`. A timezone-less timestamp (`Temporal.PlainDateTime`) is not told
+ * apart from a zoned one: the IR has a single `datetime` scalar.
+ */
+export function temporalClass(
+  scalar: 'date' | 'datetime',
+  format?: StringFormat,
+): TemporalClass {
+  if (scalar === 'date') {
+    return 'PlainDate';
+  }
+  return format === 'time' ? 'PlainTime' : 'Instant';
+}
+
+/**
+ * The TS type of a `date` / `datetime` value for a `dateType`: `Date`, an ISO 8601
+ * `string`, or the `Temporal.*` class from {@link temporalClass}. `format` is the
+ * field's `constraints.format` (what tells a time of day from a timestamp).
+ */
+export function dateTsType(
+  scalar: 'date' | 'datetime',
+  format: StringFormat | undefined,
+  dateType: DateType,
+): string {
+  switch (dateType) {
+    case 'date':
+      return 'Date';
+    case 'string':
+      return 'string';
+    case 'temporal':
+      return `Temporal.${temporalClass(scalar, format)}`;
   }
 }
 

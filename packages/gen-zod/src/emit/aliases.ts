@@ -119,7 +119,7 @@ export function emitAliases(
     }
     if (cyclicRefs.has(alias.name)) {
       blocks.push(
-        `export type ${aliasTs} = ${typeExpr(alias.type, source)};`,
+        `export type ${aliasTs} = ${typeExpr(alias.type, source, { dateType: dialect.dateType })};`,
         `export const ${schemaId}: z.ZodType<${aliasTs}> = ${expr};`,
         '',
       );

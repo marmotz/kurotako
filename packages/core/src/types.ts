@@ -171,6 +171,14 @@ export interface GeneratorArtifact {
    * per namespace (output-modes).
    */
   peerDependencies?: Record<string, string>;
+  /**
+   * Whether the synthesized root barrel (`<namespace>/index.ts`) re-exports this
+   * generator's sub-tree. Default `true`. A generator whose output pulls in a
+   * heavy or environment-specific runtime (a UI framework) sets it to `false`, so
+   * importing the namespace root from a plain Node process stays free of that
+   * runtime; the sub-tree remains reachable from `<namespace>/<generatorName>`.
+   */
+  exportFromRoot?: boolean;
   /** Generator-defined; the consumer casts to the producer's published type. */
   extra?: unknown;
 }

@@ -9,6 +9,7 @@ import {
   type SourceIR,
 } from '@kurotako/ir';
 import { typescriptGenerator } from '../generator.js';
+import type { TypeScriptGeneratorOptions } from '../options.js';
 
 export const noopLogger: GenerateContext['logger'] = {
   debug() {},
@@ -43,6 +44,7 @@ export function runGenerator(
   ir: IR,
   logger: GenerateContext['logger'] = noopLogger,
   segment = 'typescript',
+  options: TypeScriptGeneratorOptions = {},
 ): GenOutput {
   const cycles = new Set<string>();
   for (const [namespace, source] of Object.entries(ir.sources)) {
@@ -50,13 +52,16 @@ export function runGenerator(
       cycles.add(`${namespace}.${member}`);
     }
   }
-  const output = typescriptGenerator.generate({
-    ir,
-    dependencies: {},
-    cycles,
-    segment,
-    logger,
-  });
+  const output = typescriptGenerator.generate(
+    {
+      ir,
+      dependencies: {},
+      cycles,
+      segment,
+      logger,
+    },
+    options,
+  );
   if (output instanceof Promise) {
     throw new Error('typescriptGenerator.generate must be synchronous');
   }

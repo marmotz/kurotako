@@ -127,7 +127,17 @@ function readField(
   field.format = mapped.format;
   field.maxLength = maxLength;
   const parsedDefault = defaultValue(storageColumn.default);
-  if (parsedDefault !== undefined) field.default = parsedDefault;
+  if (parsedDefault !== undefined) {
+    field.default = parsedDefault;
+  } else {
+    // A value the ORM generates at create time (`uuidv4`, `instantNow`) is not in
+    // the storage column's default: record it as an expression default, so the
+    // field reads back as required, like a database default does.
+    const onCreate = record(generator?.onCreate);
+    if (onCreate.kind === 'generator' && typeof onCreate.id === 'string') {
+      field.default = { name: onCreate.id, args: [] };
+    }
+  }
   return field;
 }
 

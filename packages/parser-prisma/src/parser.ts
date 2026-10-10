@@ -35,6 +35,7 @@ export const prismaParser = defineParser({
         model,
         `prisma-contract@${generatorVersion}`,
         ctx.logger,
+        options.hidden,
       );
     }
 
@@ -49,6 +50,7 @@ export const prismaParser = defineParser({
       model,
       `prisma@${prismaVersion}`,
       ctx.logger,
+      options.hidden,
     );
   },
 

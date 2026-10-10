@@ -100,6 +100,9 @@ export function buildArtifact(
   return {
     entities,
     peerDependencies: { '@tanstack/react-form': TANSTACK_FORM_RANGE },
+    // UI-framework output: reachable from `<ns>/react-tanstack` only, never the
+    // namespace root (see `GeneratorArtifact.exportFromRoot`).
+    exportFromRoot: false,
     extra,
   };
 }

@@ -6,7 +6,7 @@
  * never raw file paths. The shape is a required contract.
  */
 import type { EntitySymbols, GeneratorArtifact } from '@kurotako/core';
-import type { IR } from '@kurotako/ir';
+import type { DateType, IR } from '@kurotako/ir';
 import { iterEntities, nonRedundantTypeAliases } from '@kurotako/ir';
 import { collectEnums } from './emit/enums.js';
 import {
@@ -33,8 +33,9 @@ import type { ZodGeneratorOptions } from './options.js';
 
 export interface ZodArtifactExtra {
   zodVersion: 3 | 4;
+  dateType: DateType;
   families: ['flat', 'deep'];
-  variants: ['full', 'create', 'update', 'where', 'select'];
+  variants: ['full', 'create', 'update', 'read', 'where', 'select'];
   perNamespace: Record<
     string,
     {
@@ -131,8 +132,9 @@ export function buildArtifact(
 
   const extra: ZodArtifactExtra = {
     zodVersion: opts.zodVersion,
+    dateType: opts.dateType ?? 'date',
     families: ['flat', 'deep'],
-    variants: ['full', 'create', 'update', 'where', 'select'],
+    variants: ['full', 'create', 'update', 'read', 'where', 'select'],
     perNamespace,
   };
 

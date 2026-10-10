@@ -61,6 +61,14 @@ export const StringFormatSchema = v.picklist([
   'ipv6',
 ]);
 
+/**
+ * How a generator represents the `date` / `datetime` scalars (and a `datetime`
+ * with `format: 'time'`) in the code it emits: a JS `Date`, an ISO 8601 string,
+ * or a TC39 `Temporal` object. Shared option vocabulary of the generators that
+ * emit date types; the IR itself stays representation-agnostic.
+ */
+export const DateTypeSchema = v.picklist(['date', 'string', 'temporal']);
+
 export const ReferentialActionSchema = v.picklist([
   'cascade',
   'restrict',
@@ -142,6 +150,11 @@ export const FieldSchema = v.object({
   default: v.optional(DefaultValueSchema),
   doc: v.optional(v.string()),
   dbName: v.optional(v.string()),
+  /**
+   * Excluded from the read shape (`Read` variant) of the entity: a field the
+   * source marks as never to leave the server, such as a password hash.
+   */
+  hidden: v.optional(v.boolean()),
 });
 
 // --- relations -----------------------------------------------------------

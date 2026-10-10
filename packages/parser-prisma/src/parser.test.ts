@@ -15,7 +15,11 @@ import {
   validateSourceIR,
 } from '@kurotako/ir';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { PrismaAmbiguousRelationError, PrismaContractError } from './errors.js';
+import {
+  PrismaAmbiguousRelationError,
+  PrismaContractError,
+  PrismaHiddenFieldError,
+} from './errors.js';
 import { prismaParser } from './parser.js';
 
 const PKG_DIR = join(import.meta.dirname, '..');
@@ -296,6 +300,78 @@ describe('prismaParser.parse — multi-file folder', () => {
   });
 });
 
+describe('prismaParser.parse — hidden fields (Prisma 7 mode)', () => {
+  beforeEach(() => {
+    writeFileSync(
+      join(root, 'schema.prisma'),
+      `datasource db {
+  provider = "postgresql"
+}
+
+model Account {
+  id           Int      @id @default(autoincrement())
+  email        String
+  /// bcrypt hash
+  /// @kurotako.hidden
+  passwordHash String
+  token        String
+  wakeAt       DateTime @db.Time
+  updatedAt    DateTime @updatedAt
+}
+`,
+    );
+  });
+
+  it('marks the annotated field hidden and strips the tag from its doc', async () => {
+    const account = entity(await parse(), 'Account');
+    const field = (name: string) => account.fields.find((f) => f.name === name);
+    expect(field('passwordHash')).toMatchObject({
+      hidden: true,
+      doc: 'bcrypt hash',
+    });
+    expect(field('email')?.hidden).toBeUndefined();
+  });
+
+  it('marks the fields listed in options.hidden, on top of the annotation', async () => {
+    const ir = await prismaParser.parse(ctx(root), {
+      schema: 'schema.prisma',
+      hidden: { Account: ['token'] },
+    });
+    const hidden = entity(ir, 'Account')
+      .fields.filter((f) => f.hidden)
+      .map((f) => f.name);
+    expect(hidden).toEqual(['passwordHash', 'token']);
+    expect(validateSourceIR(ir).ok).toBe(true);
+  });
+
+  it('rejects an options.hidden entry that matches nothing', async () => {
+    await expect(
+      prismaParser.parse(ctx(root), {
+        schema: 'schema.prisma',
+        hidden: { Account: ['passwordHsh'] },
+      }),
+    ).rejects.toBeInstanceOf(PrismaHiddenFieldError);
+  });
+
+  it('keeps the time format of a @db.Time column on its datetime scalar', async () => {
+    const wakeAt = entity(await parse(), 'Account').fields.find(
+      (f) => f.name === 'wakeAt',
+    );
+    expect(wakeAt?.type).toEqual({ kind: 'scalar', scalar: 'datetime' });
+    expect(wakeAt?.constraints.format).toBe('time');
+  });
+
+  it('records @updatedAt as an ORM-assigned default so the field reads back as required', async () => {
+    const updatedAt = entity(await parse(), 'Account').fields.find(
+      (f) => f.name === 'updatedAt',
+    );
+    expect(updatedAt).toMatchObject({
+      optional: true,
+      default: { kind: 'expr', expr: 'updatedAt()' },
+    });
+  });
+});
+
 describe('prismaParser.parse — Prisma 8 contract', () => {
   it('produces a SourceIR from the captured contract fixture', async () => {
     const fixture = JSON.parse(
@@ -322,6 +398,59 @@ describe('prismaParser.parse — Prisma 8 contract', () => {
       { name: 'ADMIN' },
     ]);
     expect(validateSourceIR(ir).ok).toBe(true);
+  });
+
+  it('honours options.hidden on a contract, which carries no doc comments', async () => {
+    const fixture = JSON.parse(
+      readFileSync(
+        join(import.meta.dirname, 'contract', '__fixtures__', 'contract.json'),
+        'utf8',
+      ),
+    ) as {
+      domain: { namespaces: { billing: { models: Record<string, unknown> } } };
+    };
+    delete fixture.domain.namespaces.billing.models.User;
+    writeFileSync(join(root, 'contract.json'), JSON.stringify(fixture));
+
+    const ir = await prismaParser.parse(ctx(root), {
+      schema: 'contract.json',
+      version: 8,
+      hidden: { Profile: ['bio'] },
+    });
+    const profile = ir.entities.Profile;
+    expect(profile?.fields.filter((f) => f.hidden).map((f) => f.name)).toEqual([
+      'bio',
+    ]);
+    // An ORM-generated value (`temporal.updatedAt()`, `@default(uuid())`) is recorded
+    // as an expression default, so it reads back as required.
+    const post = ir.entities.Post;
+    expect(post?.fields.find((f) => f.name === 'updatedAt')).toMatchObject({
+      optional: true,
+      default: { kind: 'expr', expr: 'instantNow()' },
+    });
+    expect(post?.fields.find((f) => f.name === 'id')?.default?.kind).toBe(
+      'expr',
+    );
+  });
+
+  it('rejects an unknown options.hidden entry on a contract', async () => {
+    const fixture = JSON.parse(
+      readFileSync(
+        join(import.meta.dirname, 'contract', '__fixtures__', 'contract.json'),
+        'utf8',
+      ),
+    ) as {
+      domain: { namespaces: { billing: { models: Record<string, unknown> } } };
+    };
+    delete fixture.domain.namespaces.billing.models.User;
+    writeFileSync(join(root, 'contract.json'), JSON.stringify(fixture));
+    await expect(
+      prismaParser.parse(ctx(root), {
+        schema: 'contract.json',
+        version: 8,
+        hidden: { Profile: ['nope'] },
+      }),
+    ).rejects.toBeInstanceOf(PrismaHiddenFieldError);
   });
 
   it('rejects the ambiguous cross-namespace relation in the full fixture', async () => {

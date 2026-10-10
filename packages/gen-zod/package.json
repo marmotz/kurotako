@@ -57,6 +57,7 @@
   "devDependencies": {
     "@kurotako/config": "workspace:^",
     "@kurotako/core": "workspace:^",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "zod": "4.4.3"
   }
 }

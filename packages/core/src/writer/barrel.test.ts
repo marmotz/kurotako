@@ -35,6 +35,36 @@ describe('synthesizeRootBarrels', () => {
     ]);
   });
 
+  it('leaves out a generator whose artifact sets exportFromRoot: false', () => {
+    const barrels = synthesizeRootBarrels(
+      [
+        file('pg/angular/user.form.ts'),
+        file('pg/typescript/User.type.ts'),
+        file('pg/zod/User.schema.ts'),
+      ],
+      {
+        angular: { entities: {}, exportFromRoot: false },
+        zod: { entities: {}, exportFromRoot: true },
+        typescript: { entities: {} },
+      },
+    );
+    expect(barrels).toEqual([
+      {
+        path: 'pg/index.ts',
+        content:
+          "export * from './typescript/index.js';\nexport * from './zod/index.js';\n",
+      },
+    ]);
+  });
+
+  it('emits an empty barrel when every contributor opts out of the root', () => {
+    expect(
+      synthesizeRootBarrels([file('pg/angular/user.form.ts')], {
+        angular: { entities: {}, exportFromRoot: false },
+      }),
+    ).toEqual([{ path: 'pg/index.ts', content: 'export {};\n' }]);
+  });
+
   it('ignores files with fewer than three path segments', () => {
     expect(
       synthesizeRootBarrels([file('pg/index.ts'), file('README.md')]),
