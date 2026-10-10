@@ -1,6 +1,7 @@
 /** `typescriptGenerator` — emits pure TypeScript declarations from the IR. */
 import { defineGenerator } from '@kurotako/config';
 import type { GenerateContext, GenOutput, VirtualFile } from '@kurotako/core';
+import type { DateType } from '@kurotako/ir';
 import { nonRedundantTypeAliases } from '@kurotako/ir';
 import { buildArtifact } from './artifact.js';
 import { emitAliases } from './emit/aliases.js';
@@ -21,6 +22,7 @@ import {
   VARIANT_TOKEN,
   VARIANTS,
 } from './names.js';
+import { TypeScriptGeneratorOptions } from './options.js';
 import { collectTypeDependencies } from './render/scalars.js';
 
 function sourceUsesJsonValue(
@@ -86,6 +88,7 @@ function cyclicAliasNames(
 /** Public barrel identifiers, separated by their enum, generated, and alias origins. */
 function generatedPublicNames(
   source: GenerateContext['ir']['sources'][string],
+  dateType: DateType,
 ): {
   enumNames: Set<string>;
   generatedTypeNames: Set<string>;
@@ -106,7 +109,9 @@ function generatedPublicNames(
     }
   }
 
-  for (const name of collectFilterNames(source)) generatedTypeNames.add(name);
+  for (const name of collectFilterNames(source, dateType)) {
+    generatedTypeNames.add(name);
+  }
   if (sourceUsesJsonValue(source)) generatedTypeNames.add('JsonValue');
   return {
     enumNames,
@@ -120,14 +125,17 @@ function generatedPublicNames(
 function validateSourceEmission(
   source: GenerateContext['ir']['sources'][string],
   cycles: GenerateContext['cycles'],
+  dateType: DateType,
 ): void {
   const aliasesInCycles = cyclicAliasNames(source, cycles);
   if (aliasesInCycles.length > 0) {
     throw new TypeScriptAliasCycleError(source.namespace, aliasesInCycles);
   }
 
-  const { enumNames, generatedTypeNames, aliasNames } =
-    generatedPublicNames(source);
+  const { enumNames, generatedTypeNames, aliasNames } = generatedPublicNames(
+    source,
+    dateType,
+  );
   const aliasCollisions = [...aliasNames].filter(
     (name) => enumNames.has(name) || generatedTypeNames.has(name),
   );
@@ -152,11 +160,13 @@ function validateSourceEmission(
 /** Pure, synchronous generator with no runtime dependency on generated code. */
 export const typescriptGenerator = defineGenerator({
   name: 'typescript',
+  optionsSchema: TypeScriptGeneratorOptions,
 
-  generate(ctx: GenerateContext): GenOutput {
+  generate(ctx: GenerateContext, options): GenOutput {
+    const dateType = options?.dateType ?? 'date';
     const files: VirtualFile[] = [];
     for (const [namespace, source] of Object.entries(ctx.ir.sources)) {
-      validateSourceEmission(source, ctx.cycles);
+      validateSourceEmission(source, ctx.cycles, dateType);
       const prefix = `${namespace}/${ctx.segment}`;
       const emitsScalars = sourceUsesJsonValue(source);
       if (emitsScalars) {
@@ -166,19 +176,19 @@ export const typescriptGenerator = defineGenerator({
       if (Object.keys(source.entities).length > 0) {
         files.push({
           path: `${prefix}/filters.ts`,
-          content: emitFilters(source),
+          content: emitFilters(source, dateType),
         });
       }
       if (nonRedundantTypeAliases(source).length > 0) {
         files.push({
           path: `${prefix}/aliases.ts`,
-          content: emitAliases(source),
+          content: emitAliases(source, dateType),
         });
       }
       for (const entity of Object.values(source.entities)) {
         files.push({
           path: `${prefix}/${entity.name}.type.ts`,
-          content: emitEntity(source, entity, ctx.logger),
+          content: emitEntity(source, entity, ctx.logger, dateType),
         });
       }
       files.push({

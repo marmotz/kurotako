@@ -22,7 +22,7 @@ import {
 
 export interface TypeScriptArtifactExtra {
   families: ['flat', 'deep'];
-  variants: ['full', 'create', 'update', 'where', 'select'];
+  variants: ['full', 'create', 'update', 'read', 'where', 'select'];
   perNamespace: Record<
     string,
     {
@@ -94,7 +94,7 @@ export function buildArtifact(ir: IR, segment: string): GeneratorArtifact {
     entities,
     extra: {
       families: ['flat', 'deep'],
-      variants: ['full', 'create', 'update', 'where', 'select'],
+      variants: ['full', 'create', 'update', 'read', 'where', 'select'],
       perNamespace,
     } satisfies TypeScriptArtifactExtra,
   };

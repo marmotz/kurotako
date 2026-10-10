@@ -12,7 +12,7 @@
  */
 import type { Logger } from '@kurotako/core';
 import type { Entity, Relation, TypeAlias } from '@kurotako/ir';
-import { isCrossSource } from '@kurotako/ir';
+import { isCrossSource, readFields } from '@kurotako/ir';
 import { applyConstraints } from './constraints.js';
 import {
   type JsonSchemaFragment,
@@ -60,7 +60,8 @@ export function renderEntity(
   const properties: Record<string, JsonSchemaFragment> = {};
   const required: string[] = [];
 
-  for (const field of entity.fields) {
+  // The component is the shape a response carries: a hidden field never appears.
+  for (const field of readFields(entity)) {
     let schema = renderFieldType(field.type);
     schema = applyConstraints(schema, field.type, field.constraints);
     if (field.list) {

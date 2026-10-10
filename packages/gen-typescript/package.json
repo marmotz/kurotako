@@ -46,7 +46,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@kurotako/ir": "workspace:^"
+    "@kurotako/ir": "workspace:^",
+    "valibot": "1.4.2"
   },
   "peerDependencies": {
     "@kurotako/config": "workspace:^",

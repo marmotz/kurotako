@@ -13,7 +13,10 @@ differ.
 
 Each generator owns the prefix `<namespace>/<generatorName>/` and writes its own barrel
 there. `core` then synthesizes a `<namespace>/index.ts` that re-exports every generator
-which contributed to that namespace.
+which contributed to that namespace, **except UI-framework generators** (`angular`,
+`react-tanstack`): their output imports its framework as soon as it loads, so re-exporting
+it would make a plain Node process (an API importing `@myapp/db`) require `@angular/forms`.
+Those stay reachable from their own path, `@myapp/db/angular`.
 
 ```text
 <root>/
@@ -25,7 +28,7 @@ which contributed to that namespace.
     angular/
       user.form.ts
       index.ts          # gen-angular's own barrel
-    index.ts            # SYNTHESIZED by core: export * from './zod'; export * from './angular';
+    index.ts            # SYNTHESIZED by core: export * from './zod'; (angular is left out, see above)
   index.ts              # SYNTHESIZED: re-exports every namespace
 ```
 
@@ -34,6 +37,7 @@ Import surface:
 ```ts
 import { UserDto } from '@myapp/db';              // synthesized root barrel
 import { UserSchema } from '@myapp/db/zod';       // one generator's barrel
+import { UserForm } from '@myapp/db/angular';     // UI-framework generators: this path only
 import { UserSchema } from '@myapp/db/zod/user.schema'; // fine-grained, no eager sibling load
 ```
 
@@ -74,6 +78,14 @@ The result is imported by package name:
 ```ts
 import { UserSchema } from '@myapp/db/zod';
 ```
+
+The generated `package.json` declares an explicit `exports` entry for the package root and
+for every generator that wrote into the namespace (`./zod`, `./typescript`, `./angular`, …),
+each with `types`, `import` and `require` conditions, plus a `./*` pattern for single files
+(`@myapp/db/zod/user.schema`). A sub-path such as `@myapp/db/zod` therefore resolves to the
+generator's `dist/zod/index.*` for ESM, CommonJS and TypeScript alike. Before
+`@kurotako/core` 0.4.0 (`kurotako` 0.3.0) only the `./*` pattern existed, which sent `@myapp/db/zod` to a non-existent
+`dist/zod.js`; the workaround was `@myapp/db/zod/index`, which keeps working.
 
 ### Prerequisites {#mode-b-prerequisites}
 
@@ -147,7 +159,7 @@ generator's declaration, import it explicitly:
 ```ts
 import { UserDto } from '@myapp/db';            // typescript's declarations for clashing names
 import { UserSchema } from '@myapp/db/zod';     // zod
-import { UserForm } from '@myapp/db/angular';   // angular
+import { UserForm } from '@myapp/db/angular';   // angular (never in the root entry point)
 ```
 
 ## Choosing

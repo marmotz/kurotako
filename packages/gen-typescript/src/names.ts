@@ -6,16 +6,17 @@
  */
 
 /** PascalCase variant token embedded in a type identifier. */
-export type Variant = '' | 'Create' | 'Update' | 'Where' | 'Select';
+export type Variant = '' | 'Create' | 'Update' | 'Read' | 'Where' | 'Select';
 
 /** Relation family token embedded in a type identifier. */
 export type Family = '' | 'Deep';
 
-/** The five variant names, in their fixed order. */
+/** The six variant names, in their fixed order. */
 export const VARIANTS = [
   'full',
   'create',
   'update',
+  'read',
   'where',
   'select',
 ] as const;
@@ -30,6 +31,7 @@ export const VARIANT_TOKEN: Record<VariantName, Variant> = {
   full: '',
   create: 'Create',
   update: 'Update',
+  read: 'Read',
   where: 'Where',
   select: 'Select',
 };

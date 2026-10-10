@@ -142,7 +142,10 @@ export function emitEntity(
 
   /** Hand-written TS type for a field — mirrors `fieldExpr`'s wrappers. */
   const fieldTsType = (field: Field): string => {
-    let t = typeExpr(field.type, source);
+    let t = typeExpr(field.type, source, {
+      dateType: dialect.dateType,
+      format: field.constraints.format,
+    });
     if (field.type.kind === 'union') {
       t = `(${t})`;
     }
@@ -318,7 +321,7 @@ export function emitEntity(
   ): string[] {
     const ownEntries: Entry[] = [];
     for (const field of entity.fields) {
-      const cls = filterClass(field);
+      const cls = filterClass(field, dialect.dateType);
       if (cls === null) {
         continue;
       }

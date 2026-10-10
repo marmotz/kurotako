@@ -41,6 +41,23 @@ cd apps/backend && bun run start:dev
 cd apps/frontend && bun run start
 ```
 
+## Dates and hidden fields
+
+Prisma 8 reads and writes `DateTime` columns as `Temporal.Instant`, so `tako.config.ts`
+sets `dateType: 'temporal'` on `typescriptGenerator` and `zodGenerator`: the generated
+schemas accept an ISO 8601 string (an HTTP body) or an Instant (an ORM row). This needs a
+global `Temporal` at runtime (Node 26+, or a polyfill) and its types at compile time,
+which `temporal-spec` and `"types": ["temporal-spec/global"]` in `tsconfig.base.json`
+provide for the generated package's `.d.ts` build.
+
+`User.passwordHash` is listed under the parser's `hidden` option, so it is absent from
+every `*Read*` schema. `TasksController.list()` parses the ORM rows with
+`TaskReadDeepSchema`, which drops it from the nested `assignee`. See
+[Read shapes and dates](https://kurotako.marmotz.dev/docs/concepts/read-shapes-and-dates).
+
+The apps import the sub-paths `@example/tasks/zod` and `@example/tasks/angular/...`;
+`@example/tasks/angular` no longer comes with the root `@example/tasks` entry point.
+
 ## Zod generator and `gen-angular`
 
 `tako.config.ts` keeps `zodGenerator` because the apps import the `zod` sub-tree

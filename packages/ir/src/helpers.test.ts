@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   createFields,
+  dateTsType,
   defaultValueExpr,
   flattenUnion,
   formInitExpr,
@@ -8,11 +9,13 @@ import {
   isCreateOptional,
   isCrossSource,
   isDbAssigned,
+  isReadOptional,
   iterEntities,
   iterFields,
   iterTypeAliases,
   nonRedundantTypeAliases,
   primaryKeyFields,
+  readFields,
   refCycleMembers,
   resolveEntity,
   resolveEnum,
@@ -20,6 +23,7 @@ import {
   resolveRelationTarget,
   resolveTypeAlias,
   scalarTsType,
+  temporalClass,
   updateFields,
 } from './helpers.js';
 import type {
@@ -296,6 +300,92 @@ describe('shared-decision helpers', () => {
     expect(defaultValueExpr({ kind: 'scalar', scalar: 'string' }, 'x')).toBe(
       '"x"',
     );
+  });
+});
+
+describe('read-shape helpers', () => {
+  it('isReadOptional: optional only when the source has no default', () => {
+    expect(isReadOptional(field('a'))).toBe(false);
+    expect(isReadOptional(field('a', { optional: true }))).toBe(true);
+    expect(
+      isReadOptional(
+        field('a', {
+          optional: true,
+          default: { kind: 'expr', expr: 'now()' },
+        }),
+      ),
+    ).toBe(false);
+    expect(
+      isReadOptional(
+        field('a', { optional: true, default: { kind: 'value', value: 1 } }),
+      ),
+    ).toBe(false);
+  });
+
+  it('readFields drops hidden fields and keeps declaration order', () => {
+    const entity: Entity = {
+      name: 'User',
+      fields: [
+        field('id'),
+        field('passwordHash', { hidden: true }),
+        field('email'),
+      ],
+      relations: [],
+      indexes: [],
+      uniques: [],
+    };
+    expect(readFields(entity).map((f) => f.name)).toEqual(['id', 'email']);
+  });
+});
+
+describe('date type helpers', () => {
+  it('temporalClass: date, time of day and timestamp', () => {
+    expect(temporalClass('date')).toBe('PlainDate');
+    expect(temporalClass('datetime', 'time')).toBe('PlainTime');
+    expect(temporalClass('datetime')).toBe('Instant');
+  });
+
+  it('dateTsType covers the three representations', () => {
+    expect(dateTsType('datetime', undefined, 'date')).toBe('Date');
+    expect(dateTsType('date', undefined, 'string')).toBe('string');
+    expect(dateTsType('date', undefined, 'temporal')).toBe(
+      'Temporal.PlainDate',
+    );
+    expect(dateTsType('datetime', 'time', 'temporal')).toBe(
+      'Temporal.PlainTime',
+    );
+    expect(dateTsType('datetime', undefined, 'temporal')).toBe(
+      'Temporal.Instant',
+    );
+  });
+
+  it('scalarTsType honours dateType and format, through arrays and unions', () => {
+    const datetime: FieldType = { kind: 'scalar', scalar: 'datetime' };
+    expect(scalarTsType(datetime)).toBe('Date');
+    expect(scalarTsType(datetime, { dateType: 'temporal' })).toBe(
+      'Temporal.Instant',
+    );
+    expect(
+      scalarTsType(datetime, { dateType: 'temporal', format: 'time' }),
+    ).toBe('Temporal.PlainTime');
+    expect(
+      scalarTsType(
+        { kind: 'array', element: { kind: 'scalar', scalar: 'date' } },
+        { dateType: 'string' },
+      ),
+    ).toBe('string[]');
+    expect(
+      scalarTsType(
+        {
+          kind: 'union',
+          variants: [
+            { kind: 'scalar', scalar: 'date' },
+            { kind: 'scalar', scalar: 'int' },
+          ],
+        },
+        { dateType: 'temporal' },
+      ),
+    ).toBe('Temporal.PlainDate | number');
   });
 });
 

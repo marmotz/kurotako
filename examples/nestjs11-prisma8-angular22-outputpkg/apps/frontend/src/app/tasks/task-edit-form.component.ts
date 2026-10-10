@@ -1,8 +1,8 @@
 import { Component, signal } from '@angular/core';
 import { type Field, form, FormField, schema } from '@angular/forms/signals';
 import { zodTreeValidate } from '@example/tasks/angular/zod-forms.runtime';
-import { TaskUpdateDeepSchema } from '@example/tasks/zod/index';
-import type { TaskUpdateDeepDto } from '@example/tasks/zod/index';
+import { TaskUpdateDeepSchema } from '@example/tasks/zod';
+import type { TaskUpdateDeepDto } from '@example/tasks/zod';
 import { TasksApiService } from './tasks-api.service';
 
 // No PUT/PATCH endpoint exists on the backend (out of scope, see #82) — this

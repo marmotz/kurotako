@@ -87,6 +87,8 @@ export interface FieldBuilder {
   default(d: DefaultValue): this;
   doc(text: string): this;
   dbName(name: string): this;
+  /** Exclude the field from the entity's read shape (see `Field.hidden`). */
+  hidden(): this;
 }
 
 export interface RelationBuilder {
@@ -450,13 +452,15 @@ class FieldBuilderImpl implements FieldBuilder {
   }
 
   format(f: StringFormat): this {
-    if (
-      this.#field.type.kind !== 'scalar' ||
-      this.#field.type.scalar !== 'string'
-    ) {
+    const type = this.#field.type;
+    // A `time` column has no scalar of its own: it is a `datetime` scalar whose
+    // format says it carries a time of day only.
+    const isTime =
+      type.kind === 'scalar' && type.scalar === 'datetime' && f === 'time';
+    if (!isTime && (type.kind !== 'scalar' || type.scalar !== 'string')) {
       throw new IrBuildError(
         this.#path,
-        'format() requires a string scalar field',
+        "format() requires a string scalar field (or a datetime field with the 'time' format)",
       );
     }
     this.#field.constraints.format = f;
@@ -475,6 +479,11 @@ class FieldBuilderImpl implements FieldBuilder {
 
   dbName(name: string): this {
     this.#field.dbName = name;
+    return this;
+  }
+
+  hidden(): this {
+    this.#field.hidden = true;
     return this;
   }
 

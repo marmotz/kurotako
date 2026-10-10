@@ -29,6 +29,21 @@ describe('renderEntity — own fields', () => {
     expect(schema.required).toEqual(['id', 'email', 'role', 'createdAt']);
   });
 
+  it('leaves a hidden field out of properties and required', () => {
+    const source = createSourceIR({ namespace: 'acc', parser: 'test' })
+      .addEntity('User', (t) => {
+        t.field('id', (f) => f.scalar('uuid'));
+        t.field('passwordHash', (f) => f.scalar('string').hidden());
+      })
+      .build();
+    const schema = renderEntity(entityOf(source, 'User'), {
+      openapiVersion: '3.1',
+      namespace: 'acc',
+    });
+    expect(Object.keys(schema.properties ?? {})).toEqual(['id']);
+    expect(schema.required).toEqual(['id']);
+  });
+
   it('renders a to-one relation as a bare $ref', () => {
     const source = blogSource();
     const schema = renderEntity(entityOf(source, 'Post'), {

@@ -149,6 +149,7 @@
       "version": "0.4.0",
       "dependencies": {
         "@kurotako/ir": "workspace:^",
+        "valibot": "1.4.2",
       },
       "devDependencies": {
         "@kurotako/config": "workspace:^",
@@ -171,6 +172,7 @@
         "@kurotako/config": "workspace:^",
         "@kurotako/core": "workspace:^",
         "typescript": "5.9.3",
+        "zod": "4.4.3",
       },
       "peerDependencies": {
         "@kurotako/config": "workspace:^",
@@ -3752,6 +3754,8 @@
     "@jsonjoy.com/json-pack/@jsonjoy.com/buffers": ["@jsonjoy.com/buffers@1.2.1", "", { "peerDependencies": { "tslib": "2" } }, "sha512-12cdlDwX4RUM3QxmUbVJWqZ/mrK6dFQH4Zxq6+r1YXKXYBNgZXndx2qbCJwh3+WWkCSn67IjnlG3XYTvmvYtgA=="],
 
     "@jsonjoy.com/util/@jsonjoy.com/buffers": ["@jsonjoy.com/buffers@1.2.1", "", { "peerDependencies": { "tslib": "2" } }, "sha512-12cdlDwX4RUM3QxmUbVJWqZ/mrK6dFQH4Zxq6+r1YXKXYBNgZXndx2qbCJwh3+WWkCSn67IjnlG3XYTvmvYtgA=="],
+
+    "@kurotako/gen-zod/zod": ["zod@4.4.3", "", {}, "sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ=="],
 
     "@libsql/isomorphic-ws/ws": ["ws@8.21.3", "", { "peerDependencies": { "bufferutil": "^4.0.1", "utf-8-validate": ">=5.0.2" }, "optionalPeers": ["bufferutil", "utf-8-validate"] }, "sha512-201TZ/kPWxoPr/OKWjquZR1SWKXcvxdH+e1xrx89b3YbmzLMFCLfnaG1HFIgWzJOEWZ7MvpK++odZufgYR50Rw=="],
 

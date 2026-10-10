@@ -13,6 +13,7 @@ export {
   PrismaContractVersionError,
   PrismaDialectError,
   PrismaEntityCollisionError,
+  PrismaHiddenFieldError,
   PrismaInputError,
   PrismaPeerMissingError,
   PrismaSchemaError,

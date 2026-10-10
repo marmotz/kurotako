@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { TaskCreateDto } from '@example/tasks/zod/index';
+import type { TaskCreateDto } from '@example/tasks/zod';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()

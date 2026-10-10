@@ -5,7 +5,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { TaskCreateDeepSchema } from '@example/tasks/zod/index';
+import { TaskCreateDeepSchema } from '@example/tasks/zod';
 import { TasksApiService } from './tasks-api.service';
 
 // relations: 'deep' in this project's tako.config.ts: the generated form nests a

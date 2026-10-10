@@ -58,6 +58,7 @@ interface Field {
   default?: DefaultValue                     // literal or db-side expression
   doc?: string
   dbName?: string                            // @map
+  hidden?: boolean                           // kept out of the read shape (`Read` variant), e.g. a password hash
 }
 
 type FieldType =
@@ -98,7 +99,7 @@ interface Constraints {
   minLength?: number
   maxLength?: number
   regex?: string                // free fallback, JS-compatible source
-  format?: StringFormat         // named semantic refinement (string scalars only)
+  format?: StringFormat         // named semantic refinement (string scalars; `'time'` also on a datetime scalar = a time of day)
   unique?: boolean              // single-field @unique
 }
 

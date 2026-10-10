@@ -25,6 +25,7 @@ Reads either a Prisma 7 schema (through DMMF) or a Prisma 8 PostgreSQL
 | `version`         | `7` \| `8`               | inferred                   | force the input mode; omitted, it is inferred from a Prisma schema, `contract.json`, or a directory containing one.       |
 | `namespacePrefix` | `Record<string, string>` | —                          | Prisma 8 only: prepends a prefix to every model from the named Prisma namespace. Ignored with a warning in Prisma 7 mode. |
 | `rename`          | `Record<string, string>` | —                          | overrides an entity name. Keys are `Entity` in Prisma 7 mode and `namespace.Entity` in Prisma 8 mode.                     |
+| `hidden`          | `Record<string, string[]>` | —                        | fields kept out of the `read` variant, `{ User: ['passwordHash'] }`. Keys are IR entity names (after `rename`). An unknown entry is an error. Also settable with `/// @kurotako.hidden` (Prisma 7 mode). See [Read shapes and dates](../concepts/read-shapes-and-dates.md). |
 
 Unknown option keys are a hard error (a typo like `schemaPath` fails rather than being
 ignored).
@@ -118,10 +119,15 @@ barrel, under `<namespace>/zod/`.
 | Option       | Type       | Default | Notes                                                                                                                     |
 |--------------|------------|---------|---------------------------------------------------------------------------------------------------------------------------|
 | `zodVersion` | `3` \| `4` | `4`     | which Zod API flavor to emit. Explicit — the generator never probes the environment (it must stay pure for `tako check`). |
+| `dateType`   | `'date'` \| `'string'` \| `'temporal'` | `'date'` | how date fields are modelled: `z.coerce.date()`, an ISO 8601 string, or a Temporal object. See [Date types](../concepts/read-shapes-and-dates.md#date-types). |
 
 ```ts
 generators: [ { use: zodGenerator, options: { zodVersion: 4 } } ]
 ```
+
+Each entity yields six variants (`full`, `create`, `update`, `read`, `where`, `select`) in
+both relation families; `read` (`UserReadSchema`) has its defaulted fields required and
+its `hidden` fields removed.
 
 ### `@kurotako/gen-angular`
 
@@ -181,14 +187,18 @@ barrel, under `<namespace>/typescript/`.
 
 - **Export:** `typescriptGenerator` — the value you pass to `use` in a `generators` entry.
 - **Name:** `typescript` — its `name` field.
-- **Depends on:** nothing. No options.
+- **Depends on:** nothing.
 
-Each entity yields five variants (`full`, `create`, `update`, `where`, `select`) in both
-relation families (`flat`, `deep`), named `${Entity}${Variant}${Family}Dto` — e.g.
-`User`, `UserCreateDto`, `UserDeepDto`.
+| Option     | Type                                     | Default  | Notes                                                                                                                       |
+|------------|------------------------------------------|----------|-----------------------------------------------------------------------------------------------------------------------------|
+| `dateType` | `'date'` \| `'string'` \| `'temporal'` | `'date'` | how date fields are typed: `Date`, `string`, or `Temporal.*`. See [Date types](../concepts/read-shapes-and-dates.md#date-types). |
+
+Each entity yields six variants (`full`, `create`, `update`, `read`, `where`, `select`) in
+both relation families (`flat`, `deep`), named `${Entity}${Variant}${Family}Dto` — e.g.
+`User`, `UserCreateDto`, `UserReadDto`, `UserDeepDto`.
 
 ```ts
-generators: [ { use: typescriptGenerator } ]
+generators: [ { use: typescriptGenerator, options: { dateType: 'string' } } ]
 ```
 
 ### `@kurotako/gen-openapi`
@@ -196,7 +206,9 @@ generators: [ { use: typescriptGenerator } ]
 Emits one OpenAPI 3.0/3.1 document (`components/schemas` only — no `paths`/operations)
 per namespace from the IR — entities, type aliases and enums, including relations (rendered nested via `$ref`,
 cross-source relations omitted) and a discriminated-union
-mapping symmetric to `@kurotako/parser-openapi`.
+mapping symmetric to `@kurotako/parser-openapi`. A field marked `hidden` is left out of its
+schema, which describes a response (see
+[Read shapes and dates](../concepts/read-shapes-and-dates.md)).
 
 - **Export:** `openapiGenerator` — the value you pass to `use` in a `generators` entry.
 - **Name:** `openapi` — its `name` field.

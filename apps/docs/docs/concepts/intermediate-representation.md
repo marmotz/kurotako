@@ -21,7 +21,7 @@ IR
       ├─ parser: "prisma"
       ├─ entities
       │  └─ User
-      │     ├─ fields[]      # name, type, list, optional, nullable, constraints, default, doc
+      │     ├─ fields[]      # name, type, list, optional, nullable, constraints, default, doc, hidden
       │     ├─ relations[]   # target (namespace + entity), cardinality, owning, fk fields…
       │     ├─ enums         # entity-scoped enums
       │     ├─ primaryKey

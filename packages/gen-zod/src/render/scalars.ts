@@ -2,7 +2,13 @@
  * `FieldType` -> base Zod expression (dialect-aware), before constraints and the
  * list / nullable / optional / default assembly.
  */
-import type { FieldType, ScalarType, SourceIR } from '@kurotako/ir';
+import type {
+  DateType,
+  FieldType,
+  ScalarType,
+  SourceIR,
+  StringFormat,
+} from '@kurotako/ir';
 import { flattenUnion, scalarTsType } from '@kurotako/ir';
 import type { ZodDialect } from '../dialect.js';
 import {
@@ -37,7 +43,11 @@ export function baseClass(type: FieldType): BaseClass {
   return 'other';
 }
 
-function scalarExpr(scalar: ScalarType, dialect: ZodDialect): string {
+function scalarExpr(
+  scalar: ScalarType,
+  dialect: ZodDialect,
+  format?: StringFormat,
+): string {
   switch (scalar) {
     case 'string':
     case 'decimal':
@@ -53,7 +63,7 @@ function scalarExpr(scalar: ScalarType, dialect: ZodDialect): string {
       return 'z.number()';
     case 'date':
     case 'datetime':
-      return 'z.coerce.date()';
+      return dialect.scalarDate(scalar, format);
     case 'uuid':
       return dialect.scalarUuid();
     case 'json':
@@ -74,15 +84,20 @@ const NO_CYCLES: ReadonlySet<string> = new Set();
  * - `union` -> `z.union([...])`, or `z.discriminatedUnion('<prop>', [...])` when
  *   a discriminator is set. Variants are flattened (`flattenUnion`); a degenerate
  *   union unfolds to its single variant (0 variants -> `z.unknown()`).
+ *
+ * `format` is the owning field's `constraints.format`; it only matters for a
+ * top-level `datetime` scalar (`'time'` = a time of day), and is dropped for
+ * nested types, which carry no constraints of their own.
  */
 export function baseExpr(
   type: FieldType,
   dialect: ZodDialect,
   cyclicRefs: ReadonlySet<string> = NO_CYCLES,
+  format?: StringFormat,
 ): string {
   switch (type.kind) {
     case 'scalar':
-      return scalarExpr(type.scalar, dialect);
+      return scalarExpr(type.scalar, dialect, format);
     case 'enum':
       return enumSchemaName(type.ref);
     case 'unknown':
@@ -169,7 +184,11 @@ export function refTypeName(source: SourceIR, ref: string): string {
  * an entity `ref` to `<Name>Dto` (its emitted flat schema type) rather than the
  * bare identifier.
  */
-export function typeExpr(type: FieldType, source: SourceIR): string {
+export function typeExpr(
+  type: FieldType,
+  source: SourceIR,
+  dateOpts?: { dateType?: DateType; format?: StringFormat },
+): string {
   switch (type.kind) {
     case 'ref':
       return refTypeName(source, type.ref);
@@ -177,18 +196,18 @@ export function typeExpr(type: FieldType, source: SourceIR): string {
       return flattenUnion(type)
         .map((variant) =>
           variant.kind === 'union'
-            ? `(${typeExpr(variant, source)})`
-            : typeExpr(variant, source),
+            ? `(${typeExpr(variant, source, dateOpts)})`
+            : typeExpr(variant, source, dateOpts),
         )
         .join(' | ');
     case 'map':
-      return `Record<string, ${typeExpr(type.value, source)}>`;
+      return `Record<string, ${typeExpr(type.value, source, dateOpts)}>`;
     case 'array':
       return type.element.kind === 'union'
-        ? `(${typeExpr(type.element, source)})[]`
-        : `${typeExpr(type.element, source)}[]`;
+        ? `(${typeExpr(type.element, source, dateOpts)})[]`
+        : `${typeExpr(type.element, source, dateOpts)}[]`;
     default:
-      return scalarTsType(type);
+      return scalarTsType(type, dateOpts);
   }
 }
 

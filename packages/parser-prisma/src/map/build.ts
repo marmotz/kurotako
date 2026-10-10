@@ -21,6 +21,7 @@ import {
 } from '@kurotako/ir';
 import type { PrismaEnum, PrismaModel } from '../dmmf/model.js';
 import { mapDefault } from './defaults.js';
+import { assertHiddenOptionResolves, extractHidden } from './hidden.js';
 import { buildRelations } from './relations.js';
 import { mapFieldType } from './scalars.js';
 
@@ -99,8 +100,10 @@ export function buildSourceIR(
   model: PrismaModel,
   parserVersion: string,
   logger?: Logger,
+  hidden?: Record<string, string[]>,
 ): SourceIR {
   const b = createSourceIR({ namespace, parser: 'prisma', parserVersion });
+  assertHiddenOptionResolves(hidden, model.entities);
 
   for (const e of model.enums) {
     b.addEnum(e.name, (eb) => fillEnum(eb, e));
@@ -152,7 +155,8 @@ export function buildSourceIR(
           }
           const format = mappedDefault.format ?? nativeFormat;
           if (format !== undefined) {
-            if (isString) {
+            // A `time` column is a `datetime` scalar carrying the 'time' format.
+            if (isString || (scalar === 'datetime' && format === 'time')) {
               fb.format(format);
             } else {
               logger?.debug(
@@ -170,11 +174,20 @@ export function buildSourceIR(
           if (field.hasDefaultValue || field.isUpdatedAt) {
             fb.optional();
           }
+          // `@updatedAt` is filled in by the ORM like a default: record it as one,
+          // so the field reads back as required.
+          if (field.isUpdatedAt && !mappedDefault.default) {
+            fb.default({ kind: 'expr', expr: 'updatedAt()' });
+          }
           if (field.isUnique) {
             fb.unique();
           }
-          if (field.doc !== undefined) {
-            fb.doc(field.doc);
+          const { hidden: tagged, doc } = extractHidden(field.doc);
+          if (doc !== undefined) {
+            fb.doc(doc);
+          }
+          if (tagged || hidden?.[entity.name]?.includes(field.name)) {
+            fb.hidden();
           }
         });
       }

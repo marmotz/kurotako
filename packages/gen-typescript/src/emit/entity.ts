@@ -1,6 +1,6 @@
 /** One entity -> its ten flat/deep TypeScript declaration variants. */
 import { jsFile, type Logger } from '@kurotako/core';
-import type { Entity, SourceIR } from '@kurotako/ir';
+import type { DateType, Entity, SourceIR } from '@kurotako/ir';
 import {
   FAMILIES,
   FAMILY_TOKEN,
@@ -64,6 +64,7 @@ export function emitEntity(
   source: SourceIR,
   entity: Entity,
   logger?: Logger,
+  dateType: DateType = 'date',
 ): string {
   const usedEnums = new Set<string>();
   const usedAliases = new Set<string>();
@@ -145,17 +146,25 @@ export function emitEntity(
     const own = variantFields(entity, variant).map((selection) =>
       memberLine(
         selection.field,
-        { optional: variant === 'update' ? false : selection.optional },
+        {
+          optional: variant === 'update' ? false : selection.optional,
+          dateType,
+        },
         source,
         entity,
       ),
     );
     if (entity.additionalProperties !== undefined) {
       const declared = variantFields(entity, variant)
-        .map((selection) => renderFieldType(selection.field.type, source))
+        .map((selection) =>
+          renderFieldType(selection.field.type, source, {
+            dateType,
+            format: selection.field.constraints.format,
+          }),
+        )
         .join(' | ');
       own.push(
-        `  [key: string]: ${renderFieldType(entity.additionalProperties, source)}${declared === '' ? '' : ` | ${declared}`} | undefined;`,
+        `  [key: string]: ${renderFieldType(entity.additionalProperties, source, { dateType })}${declared === '' ? '' : ` | ${declared}`} | undefined;`,
       );
     }
     const relations: string[] = [];
@@ -181,7 +190,7 @@ export function emitEntity(
   function renderWhere(name: string, family: FamilyName): string {
     const members: string[] = [];
     for (const field of entity.fields) {
-      const filter = filterClass(field);
+      const filter = filterClass(field, dateType);
       if (filter === null) continue;
       usedFilters.add(filter);
       members.push(`  ${field.name}?: ${filter};`);

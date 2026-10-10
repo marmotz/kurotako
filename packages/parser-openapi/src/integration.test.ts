@@ -81,11 +81,14 @@ describe('openapiParser pipeline integration', () => {
       '.catchall(z.string())',
     );
 
-    const ts = typescriptGenerator.generate({
-      ...baseCtx,
-      dependencies: {},
-      segment: 'typescript',
-    });
+    const ts = typescriptGenerator.generate(
+      {
+        ...baseCtx,
+        dependencies: {},
+        segment: 'typescript',
+      },
+      {},
+    );
     if (ts instanceof Promise)
       throw new Error('typescript generate must be sync');
     const tsEntity = fileEndingWith(

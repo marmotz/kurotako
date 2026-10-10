@@ -1,6 +1,6 @@
 /**
  * `<ns>/zod/index.ts` — this generator's own sub-tree barrel. Re-exports
- * `./enums`, `./filters` (when the source has >= 1 entity), `./aliases` (when
+ * `./enums`, `./temporal` (when `dateType: 'temporal'` is in use), `./filters` (when the source has >= 1 entity), `./aliases` (when
  * the source has >= 1 type alias) and every `./<entity>.schema`. An empty
  * source still yields a valid `index.ts`.
  */
@@ -8,8 +8,12 @@ import { jsFile } from '@kurotako/core';
 import type { SourceIR } from '@kurotako/ir';
 import { nonRedundantTypeAliases } from '@kurotako/ir';
 
-export function emitBarrel(source: SourceIR): string {
+export function emitBarrel(source: SourceIR, emitsTemporal = false): string {
   const lines = [`export * from '${jsFile('./enums')}';`];
+
+  if (emitsTemporal) {
+    lines.push(`export * from '${jsFile('./temporal')}';`);
+  }
 
   const entities = Object.values(source.entities);
   if (entities.length > 0) {

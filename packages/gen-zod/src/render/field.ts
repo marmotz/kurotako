@@ -31,7 +31,7 @@ export function fieldExpr(
   cyclicRefs?: ReadonlySet<string>,
 ): FieldExprResult {
   let expr = applyConstraints(
-    baseExpr(field.type, dialect, cyclicRefs),
+    baseExpr(field.type, dialect, cyclicRefs, field.constraints.format),
     field.constraints,
     baseClass(field.type),
     dialect,

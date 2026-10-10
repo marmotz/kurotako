@@ -37,6 +37,7 @@ const sidebars: SidebarsConfig = {
         'concepts/intermediate-representation',
         'concepts/dependency-graph',
         'concepts/namespaces',
+        'concepts/read-shapes-and-dates',
       ],
     },
     {

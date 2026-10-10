@@ -7,7 +7,7 @@
     "^.+\\.(t|j)s$": "ts-jest"
   },
   "moduleNameMapper": {
-    "^@example/tasks/zod/index$": "<rootDir>/../../../packages/example-tasks/dist/zod/index.cjs",
+    "^@example/tasks/zod$": "<rootDir>/../../../packages/example-tasks/dist/zod/index.cjs",
     "^(\\.{1,2}/.*)\\.js$": "$1"
   }
 }

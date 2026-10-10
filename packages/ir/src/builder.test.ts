@@ -193,6 +193,32 @@ describe('createSourceIR — incremental throws', () => {
     ).toThrow(/string scalar/);
   });
 
+  it("format('time') is allowed on a datetime field, other formats are not", () => {
+    const ir = base()
+      .addEntity('Slot', (e) => {
+        e.field('at', (f) => f.scalar('datetime').format('time'));
+      })
+      .build();
+    expect(ir.entities.Slot?.fields[0]?.constraints.format).toBe('time');
+    expect(() =>
+      base().addEntity('Slot', (e) => {
+        e.field('at', (f) => f.scalar('datetime').format('email'));
+      }),
+    ).toThrow(/string scalar/);
+  });
+
+  it('hidden() flags the field', () => {
+    const ir = base()
+      .addEntity('User', (e) => {
+        e.field('passwordHash', (f) => f.scalar('string').hidden());
+        e.field('email', (f) => f.scalar('string'));
+      })
+      .build();
+    const fields = ir.entities.User?.fields ?? [];
+    expect(fields[0]?.hidden).toBe(true);
+    expect(fields[1]?.hidden).toBeUndefined();
+  });
+
   it('primary() on a list field', () => {
     expect(() =>
       base().addEntity('User', (e) => {
