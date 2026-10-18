@@ -33,7 +33,7 @@ describe('emitEntity', () => {
     }
     // Deep family: `User` and `Post` relate to each other, so every deep
     // variant's relation field would make `z.infer` circular. Each gets an
-    // explicit `z.ZodType<Dto>` annotation, with `Dto` hand-composed from an
+    // explicit `z.ZodType<Dto>` assertion, with `Dto` hand-composed from an
     // unexported, relation-free `<name>Base` (see `emitEntity`'s doc comment).
     for (const name of [
       'UserDeepSchema',
@@ -44,7 +44,8 @@ describe('emitEntity', () => {
       'UserSelectDeepSchema',
     ]) {
       const dto = name.replace('Schema', 'Dto');
-      expect(out).toContain(`export const ${name}: z.ZodType<${dto}> = `);
+      expect(out).toContain(`export const ${name} = `);
+      expect(out).toContain(`as unknown as z.ZodType<${dto}>;`);
       expect(out).toContain(`export type ${dto} = `);
       expect(out).toContain(`z.infer<typeof ${name}Base>`);
     }
