@@ -1,5 +1,13 @@
 # @kurotako/cli
 
+## 0.3.1
+
+### Patch Changes
+
+- Updated dependencies [147a177]
+  - @kurotako/core@0.4.0
+  - @kurotako/config@0.2.1
+
 ## 0.3.0
 
 ### Minor Changes
