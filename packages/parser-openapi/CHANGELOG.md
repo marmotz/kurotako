@@ -1,5 +1,16 @@
 # @kurotako/parser-openapi
 
+## 0.2.8
+
+### Patch Changes
+
+- Updated dependencies [147a177]
+- Updated dependencies [147a177]
+- Updated dependencies [147a177]
+  - @kurotako/ir@0.7.0
+  - @kurotako/core@0.4.0
+  - @kurotako/config@0.2.1
+
 ## 0.2.7
 
 ### Patch Changes

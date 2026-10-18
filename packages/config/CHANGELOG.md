@@ -1,5 +1,15 @@
 # @kurotako/config
 
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies [147a177]
+- Updated dependencies [147a177]
+- Updated dependencies [147a177]
+  - @kurotako/ir@0.7.0
+  - @kurotako/core@0.4.0
+
 ## 0.2.0
 
 ### Minor Changes

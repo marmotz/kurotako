@@ -1,5 +1,27 @@
 # @kurotako/gen-typescript
 
+## 0.5.0
+
+### Minor Changes
+
+- 147a177: New `dateType` option on `gen-zod` and `gen-typescript` (`'date'` default, `'string'`, `'temporal'`) for `date`, `datetime` and time-of-day fields. `'string'` emits ISO 8601 strings (`z.iso.datetime()`, `z.iso.date()`, `z.iso.time()`); `'temporal'` emits `Temporal.Instant` / `PlainDate` / `PlainTime` and, in `gen-zod`, a generated `temporal.ts` whose schemas accept an ISO 8601 string or a Temporal object and output the Temporal object. This matches what Prisma 8 reads and writes for its `*-temporal` codecs, which `z.coerce.date()` and `Date` do not. With `temporal`, `Where` filters are split per class (`InstantFilter`, `PlainDateFilter`, `PlainTimeFilter`). `gen-typescript` now has an options schema (`TypeScriptGeneratorOptions`), and `generate` takes its options as a second argument.
+  
+  `@kurotako/ir` adds `DateTypeSchema` / `DateType`, `dateTsType`, `temporalClass`, an optional `scalarTsType` options argument, and lets `FieldBuilder.format('time')` apply to a `datetime` field.
+- 147a177: New `read` variant (`UserReadSchema` / `UserReadDto`, plus `UserReadDeepSchema` / `UserReadDeepDto`) in `gen-zod` and `gen-typescript`, next to `full`, `create`, `update`, `where` and `select`. It is the shape of a stored row: fields that have a default (`id`, `createdAt`, ...) are required, and fields marked `hidden` are absent, nested relations included.
+  
+  `@kurotako/ir` adds `Field.hidden`, `FieldBuilder.hidden()`, `readFields` and `isReadOptional`. `@kurotako/parser-prisma` marks a field hidden from the new `hidden` option (`{ User: ['passwordHash'] }`, Prisma 7 and 8, an unknown entry is an error) or from a `/// @kurotako.hidden` doc annotation (Prisma 7 mode; a Prisma 8 contract carries no doc comments). `gen-openapi` leaves hidden fields out of `components/schemas`.
+  
+  `parser-prisma` also records ORM-generated defaults (`@default(uuid())`, `@updatedAt`, Prisma 8 generators) as expression defaults, so those fields read back as required, and keeps `format: 'time'` on `@db.Time` columns.
+
+### Patch Changes
+
+- Updated dependencies [147a177]
+- Updated dependencies [147a177]
+- Updated dependencies [147a177]
+  - @kurotako/ir@0.7.0
+  - @kurotako/core@0.4.0
+  - @kurotako/config@0.2.1
+
 ## 0.4.0
 
 ### Minor Changes
