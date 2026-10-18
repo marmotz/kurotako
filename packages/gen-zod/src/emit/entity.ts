@@ -5,7 +5,7 @@
  *
  * A `deep`-family schema with relations gets a hand-composed `Dto` type (not a
  * plain `z.infer<typeof <name>Schema>`) plus an explicit `z.ZodType<Dto>`
- * annotation on the exported const. Reason: two entities with relations
+ * type on the exported const (via `asZodType`). Reason: two entities with relations
  * pointing at each other (the ordinary shape of a Prisma one-to-many /
  * many-to-one pair, not an edge case) make every relation-carrying
  * `z.object(...)` mutually circular — TypeScript can't emit a `.d.ts` for a
@@ -291,7 +291,7 @@ export function emitEntity(
         })
         .join('\n');
       return [
-        `export const ${name}: z.ZodType<${dto}> = ${body};`,
+        `export const ${name} = ${asZodType(body, dto)};`,
         `export type ${dto} = {\n${rows}\n};`,
         '',
       ];
@@ -308,7 +308,7 @@ export function emitEntity(
 
     return [
       `const ${baseName} = ${entity.additionalProperties === undefined ? objectExpr(ownEntries) : `${objectExpr(ownEntries)}.catchall(${baseExpr(entity.additionalProperties, dialect, cyclicRefs)})`};`,
-      `export const ${name}: z.ZodType<${dto}> = ${finalValue};`,
+      `export const ${name} = ${asZodType(finalValue, dto)};`,
       `export type ${dto} = ${ownDtoExpr}${typeIntersection(relTyped)};`,
       '',
     ];
@@ -356,7 +356,7 @@ export function emitEntity(
 
     return [
       `const ${baseName} = ${objectExpr(ownEntries)};`,
-      `export const ${name}: z.ZodType<${dto}> = z.lazy(() => ${extendExpr(baseName, logicEntries)});`,
+      `export const ${name} = ${asZodType(`z.lazy(() => ${extendExpr(baseName, logicEntries)})`, dto)};`,
       `export type ${dto} = ${dtoMembers.join(' & ')};`,
       '',
     ];
@@ -427,11 +427,24 @@ export function emitEntity(
     const baseName = `${name}Base`;
     return [
       `const ${baseName} = ${objectExpr(ownEntries)};`,
-      `export const ${name}: z.ZodType<${dto}> = ${extendExpr(baseName, relEntries)};`,
+      `export const ${name} = ${asZodType(extendExpr(baseName, relEntries), dto)};`,
       `export type ${dto} = z.infer<typeof ${baseName}>${typeIntersection(relTyped)};`,
       '',
     ];
   }
+}
+
+/**
+ * Types a recursive schema as `z.ZodType<Dto>` through a double assertion
+ * instead of a `: z.ZodType<Dto> = <expr>` annotation. The annotation makes
+ * TypeScript check the whole inferred zod type (`ZodObject<{ ...ZodLazy... }>`)
+ * against `ZodType<Dto>` structurally, which across a densely connected model
+ * costs hundreds of thousands of type instantiations and gigabytes of heap
+ * (`tsc`, tsup `.d.ts` build). The assertion yields the same exported type and
+ * still breaks the const-initializer circularity, at a fraction of the cost.
+ */
+function asZodType(expr: string, dto: string): string {
+  return `${expr} as unknown as z.ZodType<${dto}>`;
 }
 
 function buildImports(

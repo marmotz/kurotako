@@ -114,7 +114,8 @@ describe('zodGenerator.generate', () => {
       "import { ShapeSchema, type Shape } from './aliases.js';",
     );
     expect(group).toContain('child: z.lazy(() => ShapeSchema)');
-    expect(group).toContain('export const GroupSchema: z.ZodType<GroupDto> =');
+    expect(group).toContain('export const GroupSchema = ');
+    expect(group).toContain('as unknown as z.ZodType<GroupDto>;');
     expect(group).toContain('child: Shape;');
   });
 
