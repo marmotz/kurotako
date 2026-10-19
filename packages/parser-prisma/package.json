@@ -65,6 +65,6 @@
     "@kurotako/core": "workspace:^",
     "@prisma/dmmf": "7.10.0",
     "@prisma/internals": "7.10.0",
-    "prisma": "8.0.0-rc.13"
+    "prisma": "8.0.0-rc.23"
   }
 }

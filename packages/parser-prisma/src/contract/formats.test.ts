@@ -13,8 +13,10 @@ const ctx: ParseContext = {
   logger: noopLogger,
 };
 
-// Same contract.prisma emitted by prisma 8.0.0-rc.13 (ref: namespace/table/column)
-// and 8.0.0-rc.22 (ref: namespace/entry/field, table names no longer lowercased).
+// The same contract.prisma emitted by prisma 8.0.0-rc.13 (ref:
+// namespace/table/column) and 8.0.0-rc.22 (ref: namespace/entry/field, table
+// names no longer lowercased). Verified byte-identical from rc.22 through
+// rc.23, the latest 8.0.0 RC (only volatile hashes differ).
 const rc13 = load('contract.rc13.json');
 const rc22 = load('contract.rc22.json');
 

@@ -13,10 +13,12 @@ differ.
 
 Each generator owns the prefix `<namespace>/<generatorName>/` and writes its own barrel
 there. `core` then synthesizes a `<namespace>/index.ts` that re-exports every generator
-which contributed to that namespace, **except UI-framework generators** (`angular`,
-`react-tanstack`): their output imports its framework as soon as it loads, so re-exporting
-it would make a plain Node process (an API importing `@myapp/db`) require `@angular/forms`.
-Those stay reachable from their own path, `@myapp/db/angular`.
+which contributed to that namespace, **except** the generators that export nothing
+importable from the root: the UI-framework generators (`angular`, `react-tanstack`),
+whose output imports its framework as soon as it loads — re-exporting it would make a
+plain Node process (an API importing `@myapp/db`) require `@angular/forms`; they stay
+reachable from their own path, `@myapp/db/angular` — and `openapi`, which emits only an
+`openapi.json`/`openapi.yaml` document per namespace and no TypeScript module at all.
 
 ```text
 <root>/

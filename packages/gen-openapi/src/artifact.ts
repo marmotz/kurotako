@@ -4,6 +4,10 @@
  * pointer. No `dependsOn` (this generator reads only the IR), no
  * `peerDependencies` (the emitted document has no runtime import surface), no
  * `extra` (no consumer needs OpenAPI-specific artifact data yet).
+ *
+ * `exportFromRoot: false`: the generator emits one `openapi.<ext>` document, not
+ * a TypeScript module — the synthesized root barrel would otherwise export from
+ * a `./openapi/index.js` that does not exist (same rationale as `gen-angular`).
  */
 import type { EntitySymbols, GeneratorArtifact } from '@kurotako/core';
 import type { IR } from '@kurotako/ir';
@@ -26,5 +30,5 @@ export function buildArtifact(
     };
   }
 
-  return { entities };
+  return { entities, exportFromRoot: false };
 }

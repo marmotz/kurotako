@@ -84,6 +84,9 @@ describe('openapiGenerator.generate', () => {
     });
     expect(out.artifact.peerDependencies).toBeUndefined();
     expect(out.artifact.extra).toBeUndefined();
+    // No TypeScript module is emitted under `<ns>/openapi/` (only the document),
+    // so the root barrel must not re-export that sub-tree (see `artifact.ts`).
+    expect(out.artifact.exportFromRoot).toBe(false);
   });
 
   it('the artifact module points at .yaml when format is yaml', () => {
